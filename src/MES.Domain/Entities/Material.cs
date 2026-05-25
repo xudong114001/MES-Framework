@@ -1,0 +1,13 @@
+namespace MES.Domain.Entities;
+
+public class Material : BaseEntity
+{
+    public string Code { get; set; } = string.Empty;
+    public string Name { get; set; } = string.Empty;
+    public string? Spec { get; set; }
+    public string? Unit { get; set; }
+    public string? Category { get; set; }
+    public int? BomLevel { get; set; }
+    public decimal StockQty { get; set; }
+    public bool Status { get; set; } = true;
+}

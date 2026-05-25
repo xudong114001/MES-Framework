@@ -1,0 +1,94 @@
+2026-05-25 22:28:06.391 +08:00 [WRN] Entity 'Equipment' has a global query filter defined and is the required end of a relationship with the entity 'MaintenancePlan'. This may lead to unexpected results when the required entity is filtered out. Either configure the navigation as optional, or define matching query filters for both entities in the navigation. See https://go.microsoft.com/fwlink/?linkid=2131316 for more information.
+2026-05-25 22:28:06.419 +08:00 [WRN] Entity 'Material' has a global query filter defined and is the required end of a relationship with the entity 'MaterialTrace'. This may lead to unexpected results when the required entity is filtered out. Either configure the navigation as optional, or define matching query filters for both entities in the navigation. See https://go.microsoft.com/fwlink/?linkid=2131316 for more information.
+2026-05-25 22:28:06.420 +08:00 [WRN] Entity 'Routing' has a global query filter defined and is the required end of a relationship with the entity 'RoutingStep'. This may lead to unexpected results when the required entity is filtered out. Either configure the navigation as optional, or define matching query filters for both entities in the navigation. See https://go.microsoft.com/fwlink/?linkid=2131316 for more information.
+2026-05-25 22:28:06.422 +08:00 [WRN] Entity 'WorkOrder' has a global query filter defined and is the required end of a relationship with the entity 'WorkOrderStep'. This may lead to unexpected results when the required entity is filtered out. Either configure the navigation as optional, or define matching query filters for both entities in the navigation. See https://go.microsoft.com/fwlink/?linkid=2131316 for more information.
+2026-05-25 22:28:06.423 +08:00 [WRN] Entity 'WorkOrder' has a global query filter defined and is the required end of a relationship with the entity 'WorkReport'. This may lead to unexpected results when the required entity is filtered out. Either configure the navigation as optional, or define matching query filters for both entities in the navigation. See https://go.microsoft.com/fwlink/?linkid=2131316 for more information.
+2026-05-25 22:28:06.471 +08:00 [WRN] The 'EquipmentStatus' property 'Status' on entity type 'Equipment' is configured with a database-generated default, but has no configured sentinel value. The database-generated default will always be used for inserts when the property has the value 'RUNNING', since this is the CLR default for the 'EquipmentStatus' type. Consider using a nullable type, using a nullable backing field, or setting the sentinel value for the property to ensure the database default is used when, and only when, appropriate. See https://aka.ms/efcore-docs-default-values for more information.
+2026-05-25 22:28:06.473 +08:00 [WRN] The 'QcResult' property 'InspectResult' on entity type 'QcInspection' is configured with a database-generated default, but has no configured sentinel value. The database-generated default will always be used for inserts when the property has the value 'PASS', since this is the CLR default for the 'QcResult' type. Consider using a nullable type, using a nullable backing field, or setting the sentinel value for the property to ensure the database default is used when, and only when, appropriate. See https://aka.ms/efcore-docs-default-values for more information.
+2026-05-25 22:28:06.474 +08:00 [WRN] The 'QcResult' property 'Result' on entity type 'QcInspectionItem' is configured with a database-generated default, but has no configured sentinel value. The database-generated default will always be used for inserts when the property has the value 'PASS', since this is the CLR default for the 'QcResult' type. Consider using a nullable type, using a nullable backing field, or setting the sentinel value for the property to ensure the database default is used when, and only when, appropriate. See https://aka.ms/efcore-docs-default-values for more information.
+2026-05-25 22:28:06.475 +08:00 [WRN] The 'Priority' property 'Priority' on entity type 'WorkOrder' is configured with a database-generated default, but has no configured sentinel value. The database-generated default will always be used for inserts when the property has the value 'LOW', since this is the CLR default for the 'Priority' type. Consider using a nullable type, using a nullable backing field, or setting the sentinel value for the property to ensure the database default is used when, and only when, appropriate. See https://aka.ms/efcore-docs-default-values for more information.
+2026-05-25 22:28:06.759 +08:00 [INF] Executed DbCommand (18ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT 1
+2026-05-25 22:28:06.800 +08:00 [INF] Executed DbCommand (32ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT CASE WHEN COUNT(*) = 0 THEN FALSE ELSE TRUE END
+FROM pg_class AS cls
+JOIN pg_namespace AS ns ON ns.oid = cls.relnamespace
+WHERE
+        cls.relkind IN ('r', 'v', 'm', 'f', 'p') AND
+        ns.nspname NOT IN ('pg_catalog', 'information_schema') AND
+        -- Exclude tables which are members of PG extensions
+        NOT EXISTS (
+            SELECT 1 FROM pg_depend WHERE
+                classid=(
+                    SELECT cls.oid
+                    FROM pg_class AS cls
+                             JOIN pg_namespace AS ns ON ns.oid = cls.relnamespace
+                    WHERE relname='pg_class' AND ns.nspname='pg_catalog'
+                ) AND
+                objid=cls.oid AND
+                deptype IN ('e', 'x')
+        )
+2026-05-25 22:28:07.072 +08:00 [INF] Executed DbCommand (3ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT EXISTS (
+    SELECT 1
+    FROM mes_user AS m
+    WHERE NOT (m.is_deleted))
+2026-05-25 22:28:07.081 +08:00 [INF] MES API starting on http://localhost:5180
+2026-05-25 22:28:07.093 +08:00 [INF] User profile is available. Using 'C:\Users\xudon\AppData\Local\ASP.NET\DataProtection-Keys' as key repository and Windows DPAPI to encrypt keys at rest.
+2026-05-25 22:28:07.240 +08:00 [INF] Now listening on: http://localhost:5180
+2026-05-25 22:28:07.242 +08:00 [INF] Application started. Press Ctrl+C to shut down.
+2026-05-25 22:28:07.242 +08:00 [INF] Hosting environment: Development
+2026-05-25 22:28:07.243 +08:00 [INF] Content root path: D:\Project\MES-Framework\src\MES.Api
+2026-05-25 22:33:57.389 +08:00 [WRN] Entity 'Equipment' has a global query filter defined and is the required end of a relationship with the entity 'MaintenancePlan'. This may lead to unexpected results when the required entity is filtered out. Either configure the navigation as optional, or define matching query filters for both entities in the navigation. See https://go.microsoft.com/fwlink/?linkid=2131316 for more information.
+2026-05-25 22:33:57.428 +08:00 [WRN] Entity 'Material' has a global query filter defined and is the required end of a relationship with the entity 'MaterialTrace'. This may lead to unexpected results when the required entity is filtered out. Either configure the navigation as optional, or define matching query filters for both entities in the navigation. See https://go.microsoft.com/fwlink/?linkid=2131316 for more information.
+2026-05-25 22:33:57.430 +08:00 [WRN] Entity 'Routing' has a global query filter defined and is the required end of a relationship with the entity 'RoutingStep'. This may lead to unexpected results when the required entity is filtered out. Either configure the navigation as optional, or define matching query filters for both entities in the navigation. See https://go.microsoft.com/fwlink/?linkid=2131316 for more information.
+2026-05-25 22:33:57.431 +08:00 [WRN] Entity 'WorkOrder' has a global query filter defined and is the required end of a relationship with the entity 'WorkOrderStep'. This may lead to unexpected results when the required entity is filtered out. Either configure the navigation as optional, or define matching query filters for both entities in the navigation. See https://go.microsoft.com/fwlink/?linkid=2131316 for more information.
+2026-05-25 22:33:57.432 +08:00 [WRN] Entity 'WorkOrder' has a global query filter defined and is the required end of a relationship with the entity 'WorkReport'. This may lead to unexpected results when the required entity is filtered out. Either configure the navigation as optional, or define matching query filters for both entities in the navigation. See https://go.microsoft.com/fwlink/?linkid=2131316 for more information.
+2026-05-25 22:33:57.497 +08:00 [WRN] The 'EquipmentStatus' property 'Status' on entity type 'Equipment' is configured with a database-generated default, but has no configured sentinel value. The database-generated default will always be used for inserts when the property has the value 'RUNNING', since this is the CLR default for the 'EquipmentStatus' type. Consider using a nullable type, using a nullable backing field, or setting the sentinel value for the property to ensure the database default is used when, and only when, appropriate. See https://aka.ms/efcore-docs-default-values for more information.
+2026-05-25 22:33:57.500 +08:00 [WRN] The 'QcResult' property 'InspectResult' on entity type 'QcInspection' is configured with a database-generated default, but has no configured sentinel value. The database-generated default will always be used for inserts when the property has the value 'PASS', since this is the CLR default for the 'QcResult' type. Consider using a nullable type, using a nullable backing field, or setting the sentinel value for the property to ensure the database default is used when, and only when, appropriate. See https://aka.ms/efcore-docs-default-values for more information.
+2026-05-25 22:33:57.504 +08:00 [WRN] The 'QcResult' property 'Result' on entity type 'QcInspectionItem' is configured with a database-generated default, but has no configured sentinel value. The database-generated default will always be used for inserts when the property has the value 'PASS', since this is the CLR default for the 'QcResult' type. Consider using a nullable type, using a nullable backing field, or setting the sentinel value for the property to ensure the database default is used when, and only when, appropriate. See https://aka.ms/efcore-docs-default-values for more information.
+2026-05-25 22:33:57.507 +08:00 [WRN] The 'Priority' property 'Priority' on entity type 'WorkOrder' is configured with a database-generated default, but has no configured sentinel value. The database-generated default will always be used for inserts when the property has the value 'LOW', since this is the CLR default for the 'Priority' type. Consider using a nullable type, using a nullable backing field, or setting the sentinel value for the property to ensure the database default is used when, and only when, appropriate. See https://aka.ms/efcore-docs-default-values for more information.
+2026-05-25 22:33:57.799 +08:00 [INF] Executed DbCommand (23ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT 1
+2026-05-25 22:33:57.835 +08:00 [INF] Executed DbCommand (27ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT CASE WHEN COUNT(*) = 0 THEN FALSE ELSE TRUE END
+FROM pg_class AS cls
+JOIN pg_namespace AS ns ON ns.oid = cls.relnamespace
+WHERE
+        cls.relkind IN ('r', 'v', 'm', 'f', 'p') AND
+        ns.nspname NOT IN ('pg_catalog', 'information_schema') AND
+        -- Exclude tables which are members of PG extensions
+        NOT EXISTS (
+            SELECT 1 FROM pg_depend WHERE
+                classid=(
+                    SELECT cls.oid
+                    FROM pg_class AS cls
+                             JOIN pg_namespace AS ns ON ns.oid = cls.relnamespace
+                    WHERE relname='pg_class' AND ns.nspname='pg_catalog'
+                ) AND
+                objid=cls.oid AND
+                deptype IN ('e', 'x')
+        )
+2026-05-25 22:33:58.117 +08:00 [INF] Executed DbCommand (1ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT EXISTS (
+    SELECT 1
+    FROM mes_user AS m
+    WHERE NOT (m.is_deleted))
+2026-05-25 22:33:58.127 +08:00 [INF] MES API starting on http://localhost:5180
+2026-05-25 22:33:58.140 +08:00 [INF] User profile is available. Using 'C:\Users\xudon\AppData\Local\ASP.NET\DataProtection-Keys' as key repository and Windows DPAPI to encrypt keys at rest.
+2026-05-25 22:33:58.179 +08:00 [INF] Now listening on: http://localhost:5000
+2026-05-25 22:33:58.181 +08:00 [INF] Application started. Press Ctrl+C to shut down.
+2026-05-25 22:33:58.182 +08:00 [INF] Hosting environment: Production
+2026-05-25 22:33:58.182 +08:00 [INF] Content root path: D:\Project\MES-Framework\src\MES.Api
+2026-05-25 22:42:24.754 +08:00 [INF] Request starting HTTP/1.1 GET http://localhost:5000/ - null null
+2026-05-25 22:42:25.768 +08:00 [INF] GET / responded 404 in 987ms
+2026-05-25 22:42:25.793 +08:00 [INF] Request finished HTTP/1.1 GET http://localhost:5000/ - 404 0 null 1041.2103ms
+2026-05-25 22:42:25.796 +08:00 [INF] Request reached the end of the middleware pipeline without being handled by application code. Request path: GET http://localhost:5000/, Response status code: 404
+2026-05-25 22:42:30.894 +08:00 [INF] Request starting HTTP/1.1 GET http://localhost:5000/swagger - null null
+2026-05-25 22:42:30.898 +08:00 [INF] GET /swagger responded 404 in 1ms
+2026-05-25 22:42:30.899 +08:00 [INF] Request finished HTTP/1.1 GET http://localhost:5000/swagger - 404 0 null 5.0003ms
+2026-05-25 22:42:30.901 +08:00 [INF] Request reached the end of the middleware pipeline without being handled by application code. Request path: GET http://localhost:5000/swagger, Response status code: 404
+2026-05-25 22:42:39.684 +08:00 [INF] Request starting HTTP/1.1 GET http://localhost:5000/docs - null null
+2026-05-25 22:42:39.689 +08:00 [INF] GET /docs responded 404 in 2ms
+2026-05-25 22:42:39.690 +08:00 [INF] Request finished HTTP/1.1 GET http://localhost:5000/docs - 404 0 null 5.8394ms
+2026-05-25 22:42:39.692 +08:00 [INF] Request reached the end of the middleware pipeline without being handled by application code. Request path: GET http://localhost:5000/docs, Response status code: 404

@@ -1,0 +1,5 @@
+{
+  "MES.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null": "D:\\Project\\MES-Framework\\src\\MES.Application",
+  "MES.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null": "D:\\Project\\MES-Framework\\src\\MES.Domain",
+  "MES.Infrastructure, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null": "D:\\Project\\MES-Framework\\src\\MES.Infrastructure"
+}

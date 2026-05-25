@@ -1,0 +1,36 @@
+using MES.Domain.Enums;
+
+namespace MES.Application.Dtos;
+
+/// <summary>
+/// 工单 DTO — 排除导航属性，仅暴露数据传输所需字段
+/// </summary>
+public class WorkOrderDto
+{
+    public long Id { get; set; }
+    public string OrderNo { get; set; } = string.Empty;
+    public SourceType SourceType { get; set; }
+    public string? SourceRef { get; set; }
+    public long MaterialId { get; set; }
+    public long? RoutingId { get; set; }
+    public decimal PlannedQty { get; set; }
+    public decimal CompletedQty { get; set; }
+    public decimal ScrapQty { get; set; }
+    public WorkOrderStatus Status { get; set; }
+    public DateTime? PlanStartTime { get; set; }
+    public DateTime? PlanEndTime { get; set; }
+    public DateTime? ActualStartTime { get; set; }
+    public DateTime? ActualEndTime { get; set; }
+    public Priority Priority { get; set; }
+    public long? FactoryId { get; set; }
+    public long? WorkshopId { get; set; }
+    public long? LineId { get; set; }
+    public long? Assignee { get; set; }
+    public string? Remark { get; set; }
+    public long? ReworkFromId { get; set; }
+
+    public DateTime CreatedAt { get; set; }
+    public long? CreatedBy { get; set; }
+    public DateTime UpdatedAt { get; set; }
+    public long? UpdatedBy { get; set; }
+}

@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/MES.Api/MES.Api.csproj" />
+    <Project Path="src/MES.Application/MES.Application.csproj" />
+    <Project Path="src/MES.Domain/MES.Domain.csproj" />
+    <Project Path="src/MES.Infrastructure/MES.Infrastructure.csproj" />
+    <Project Path="src/MES.Tests/MES.Tests.csproj" />
+  </Folder>
+</Solution>

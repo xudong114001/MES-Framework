@@ -1,0 +1,771 @@
+2026-05-08 13:54:31.868 +08:00 [WRN] Entity 'Material' has a global query filter defined and is the required end of a relationship with the entity 'MaterialTrace'. This may lead to unexpected results when the required entity is filtered out. Either configure the navigation as optional, or define matching query filters for both entities in the navigation. See https://go.microsoft.com/fwlink/?linkid=2131316 for more information.
+2026-05-08 13:54:31.894 +08:00 [WRN] Entity 'Routing' has a global query filter defined and is the required end of a relationship with the entity 'RoutingStep'. This may lead to unexpected results when the required entity is filtered out. Either configure the navigation as optional, or define matching query filters for both entities in the navigation. See https://go.microsoft.com/fwlink/?linkid=2131316 for more information.
+2026-05-08 13:54:31.894 +08:00 [WRN] Entity 'WorkOrder' has a global query filter defined and is the required end of a relationship with the entity 'WorkOrderStep'. This may lead to unexpected results when the required entity is filtered out. Either configure the navigation as optional, or define matching query filters for both entities in the navigation. See https://go.microsoft.com/fwlink/?linkid=2131316 for more information.
+2026-05-08 13:54:31.894 +08:00 [WRN] Entity 'WorkOrder' has a global query filter defined and is the required end of a relationship with the entity 'WorkReport'. This may lead to unexpected results when the required entity is filtered out. Either configure the navigation as optional, or define matching query filters for both entities in the navigation. See https://go.microsoft.com/fwlink/?linkid=2131316 for more information.
+2026-05-08 13:54:31.933 +08:00 [WRN] The 'EquipmentStatus' property 'Status' on entity type 'Equipment' is configured with a database-generated default, but has no configured sentinel value. The database-generated default will always be used for inserts when the property has the value 'RUNNING', since this is the CLR default for the 'EquipmentStatus' type. Consider using a nullable type, using a nullable backing field, or setting the sentinel value for the property to ensure the database default is used when, and only when, appropriate. See https://aka.ms/efcore-docs-default-values for more information.
+2026-05-08 13:54:31.934 +08:00 [WRN] The 'QcResult' property 'InspectResult' on entity type 'QcInspection' is configured with a database-generated default, but has no configured sentinel value. The database-generated default will always be used for inserts when the property has the value 'PASS', since this is the CLR default for the 'QcResult' type. Consider using a nullable type, using a nullable backing field, or setting the sentinel value for the property to ensure the database default is used when, and only when, appropriate. See https://aka.ms/efcore-docs-default-values for more information.
+2026-05-08 13:54:31.934 +08:00 [WRN] The 'QcResult' property 'Result' on entity type 'QcInspectionItem' is configured with a database-generated default, but has no configured sentinel value. The database-generated default will always be used for inserts when the property has the value 'PASS', since this is the CLR default for the 'QcResult' type. Consider using a nullable type, using a nullable backing field, or setting the sentinel value for the property to ensure the database default is used when, and only when, appropriate. See https://aka.ms/efcore-docs-default-values for more information.
+2026-05-08 13:54:31.934 +08:00 [WRN] The 'Priority' property 'Priority' on entity type 'WorkOrder' is configured with a database-generated default, but has no configured sentinel value. The database-generated default will always be used for inserts when the property has the value 'LOW', since this is the CLR default for the 'Priority' type. Consider using a nullable type, using a nullable backing field, or setting the sentinel value for the property to ensure the database default is used when, and only when, appropriate. See https://aka.ms/efcore-docs-default-values for more information.
+2026-05-08 13:54:32.277 +08:00 [INF] Executed DbCommand (24ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT 1
+2026-05-08 13:54:32.325 +08:00 [INF] Executed DbCommand (38ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT CASE WHEN COUNT(*) = 0 THEN FALSE ELSE TRUE END
+FROM pg_class AS cls
+JOIN pg_namespace AS ns ON ns.oid = cls.relnamespace
+WHERE
+        cls.relkind IN ('r', 'v', 'm', 'f', 'p') AND
+        ns.nspname NOT IN ('pg_catalog', 'information_schema') AND
+        -- Exclude tables which are members of PG extensions
+        NOT EXISTS (
+            SELECT 1 FROM pg_depend WHERE
+                classid=(
+                    SELECT cls.oid
+                    FROM pg_class AS cls
+                             JOIN pg_namespace AS ns ON ns.oid = cls.relnamespace
+                    WHERE relname='pg_class' AND ns.nspname='pg_catalog'
+                ) AND
+                objid=cls.oid AND
+                deptype IN ('e', 'x')
+        )
+2026-05-08 13:54:32.329 +08:00 [INF] MES API starting on http://localhost:5000
+2026-05-08 13:54:32.342 +08:00 [INF] User profile is available. Using 'C:\Users\xudon\AppData\Local\ASP.NET\DataProtection-Keys' as key repository and Windows DPAPI to encrypt keys at rest.
+2026-05-08 13:54:32.352 +08:00 [INF] Creating key {d81f8340-57e3-4e47-9294-91f6c931b7f0} with creation date 2026-05-08 05:54:32Z, activation date 2026-05-08 05:54:32Z, and expiration date 2026-08-06 05:54:32Z.
+2026-05-08 13:54:32.362 +08:00 [INF] Writing data to file 'C:\Users\xudon\AppData\Local\ASP.NET\DataProtection-Keys\key-d81f8340-57e3-4e47-9294-91f6c931b7f0.xml'.
+2026-05-08 13:54:32.491 +08:00 [INF] Now listening on: http://localhost:5000
+2026-05-08 13:54:32.492 +08:00 [INF] Application started. Press Ctrl+C to shut down.
+2026-05-08 13:54:32.492 +08:00 [INF] Hosting environment: Development
+2026-05-08 13:54:32.492 +08:00 [INF] Content root path: D:\Project\MES-Framework\src\MES.Api
+2026-05-08 13:55:41.086 +08:00 [INF] Request starting HTTP/1.1 POST http://localhost:5000/api/v1/auth/login - application/json 63
+2026-05-08 13:55:42.052 +08:00 [INF] Executing endpoint 'MES.Api.Controllers.AuthController.Login (MES.Api)'
+2026-05-08 13:55:42.065 +08:00 [INF] Route matched with {action = "Login", controller = "Auth"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Login(MES.Api.Dtos.LoginRequest) on controller MES.Api.Controllers.AuthController (MES.Api).
+2026-05-08 13:55:42.461 +08:00 [ERR] Failed executing DbCommand (15ms) [Parameters=[@request_Username='?'], CommandType='"Text"', CommandTimeout='30']
+SELECT m."Id", m."CreatedAt", m."CreatedBy", m."DisplayName", m."Email", m."IsDeleted", m."LastLoginTime", m."PasswordHash", m."Phone", m."Status", m."UpdatedAt", m."UpdatedBy", m."Username"
+FROM mes_user AS m
+WHERE NOT (m."IsDeleted") AND m."Username" = @request_Username AND NOT (m."IsDeleted")
+LIMIT 1
+2026-05-08 13:55:42.474 +08:00 [ERR] An exception occurred while iterating over the results of a query for context type 'MES.Infrastructure.Data.MesDbContext'.
+Npgsql.PostgresException (0x80004005): 42703: column m.Id does not exist
+
+POSITION: 8
+   at Npgsql.Internal.NpgsqlConnector.ReadMessageLong(Boolean async, DataRowLoadingMode dataRowLoadingMode, Boolean readingNotifications, Boolean isReadingPrependedMessage)
+   at System.Runtime.CompilerServices.PoolingAsyncValueTaskMethodBuilder`1.StateMachineBox`1.System.Threading.Tasks.Sources.IValueTaskSource<TResult>.GetResult(Int16 token)
+   at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteDbDataReaderAsync(CommandBehavior behavior, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Npgsql.EntityFrameworkCore.PostgreSQL.Storage.Internal.NpgsqlExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+  Exception data:
+    Severity: ERROR
+    SqlState: 42703
+    MessageText: column m.Id does not exist
+    Hint: Perhaps you meant to reference the column "m.id".
+    Position: 8
+    File: parse_relation.c
+    Line: 3729
+    Routine: errorMissingColumn
+Npgsql.PostgresException (0x80004005): 42703: column m.Id does not exist
+
+POSITION: 8
+   at Npgsql.Internal.NpgsqlConnector.ReadMessageLong(Boolean async, DataRowLoadingMode dataRowLoadingMode, Boolean readingNotifications, Boolean isReadingPrependedMessage)
+   at System.Runtime.CompilerServices.PoolingAsyncValueTaskMethodBuilder`1.StateMachineBox`1.System.Threading.Tasks.Sources.IValueTaskSource<TResult>.GetResult(Int16 token)
+   at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteDbDataReaderAsync(CommandBehavior behavior, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Npgsql.EntityFrameworkCore.PostgreSQL.Storage.Internal.NpgsqlExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+  Exception data:
+    Severity: ERROR
+    SqlState: 42703
+    MessageText: column m.Id does not exist
+    Hint: Perhaps you meant to reference the column "m.id".
+    Position: 8
+    File: parse_relation.c
+    Line: 3729
+    Routine: errorMissingColumn
+2026-05-08 13:55:42.480 +08:00 [INF] Executed action MES.Api.Controllers.AuthController.Login (MES.Api) in 412.5566ms
+2026-05-08 13:55:42.483 +08:00 [INF] Executed endpoint 'MES.Api.Controllers.AuthController.Login (MES.Api)'
+2026-05-08 13:55:42.484 +08:00 [ERR] Unhandled exception: 42703: column m.Id does not exist
+
+POSITION: 8
+Npgsql.PostgresException (0x80004005): 42703: column m.Id does not exist
+
+POSITION: 8
+   at Npgsql.Internal.NpgsqlConnector.ReadMessageLong(Boolean async, DataRowLoadingMode dataRowLoadingMode, Boolean readingNotifications, Boolean isReadingPrependedMessage)
+   at System.Runtime.CompilerServices.PoolingAsyncValueTaskMethodBuilder`1.StateMachineBox`1.System.Threading.Tasks.Sources.IValueTaskSource<TResult>.GetResult(Int16 token)
+   at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteDbDataReaderAsync(CommandBehavior behavior, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Npgsql.EntityFrameworkCore.PostgreSQL.Storage.Internal.NpgsqlExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+   at Microsoft.EntityFrameworkCore.Query.ShapedQueryCompilingExpressionVisitor.SingleOrDefaultAsync[TSource](IAsyncEnumerable`1 asyncEnumerable, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.ShapedQueryCompilingExpressionVisitor.SingleOrDefaultAsync[TSource](IAsyncEnumerable`1 asyncEnumerable, CancellationToken cancellationToken)
+   at MES.Api.Services.AuthService.LoginAsync(LoginRequest request) in D:\Project\MES-Framework\src\MES.Api\Services\AuthService.cs:line 27
+   at MES.Api.Controllers.AuthController.Login(LoginRequest request) in D:\Project\MES-Framework\src\MES.Api\Controllers\AuthController.cs:line 21
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ActionMethodExecutor.TaskOfIActionResultExecutor.Execute(ActionContext actionContext, IActionResultTypeMapper mapper, ObjectMethodExecutor executor, Object controller, Object[] arguments)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeActionMethodAsync>g__Awaited|12_0(ControllerActionInvoker invoker, ValueTask`1 actionResultValueTask)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeNextActionFilterAsync>g__Awaited|10_0(ControllerActionInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Rethrow(ActionExecutedContextSealed context)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Next(State& next, Scope& scope, Object& state, Boolean& isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeInnerFilterAsync>g__Awaited|13_0(ControllerActionInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeFilterPipelineAsync>g__Awaited|20_0(ResourceInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Logged|17_1(ResourceInvoker invoker)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Logged|17_1(ResourceInvoker invoker)
+   at Microsoft.AspNetCore.Routing.EndpointMiddleware.<Invoke>g__AwaitRequestTask|7_0(Endpoint endpoint, Task requestTask, ILogger logger)
+   at Microsoft.AspNetCore.Authorization.AuthorizationMiddleware.Invoke(HttpContext context)
+   at Microsoft.AspNetCore.Authentication.AuthenticationMiddleware.Invoke(HttpContext context)
+   at Swashbuckle.AspNetCore.SwaggerUI.SwaggerUIMiddleware.Invoke(HttpContext httpContext)
+   at Swashbuckle.AspNetCore.Swagger.SwaggerMiddleware.Invoke(HttpContext httpContext, ISwaggerProvider swaggerProvider)
+   at MES.Api.Middleware.RequestLoggingMiddleware.InvokeAsync(HttpContext context) in D:\Project\MES-Framework\src\MES.Api\Middleware\RequestLoggingMiddleware.cs:line 18
+   at MES.Api.Middleware.ExceptionMiddleware.InvokeAsync(HttpContext context) in D:\Project\MES-Framework\src\MES.Api\Middleware\ExceptionMiddleware.cs:line 17
+  Exception data:
+    Severity: ERROR
+    SqlState: 42703
+    MessageText: column m.Id does not exist
+    Hint: Perhaps you meant to reference the column "m.id".
+    Position: 8
+    File: parse_relation.c
+    Line: 3729
+    Routine: errorMissingColumn
+2026-05-08 13:55:42.500 +08:00 [INF] Request finished HTTP/1.1 POST http://localhost:5000/api/v1/auth/login - 500 null application/json 1414.7756ms
+2026-05-08 14:05:09.867 +08:00 [WRN] Entity 'Material' has a global query filter defined and is the required end of a relationship with the entity 'MaterialTrace'. This may lead to unexpected results when the required entity is filtered out. Either configure the navigation as optional, or define matching query filters for both entities in the navigation. See https://go.microsoft.com/fwlink/?linkid=2131316 for more information.
+2026-05-08 14:05:09.896 +08:00 [WRN] Entity 'Routing' has a global query filter defined and is the required end of a relationship with the entity 'RoutingStep'. This may lead to unexpected results when the required entity is filtered out. Either configure the navigation as optional, or define matching query filters for both entities in the navigation. See https://go.microsoft.com/fwlink/?linkid=2131316 for more information.
+2026-05-08 14:05:09.896 +08:00 [WRN] Entity 'WorkOrder' has a global query filter defined and is the required end of a relationship with the entity 'WorkOrderStep'. This may lead to unexpected results when the required entity is filtered out. Either configure the navigation as optional, or define matching query filters for both entities in the navigation. See https://go.microsoft.com/fwlink/?linkid=2131316 for more information.
+2026-05-08 14:05:09.896 +08:00 [WRN] Entity 'WorkOrder' has a global query filter defined and is the required end of a relationship with the entity 'WorkReport'. This may lead to unexpected results when the required entity is filtered out. Either configure the navigation as optional, or define matching query filters for both entities in the navigation. See https://go.microsoft.com/fwlink/?linkid=2131316 for more information.
+2026-05-08 14:05:09.936 +08:00 [WRN] The 'EquipmentStatus' property 'Status' on entity type 'Equipment' is configured with a database-generated default, but has no configured sentinel value. The database-generated default will always be used for inserts when the property has the value 'RUNNING', since this is the CLR default for the 'EquipmentStatus' type. Consider using a nullable type, using a nullable backing field, or setting the sentinel value for the property to ensure the database default is used when, and only when, appropriate. See https://aka.ms/efcore-docs-default-values for more information.
+2026-05-08 14:05:09.936 +08:00 [WRN] The 'QcResult' property 'InspectResult' on entity type 'QcInspection' is configured with a database-generated default, but has no configured sentinel value. The database-generated default will always be used for inserts when the property has the value 'PASS', since this is the CLR default for the 'QcResult' type. Consider using a nullable type, using a nullable backing field, or setting the sentinel value for the property to ensure the database default is used when, and only when, appropriate. See https://aka.ms/efcore-docs-default-values for more information.
+2026-05-08 14:05:09.936 +08:00 [WRN] The 'QcResult' property 'Result' on entity type 'QcInspectionItem' is configured with a database-generated default, but has no configured sentinel value. The database-generated default will always be used for inserts when the property has the value 'PASS', since this is the CLR default for the 'QcResult' type. Consider using a nullable type, using a nullable backing field, or setting the sentinel value for the property to ensure the database default is used when, and only when, appropriate. See https://aka.ms/efcore-docs-default-values for more information.
+2026-05-08 14:05:09.936 +08:00 [WRN] The 'Priority' property 'Priority' on entity type 'WorkOrder' is configured with a database-generated default, but has no configured sentinel value. The database-generated default will always be used for inserts when the property has the value 'LOW', since this is the CLR default for the 'Priority' type. Consider using a nullable type, using a nullable backing field, or setting the sentinel value for the property to ensure the database default is used when, and only when, appropriate. See https://aka.ms/efcore-docs-default-values for more information.
+2026-05-08 14:05:10.207 +08:00 [INF] Executed DbCommand (22ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT 1
+2026-05-08 14:05:10.249 +08:00 [INF] Executed DbCommand (33ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT CASE WHEN COUNT(*) = 0 THEN FALSE ELSE TRUE END
+FROM pg_class AS cls
+JOIN pg_namespace AS ns ON ns.oid = cls.relnamespace
+WHERE
+        cls.relkind IN ('r', 'v', 'm', 'f', 'p') AND
+        ns.nspname NOT IN ('pg_catalog', 'information_schema') AND
+        -- Exclude tables which are members of PG extensions
+        NOT EXISTS (
+            SELECT 1 FROM pg_depend WHERE
+                classid=(
+                    SELECT cls.oid
+                    FROM pg_class AS cls
+                             JOIN pg_namespace AS ns ON ns.oid = cls.relnamespace
+                    WHERE relname='pg_class' AND ns.nspname='pg_catalog'
+                ) AND
+                objid=cls.oid AND
+                deptype IN ('e', 'x')
+        )
+2026-05-08 14:05:10.253 +08:00 [INF] MES API starting on http://localhost:5000
+2026-05-08 14:05:10.273 +08:00 [INF] User profile is available. Using 'C:\Users\xudon\AppData\Local\ASP.NET\DataProtection-Keys' as key repository and Windows DPAPI to encrypt keys at rest.
+2026-05-08 14:05:10.322 +08:00 [INF] Now listening on: http://localhost:5000
+2026-05-08 14:05:10.324 +08:00 [INF] Application started. Press Ctrl+C to shut down.
+2026-05-08 14:05:10.324 +08:00 [INF] Hosting environment: Development
+2026-05-08 14:05:10.324 +08:00 [INF] Content root path: D:\Project\MES-Framework\src\MES.Api
+2026-05-08 14:05:34.263 +08:00 [INF] Request starting HTTP/1.1 POST http://localhost:5000/api/v1/auth/login - application/json 63
+2026-05-08 14:05:34.303 +08:00 [INF] Executing endpoint 'MES.Api.Controllers.AuthController.Login (MES.Api)'
+2026-05-08 14:05:34.314 +08:00 [INF] Route matched with {action = "Login", controller = "Auth"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Login(MES.Api.Dtos.LoginRequest) on controller MES.Api.Controllers.AuthController (MES.Api).
+2026-05-08 14:05:34.653 +08:00 [ERR] Failed executing DbCommand (14ms) [Parameters=[@request_Username='?'], CommandType='"Text"', CommandTimeout='30']
+SELECT m.id, m.created_at, m.created_by, m.display_name, m.email, m.is_deleted, m.last_login_time, m.password_hash, m.phone, m.status, m.updated_at, m.updated_by, m.username
+FROM mes_user AS m
+WHERE NOT (m.is_deleted) AND m.username = @request_Username AND NOT (m.is_deleted)
+LIMIT 1
+2026-05-08 14:05:34.666 +08:00 [ERR] An exception occurred while iterating over the results of a query for context type 'MES.Infrastructure.Data.MesDbContext'.
+Npgsql.PostgresException (0x80004005): 42804: argument of NOT must be type boolean, not type smallint
+
+POSITION: 207
+   at Npgsql.Internal.NpgsqlConnector.ReadMessageLong(Boolean async, DataRowLoadingMode dataRowLoadingMode, Boolean readingNotifications, Boolean isReadingPrependedMessage)
+   at System.Runtime.CompilerServices.PoolingAsyncValueTaskMethodBuilder`1.StateMachineBox`1.System.Threading.Tasks.Sources.IValueTaskSource<TResult>.GetResult(Int16 token)
+   at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteDbDataReaderAsync(CommandBehavior behavior, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Npgsql.EntityFrameworkCore.PostgreSQL.Storage.Internal.NpgsqlExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+  Exception data:
+    Severity: ERROR
+    SqlState: 42804
+    MessageText: argument of NOT must be type boolean, not type smallint
+    Position: 207
+    File: parse_coerce.c
+    Line: 1176
+    Routine: coerce_to_boolean
+Npgsql.PostgresException (0x80004005): 42804: argument of NOT must be type boolean, not type smallint
+
+POSITION: 207
+   at Npgsql.Internal.NpgsqlConnector.ReadMessageLong(Boolean async, DataRowLoadingMode dataRowLoadingMode, Boolean readingNotifications, Boolean isReadingPrependedMessage)
+   at System.Runtime.CompilerServices.PoolingAsyncValueTaskMethodBuilder`1.StateMachineBox`1.System.Threading.Tasks.Sources.IValueTaskSource<TResult>.GetResult(Int16 token)
+   at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteDbDataReaderAsync(CommandBehavior behavior, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Npgsql.EntityFrameworkCore.PostgreSQL.Storage.Internal.NpgsqlExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+  Exception data:
+    Severity: ERROR
+    SqlState: 42804
+    MessageText: argument of NOT must be type boolean, not type smallint
+    Position: 207
+    File: parse_coerce.c
+    Line: 1176
+    Routine: coerce_to_boolean
+2026-05-08 14:05:34.671 +08:00 [INF] Executed action MES.Api.Controllers.AuthController.Login (MES.Api) in 354.9907ms
+2026-05-08 14:05:34.674 +08:00 [INF] Executed endpoint 'MES.Api.Controllers.AuthController.Login (MES.Api)'
+2026-05-08 14:05:34.675 +08:00 [ERR] Unhandled exception: 42804: argument of NOT must be type boolean, not type smallint
+
+POSITION: 207
+Npgsql.PostgresException (0x80004005): 42804: argument of NOT must be type boolean, not type smallint
+
+POSITION: 207
+   at Npgsql.Internal.NpgsqlConnector.ReadMessageLong(Boolean async, DataRowLoadingMode dataRowLoadingMode, Boolean readingNotifications, Boolean isReadingPrependedMessage)
+   at System.Runtime.CompilerServices.PoolingAsyncValueTaskMethodBuilder`1.StateMachineBox`1.System.Threading.Tasks.Sources.IValueTaskSource<TResult>.GetResult(Int16 token)
+   at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+   at Npgsql.NpgsqlCommand.ExecuteDbDataReaderAsync(CommandBehavior behavior, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+   at Npgsql.EntityFrameworkCore.PostgreSQL.Storage.Internal.NpgsqlExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+   at Microsoft.EntityFrameworkCore.Query.ShapedQueryCompilingExpressionVisitor.SingleOrDefaultAsync[TSource](IAsyncEnumerable`1 asyncEnumerable, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.Query.ShapedQueryCompilingExpressionVisitor.SingleOrDefaultAsync[TSource](IAsyncEnumerable`1 asyncEnumerable, CancellationToken cancellationToken)
+   at MES.Api.Services.AuthService.LoginAsync(LoginRequest request) in D:\Project\MES-Framework\src\MES.Api\Services\AuthService.cs:line 27
+   at MES.Api.Controllers.AuthController.Login(LoginRequest request) in D:\Project\MES-Framework\src\MES.Api\Controllers\AuthController.cs:line 21
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ActionMethodExecutor.TaskOfIActionResultExecutor.Execute(ActionContext actionContext, IActionResultTypeMapper mapper, ObjectMethodExecutor executor, Object controller, Object[] arguments)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeActionMethodAsync>g__Awaited|12_0(ControllerActionInvoker invoker, ValueTask`1 actionResultValueTask)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeNextActionFilterAsync>g__Awaited|10_0(ControllerActionInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Rethrow(ActionExecutedContextSealed context)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Next(State& next, Scope& scope, Object& state, Boolean& isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeInnerFilterAsync>g__Awaited|13_0(ControllerActionInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeFilterPipelineAsync>g__Awaited|20_0(ResourceInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Logged|17_1(ResourceInvoker invoker)
+   at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Logged|17_1(ResourceInvoker invoker)
+   at Microsoft.AspNetCore.Routing.EndpointMiddleware.<Invoke>g__AwaitRequestTask|7_0(Endpoint endpoint, Task requestTask, ILogger logger)
+   at Microsoft.AspNetCore.Authorization.AuthorizationMiddleware.Invoke(HttpContext context)
+   at Microsoft.AspNetCore.Authentication.AuthenticationMiddleware.Invoke(HttpContext context)
+   at Swashbuckle.AspNetCore.SwaggerUI.SwaggerUIMiddleware.Invoke(HttpContext httpContext)
+   at Swashbuckle.AspNetCore.Swagger.SwaggerMiddleware.Invoke(HttpContext httpContext, ISwaggerProvider swaggerProvider)
+   at MES.Api.Middleware.RequestLoggingMiddleware.InvokeAsync(HttpContext context) in D:\Project\MES-Framework\src\MES.Api\Middleware\RequestLoggingMiddleware.cs:line 18
+   at MES.Api.Middleware.ExceptionMiddleware.InvokeAsync(HttpContext context) in D:\Project\MES-Framework\src\MES.Api\Middleware\ExceptionMiddleware.cs:line 17
+  Exception data:
+    Severity: ERROR
+    SqlState: 42804
+    MessageText: argument of NOT must be type boolean, not type smallint
+    Position: 207
+    File: parse_coerce.c
+    Line: 1176
+    Routine: coerce_to_boolean
+2026-05-08 14:05:34.687 +08:00 [INF] Request finished HTTP/1.1 POST http://localhost:5000/api/v1/auth/login - 500 null application/json 424.8163ms
+2026-05-08 14:09:01.756 +08:00 [WRN] Entity 'Material' has a global query filter defined and is the required end of a relationship with the entity 'MaterialTrace'. This may lead to unexpected results when the required entity is filtered out. Either configure the navigation as optional, or define matching query filters for both entities in the navigation. See https://go.microsoft.com/fwlink/?linkid=2131316 for more information.
+2026-05-08 14:09:01.782 +08:00 [WRN] Entity 'Routing' has a global query filter defined and is the required end of a relationship with the entity 'RoutingStep'. This may lead to unexpected results when the required entity is filtered out. Either configure the navigation as optional, or define matching query filters for both entities in the navigation. See https://go.microsoft.com/fwlink/?linkid=2131316 for more information.
+2026-05-08 14:09:01.782 +08:00 [WRN] Entity 'WorkOrder' has a global query filter defined and is the required end of a relationship with the entity 'WorkOrderStep'. This may lead to unexpected results when the required entity is filtered out. Either configure the navigation as optional, or define matching query filters for both entities in the navigation. See https://go.microsoft.com/fwlink/?linkid=2131316 for more information.
+2026-05-08 14:09:01.782 +08:00 [WRN] Entity 'WorkOrder' has a global query filter defined and is the required end of a relationship with the entity 'WorkReport'. This may lead to unexpected results when the required entity is filtered out. Either configure the navigation as optional, or define matching query filters for both entities in the navigation. See https://go.microsoft.com/fwlink/?linkid=2131316 for more information.
+2026-05-08 14:09:01.819 +08:00 [WRN] The 'EquipmentStatus' property 'Status' on entity type 'Equipment' is configured with a database-generated default, but has no configured sentinel value. The database-generated default will always be used for inserts when the property has the value 'RUNNING', since this is the CLR default for the 'EquipmentStatus' type. Consider using a nullable type, using a nullable backing field, or setting the sentinel value for the property to ensure the database default is used when, and only when, appropriate. See https://aka.ms/efcore-docs-default-values for more information.
+2026-05-08 14:09:01.819 +08:00 [WRN] The 'QcResult' property 'InspectResult' on entity type 'QcInspection' is configured with a database-generated default, but has no configured sentinel value. The database-generated default will always be used for inserts when the property has the value 'PASS', since this is the CLR default for the 'QcResult' type. Consider using a nullable type, using a nullable backing field, or setting the sentinel value for the property to ensure the database default is used when, and only when, appropriate. See https://aka.ms/efcore-docs-default-values for more information.
+2026-05-08 14:09:01.819 +08:00 [WRN] The 'QcResult' property 'Result' on entity type 'QcInspectionItem' is configured with a database-generated default, but has no configured sentinel value. The database-generated default will always be used for inserts when the property has the value 'PASS', since this is the CLR default for the 'QcResult' type. Consider using a nullable type, using a nullable backing field, or setting the sentinel value for the property to ensure the database default is used when, and only when, appropriate. See https://aka.ms/efcore-docs-default-values for more information.
+2026-05-08 14:09:01.820 +08:00 [WRN] The 'Priority' property 'Priority' on entity type 'WorkOrder' is configured with a database-generated default, but has no configured sentinel value. The database-generated default will always be used for inserts when the property has the value 'LOW', since this is the CLR default for the 'Priority' type. Consider using a nullable type, using a nullable backing field, or setting the sentinel value for the property to ensure the database default is used when, and only when, appropriate. See https://aka.ms/efcore-docs-default-values for more information.
+2026-05-08 14:09:02.019 +08:00 [INF] Executed DbCommand (15ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT 1
+2026-05-08 14:09:02.047 +08:00 [INF] Executed DbCommand (22ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT CASE WHEN COUNT(*) = 0 THEN FALSE ELSE TRUE END
+FROM pg_class AS cls
+JOIN pg_namespace AS ns ON ns.oid = cls.relnamespace
+WHERE
+        cls.relkind IN ('r', 'v', 'm', 'f', 'p') AND
+        ns.nspname NOT IN ('pg_catalog', 'information_schema') AND
+        -- Exclude tables which are members of PG extensions
+        NOT EXISTS (
+            SELECT 1 FROM pg_depend WHERE
+                classid=(
+                    SELECT cls.oid
+                    FROM pg_class AS cls
+                             JOIN pg_namespace AS ns ON ns.oid = cls.relnamespace
+                    WHERE relname='pg_class' AND ns.nspname='pg_catalog'
+                ) AND
+                objid=cls.oid AND
+                deptype IN ('e', 'x')
+        )
+2026-05-08 14:09:02.168 +08:00 [INF] Executed DbCommand (11ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+CREATE TABLE mes_equipment (
+    id bigint GENERATED BY DEFAULT AS IDENTITY,
+    code character varying(50) NOT NULL,
+    name character varying(200) NOT NULL,
+    model character varying(100),
+    factory_id bigint,
+    workshop_id bigint,
+    line_id bigint,
+    install_date timestamp with time zone,
+    status integer NOT NULL DEFAULT 1,
+    last_maintain_date timestamp with time zone,
+    next_maintain_date timestamp with time zone,
+    maintain_cycle integer,
+    created_at timestamp with time zone NOT NULL,
+    created_by bigint,
+    updated_at timestamp with time zone NOT NULL,
+    updated_by bigint,
+    is_deleted boolean NOT NULL DEFAULT FALSE,
+    CONSTRAINT pk_mes_equipment PRIMARY KEY (id)
+);
+2026-05-08 14:09:02.178 +08:00 [INF] Executed DbCommand (10ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+CREATE TABLE mes_factory (
+    id bigint GENERATED BY DEFAULT AS IDENTITY,
+    code character varying(50) NOT NULL,
+    name character varying(200) NOT NULL,
+    address character varying(500),
+    status boolean NOT NULL DEFAULT TRUE,
+    created_at timestamp with time zone NOT NULL,
+    created_by bigint,
+    updated_at timestamp with time zone NOT NULL,
+    updated_by bigint,
+    is_deleted boolean NOT NULL DEFAULT FALSE,
+    CONSTRAINT pk_mes_factory PRIMARY KEY (id)
+);
+2026-05-08 14:09:02.188 +08:00 [INF] Executed DbCommand (10ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+CREATE TABLE mes_material (
+    id bigint GENERATED BY DEFAULT AS IDENTITY,
+    code character varying(50) NOT NULL,
+    name character varying(200) NOT NULL,
+    spec character varying(200),
+    unit character varying(20),
+    category character varying(50),
+    bom_level integer,
+    status boolean NOT NULL DEFAULT TRUE,
+    created_at timestamp with time zone NOT NULL,
+    created_by bigint,
+    updated_at timestamp with time zone NOT NULL,
+    updated_by bigint,
+    is_deleted boolean NOT NULL DEFAULT FALSE,
+    CONSTRAINT pk_mes_material PRIMARY KEY (id)
+);
+2026-05-08 14:09:02.200 +08:00 [INF] Executed DbCommand (12ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+CREATE TABLE mes_qc_inspection (
+    id bigint GENERATED BY DEFAULT AS IDENTITY,
+    inspect_no character varying(50) NOT NULL,
+    source_type integer NOT NULL DEFAULT 0,
+    source_ref character varying(100),
+    work_order_id bigint,
+    material_id bigint,
+    inspector bigint,
+    inspect_result integer NOT NULL DEFAULT 2,
+    inspect_time timestamp with time zone NOT NULL,
+    remark character varying(500),
+    created_at timestamp with time zone NOT NULL,
+    created_by bigint,
+    updated_at timestamp with time zone NOT NULL,
+    updated_by bigint,
+    is_deleted boolean NOT NULL,
+    CONSTRAINT pk_mes_qc_inspection PRIMARY KEY (id)
+);
+2026-05-08 14:09:02.210 +08:00 [INF] Executed DbCommand (10ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+CREATE TABLE mes_user (
+    id bigint GENERATED BY DEFAULT AS IDENTITY,
+    username character varying(50) NOT NULL,
+    password_hash character varying(500) NOT NULL,
+    display_name character varying(100) NOT NULL,
+    email character varying(200),
+    phone character varying(20),
+    status boolean NOT NULL DEFAULT TRUE,
+    last_login_time timestamp with time zone,
+    created_at timestamp with time zone NOT NULL,
+    created_by bigint,
+    updated_at timestamp with time zone NOT NULL,
+    updated_by bigint,
+    is_deleted boolean NOT NULL DEFAULT FALSE,
+    CONSTRAINT pk_mes_user PRIMARY KEY (id)
+);
+2026-05-08 14:09:02.217 +08:00 [INF] Executed DbCommand (7ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+CREATE TABLE mes_workshop (
+    id bigint GENERATED BY DEFAULT AS IDENTITY,
+    factory_id bigint NOT NULL,
+    code character varying(50) NOT NULL,
+    name character varying(200) NOT NULL,
+    status boolean NOT NULL DEFAULT TRUE,
+    created_at timestamp with time zone NOT NULL,
+    created_by bigint,
+    updated_at timestamp with time zone NOT NULL,
+    updated_by bigint,
+    is_deleted boolean NOT NULL DEFAULT FALSE,
+    CONSTRAINT pk_mes_workshop PRIMARY KEY (id),
+    CONSTRAINT fk_mes_workshop_mes_factory_factory_id FOREIGN KEY (factory_id) REFERENCES mes_factory (id) ON DELETE RESTRICT
+);
+2026-05-08 14:09:02.224 +08:00 [INF] Executed DbCommand (7ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+CREATE TABLE mes_bom (
+    id bigint GENERATED BY DEFAULT AS IDENTITY,
+    product_id bigint NOT NULL,
+    material_id bigint NOT NULL,
+    quantity numeric(18,6) NOT NULL,
+    scrap_rate numeric(5,2) NOT NULL DEFAULT 0.0,
+    seq_no integer NOT NULL DEFAULT 0,
+    valid_from timestamp with time zone NOT NULL,
+    valid_to timestamp with time zone,
+    status boolean NOT NULL DEFAULT TRUE,
+    created_at timestamp with time zone NOT NULL,
+    created_by bigint,
+    updated_at timestamp with time zone NOT NULL,
+    updated_by bigint,
+    is_deleted boolean NOT NULL DEFAULT FALSE,
+    CONSTRAINT pk_mes_bom PRIMARY KEY (id),
+    CONSTRAINT fk_mes_bom_materials_material_id FOREIGN KEY (material_id) REFERENCES mes_material (id) ON DELETE RESTRICT,
+    CONSTRAINT fk_mes_bom_materials_product_id FOREIGN KEY (product_id) REFERENCES mes_material (id) ON DELETE RESTRICT
+);
+2026-05-08 14:09:02.234 +08:00 [INF] Executed DbCommand (10ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+CREATE TABLE mes_material_trace (
+    id bigint GENERATED BY DEFAULT AS IDENTITY,
+    material_id bigint NOT NULL,
+    batch_no character varying(100),
+    serial_no character varying(100),
+    work_order_id bigint,
+    src_work_order_id bigint,
+    direction character varying(20),
+    qty numeric(18,2) NOT NULL,
+    operator bigint,
+    operate_time timestamp with time zone NOT NULL,
+    remark character varying(500),
+    created_at timestamp with time zone NOT NULL,
+    created_by bigint,
+    updated_at timestamp with time zone NOT NULL,
+    updated_by bigint,
+    is_deleted boolean NOT NULL,
+    CONSTRAINT pk_mes_material_trace PRIMARY KEY (id),
+    CONSTRAINT fk_mes_material_trace_mes_material_material_id FOREIGN KEY (material_id) REFERENCES mes_material (id) ON DELETE RESTRICT
+);
+2026-05-08 14:09:02.240 +08:00 [INF] Executed DbCommand (6ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+CREATE TABLE mes_routing (
+    id bigint GENERATED BY DEFAULT AS IDENTITY,
+    material_id bigint NOT NULL,
+    routing_code character varying(50) NOT NULL,
+    routing_name character varying(200) NOT NULL,
+    version character varying(20) NOT NULL DEFAULT 'V1.0',
+    status boolean NOT NULL DEFAULT TRUE,
+    created_at timestamp with time zone NOT NULL,
+    created_by bigint,
+    updated_at timestamp with time zone NOT NULL,
+    updated_by bigint,
+    is_deleted boolean NOT NULL DEFAULT FALSE,
+    CONSTRAINT pk_mes_routing PRIMARY KEY (id),
+    CONSTRAINT fk_mes_routing_mes_material_material_id FOREIGN KEY (material_id) REFERENCES mes_material (id) ON DELETE RESTRICT
+);
+2026-05-08 14:09:02.250 +08:00 [INF] Executed DbCommand (10ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+CREATE TABLE mes_qc_inspection_item (
+    id bigint GENERATED BY DEFAULT AS IDENTITY,
+    inspection_id bigint NOT NULL,
+    item_name character varying(200) NOT NULL,
+    spec_value character varying(200),
+    actual_value character varying(200),
+    result integer NOT NULL DEFAULT 2,
+    created_at timestamp with time zone NOT NULL,
+    created_by bigint,
+    updated_at timestamp with time zone NOT NULL,
+    updated_by bigint,
+    is_deleted boolean NOT NULL,
+    CONSTRAINT pk_mes_qc_inspection_item PRIMARY KEY (id),
+    CONSTRAINT fk_mes_qc_inspection_item_mes_qc_inspection_inspection_id FOREIGN KEY (inspection_id) REFERENCES mes_qc_inspection (id) ON DELETE CASCADE
+);
+2026-05-08 14:09:02.257 +08:00 [INF] Executed DbCommand (6ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+CREATE TABLE mes_production_line (
+    id bigint GENERATED BY DEFAULT AS IDENTITY,
+    workshop_id bigint NOT NULL,
+    code character varying(50) NOT NULL,
+    name character varying(200) NOT NULL,
+    line_type integer NOT NULL DEFAULT 0,
+    status boolean NOT NULL DEFAULT TRUE,
+    created_at timestamp with time zone NOT NULL,
+    created_by bigint,
+    updated_at timestamp with time zone NOT NULL,
+    updated_by bigint,
+    is_deleted boolean NOT NULL DEFAULT FALSE,
+    CONSTRAINT pk_mes_production_line PRIMARY KEY (id),
+    CONSTRAINT fk_mes_production_line_workshops_workshop_id FOREIGN KEY (workshop_id) REFERENCES mes_workshop (id) ON DELETE RESTRICT
+);
+2026-05-08 14:09:02.262 +08:00 [INF] Executed DbCommand (5ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+CREATE TABLE mes_routing_step (
+    id bigint GENERATED BY DEFAULT AS IDENTITY,
+    routing_id bigint NOT NULL,
+    step_no integer NOT NULL,
+    step_name character varying(200) NOT NULL,
+    workstation_type character varying(100),
+    standard_time numeric(10,2) NOT NULL DEFAULT 0.0,
+    is_qc_point boolean NOT NULL DEFAULT FALSE,
+    is_scrap_point boolean NOT NULL DEFAULT FALSE,
+    created_at timestamp with time zone NOT NULL,
+    created_by bigint,
+    updated_at timestamp with time zone NOT NULL,
+    updated_by bigint,
+    is_deleted boolean NOT NULL,
+    CONSTRAINT pk_mes_routing_step PRIMARY KEY (id),
+    CONSTRAINT fk_mes_routing_step_mes_routing_routing_id FOREIGN KEY (routing_id) REFERENCES mes_routing (id) ON DELETE CASCADE
+);
+2026-05-08 14:09:02.273 +08:00 [INF] Executed DbCommand (11ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+CREATE TABLE mes_work_order (
+    id bigint GENERATED BY DEFAULT AS IDENTITY,
+    order_no character varying(50) NOT NULL,
+    source_type integer NOT NULL,
+    source_ref character varying(100),
+    material_id bigint NOT NULL,
+    routing_id bigint,
+    planned_qty numeric(18,2) NOT NULL,
+    completed_qty numeric(18,2) NOT NULL DEFAULT 0.0,
+    scrap_qty numeric(18,2) NOT NULL DEFAULT 0.0,
+    status integer NOT NULL DEFAULT 0,
+    plan_start_time timestamp with time zone,
+    plan_end_time timestamp with time zone,
+    actual_start_time timestamp with time zone,
+    actual_end_time timestamp with time zone,
+    priority integer NOT NULL DEFAULT 50,
+    factory_id bigint,
+    workshop_id bigint,
+    line_id bigint,
+    assignee bigint,
+    remark character varying(500),
+    created_at timestamp with time zone NOT NULL,
+    created_by bigint,
+    updated_at timestamp with time zone NOT NULL,
+    updated_by bigint,
+    is_deleted boolean NOT NULL DEFAULT FALSE,
+    CONSTRAINT pk_mes_work_order PRIMARY KEY (id),
+    CONSTRAINT fk_mes_work_order_mes_material_material_id FOREIGN KEY (material_id) REFERENCES mes_material (id) ON DELETE RESTRICT,
+    CONSTRAINT fk_mes_work_order_mes_routing_routing_id FOREIGN KEY (routing_id) REFERENCES mes_routing (id) ON DELETE SET NULL
+);
+2026-05-08 14:09:02.280 +08:00 [INF] Executed DbCommand (7ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+CREATE TABLE mes_workstation (
+    id bigint GENERATED BY DEFAULT AS IDENTITY,
+    line_id bigint NOT NULL,
+    code character varying(50) NOT NULL,
+    name character varying(200) NOT NULL,
+    seq_no integer NOT NULL DEFAULT 0,
+    status boolean NOT NULL DEFAULT TRUE,
+    created_at timestamp with time zone NOT NULL,
+    created_by bigint,
+    updated_at timestamp with time zone NOT NULL,
+    updated_by bigint,
+    is_deleted boolean NOT NULL DEFAULT FALSE,
+    CONSTRAINT pk_mes_workstation PRIMARY KEY (id),
+    CONSTRAINT fk_mes_workstation_mes_production_line_line_id FOREIGN KEY (line_id) REFERENCES mes_production_line (id) ON DELETE RESTRICT
+);
+2026-05-08 14:09:02.287 +08:00 [INF] Executed DbCommand (6ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+CREATE TABLE mes_work_order_step (
+    id bigint GENERATED BY DEFAULT AS IDENTITY,
+    work_order_id bigint NOT NULL,
+    step_no integer NOT NULL,
+    step_name character varying(200) NOT NULL,
+    workstation_id bigint,
+    planned_qty numeric(18,2) NOT NULL,
+    completed_qty numeric(18,2) NOT NULL DEFAULT 0.0,
+    scrap_qty numeric(18,2) NOT NULL DEFAULT 0.0,
+    status integer NOT NULL DEFAULT 0,
+    plan_start_time timestamp with time zone,
+    plan_end_time timestamp with time zone,
+    created_at timestamp with time zone NOT NULL,
+    created_by bigint,
+    updated_at timestamp with time zone NOT NULL,
+    updated_by bigint,
+    is_deleted boolean NOT NULL,
+    CONSTRAINT pk_mes_work_order_step PRIMARY KEY (id),
+    CONSTRAINT fk_mes_work_order_step_mes_work_order_work_order_id FOREIGN KEY (work_order_id) REFERENCES mes_work_order (id) ON DELETE CASCADE,
+    CONSTRAINT fk_mes_work_order_step_workstations_workstation_id FOREIGN KEY (workstation_id) REFERENCES mes_workstation (id) ON DELETE SET NULL
+);
+2026-05-08 14:09:02.297 +08:00 [INF] Executed DbCommand (10ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+CREATE TABLE mes_work_report (
+    id bigint GENERATED BY DEFAULT AS IDENTITY,
+    report_no character varying(50) NOT NULL,
+    work_order_id bigint NOT NULL,
+    step_id bigint,
+    workstation_id bigint,
+    operator_id bigint,
+    report_type integer NOT NULL DEFAULT 0,
+    good_qty numeric(18,2) NOT NULL,
+    scrap_qty numeric(18,2) NOT NULL DEFAULT 0.0,
+    rework_qty numeric(18,2) NOT NULL DEFAULT 0.0,
+    duration_min integer NOT NULL,
+    report_time timestamp with time zone NOT NULL,
+    remark character varying(500),
+    created_at timestamp with time zone NOT NULL,
+    created_by bigint,
+    updated_at timestamp with time zone NOT NULL,
+    updated_by bigint,
+    is_deleted boolean NOT NULL,
+    CONSTRAINT pk_mes_work_report PRIMARY KEY (id),
+    CONSTRAINT fk_mes_work_report_mes_work_order_step_step_id FOREIGN KEY (step_id) REFERENCES mes_work_order_step (id) ON DELETE SET NULL,
+    CONSTRAINT fk_mes_work_report_mes_work_order_work_order_id FOREIGN KEY (work_order_id) REFERENCES mes_work_order (id) ON DELETE RESTRICT,
+    CONSTRAINT fk_mes_work_report_workstations_workstation_id FOREIGN KEY (workstation_id) REFERENCES mes_workstation (id) ON DELETE SET NULL
+);
+2026-05-08 14:09:02.302 +08:00 [INF] Executed DbCommand (5ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+CREATE INDEX ix_mes_bom_material_id ON mes_bom (material_id);
+2026-05-08 14:09:02.308 +08:00 [INF] Executed DbCommand (6ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+CREATE INDEX ix_mes_bom_product_id ON mes_bom (product_id);
+2026-05-08 14:09:02.314 +08:00 [INF] Executed DbCommand (6ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+CREATE UNIQUE INDEX ix_mes_equipment_code ON mes_equipment (code);
+2026-05-08 14:09:02.320 +08:00 [INF] Executed DbCommand (6ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+CREATE UNIQUE INDEX ix_mes_factory_code ON mes_factory (code);
+2026-05-08 14:09:02.326 +08:00 [INF] Executed DbCommand (6ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+CREATE UNIQUE INDEX ix_mes_material_code ON mes_material (code);
+2026-05-08 14:09:02.332 +08:00 [INF] Executed DbCommand (6ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+CREATE INDEX ix_mes_material_trace_batch_no ON mes_material_trace (batch_no);
+2026-05-08 14:09:02.349 +08:00 [INF] Executed DbCommand (6ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+CREATE INDEX ix_mes_material_trace_material_id ON mes_material_trace (material_id);
+2026-05-08 14:09:02.356 +08:00 [INF] Executed DbCommand (6ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+CREATE INDEX ix_mes_material_trace_serial_no ON mes_material_trace (serial_no);
+2026-05-08 14:09:02.366 +08:00 [INF] Executed DbCommand (10ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+CREATE UNIQUE INDEX ix_mes_production_line_workshop_id_code ON mes_production_line (workshop_id, code);
+2026-05-08 14:09:02.372 +08:00 [INF] Executed DbCommand (6ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+CREATE UNIQUE INDEX ix_mes_qc_inspection_inspect_no ON mes_qc_inspection (inspect_no);
+2026-05-08 14:09:02.378 +08:00 [INF] Executed DbCommand (6ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+CREATE INDEX ix_mes_qc_inspection_item_inspection_id ON mes_qc_inspection_item (inspection_id);
+2026-05-08 14:09:02.384 +08:00 [INF] Executed DbCommand (6ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+CREATE INDEX ix_mes_routing_material_id ON mes_routing (material_id);
+2026-05-08 14:09:02.390 +08:00 [INF] Executed DbCommand (6ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+CREATE UNIQUE INDEX ix_mes_routing_step_routing_id_step_no ON mes_routing_step (routing_id, step_no);
+2026-05-08 14:09:02.396 +08:00 [INF] Executed DbCommand (6ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+CREATE UNIQUE INDEX ix_mes_user_username ON mes_user (username);
+2026-05-08 14:09:02.402 +08:00 [INF] Executed DbCommand (6ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+CREATE INDEX ix_mes_work_order_material_id ON mes_work_order (material_id);
+2026-05-08 14:09:02.408 +08:00 [INF] Executed DbCommand (6ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+CREATE UNIQUE INDEX ix_mes_work_order_order_no ON mes_work_order (order_no);
+2026-05-08 14:09:02.414 +08:00 [INF] Executed DbCommand (6ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+CREATE INDEX ix_mes_work_order_routing_id ON mes_work_order (routing_id);
+2026-05-08 14:09:02.420 +08:00 [INF] Executed DbCommand (6ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+CREATE INDEX ix_mes_work_order_status ON mes_work_order (status);
+2026-05-08 14:09:02.426 +08:00 [INF] Executed DbCommand (6ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+CREATE UNIQUE INDEX ix_mes_work_order_step_work_order_id_step_no ON mes_work_order_step (work_order_id, step_no);
+2026-05-08 14:09:02.434 +08:00 [INF] Executed DbCommand (8ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+CREATE INDEX ix_mes_work_order_step_workstation_id ON mes_work_order_step (workstation_id);
+2026-05-08 14:09:02.440 +08:00 [INF] Executed DbCommand (6ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+CREATE UNIQUE INDEX ix_mes_work_report_report_no ON mes_work_report (report_no);
+2026-05-08 14:09:02.446 +08:00 [INF] Executed DbCommand (6ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+CREATE INDEX ix_mes_work_report_step_id ON mes_work_report (step_id);
+2026-05-08 14:09:02.454 +08:00 [INF] Executed DbCommand (8ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+CREATE INDEX ix_mes_work_report_work_order_id ON mes_work_report (work_order_id);
+2026-05-08 14:09:02.463 +08:00 [INF] Executed DbCommand (8ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+CREATE INDEX ix_mes_work_report_workstation_id ON mes_work_report (workstation_id);
+2026-05-08 14:09:02.472 +08:00 [INF] Executed DbCommand (9ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+CREATE UNIQUE INDEX ix_mes_workshop_factory_id_code ON mes_workshop (factory_id, code);
+2026-05-08 14:09:02.478 +08:00 [INF] Executed DbCommand (6ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+CREATE UNIQUE INDEX ix_mes_workstation_line_id_code ON mes_workstation (line_id, code);
+2026-05-08 14:09:02.787 +08:00 [INF] Executed DbCommand (2ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT EXISTS (
+    SELECT 1
+    FROM mes_user AS m
+    WHERE NOT (m.is_deleted))
+2026-05-08 14:09:02.957 +08:00 [INF] Executed DbCommand (24ms) [Parameters=[@p0='?' (DbType = DateTime), @p1='?' (DbType = Int64), @p2='?', @p3='?', @p4='?' (DbType = DateTime), @p5='?', @p6='?', @p7='?' (DbType = DateTime), @p8='?' (DbType = Int64), @p9='?'], CommandType='"Text"', CommandTimeout='30']
+INSERT INTO mes_user (created_at, created_by, display_name, email, last_login_time, password_hash, phone, updated_at, updated_by, username)
+VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8, @p9)
+RETURNING id, is_deleted, status;
+2026-05-08 14:09:02.981 +08:00 [INF] Seed data: admin user created
+2026-05-08 14:09:02.986 +08:00 [INF] MES API starting on http://localhost:5000
+2026-05-08 14:09:03.002 +08:00 [INF] User profile is available. Using 'C:\Users\xudon\AppData\Local\ASP.NET\DataProtection-Keys' as key repository and Windows DPAPI to encrypt keys at rest.
+2026-05-08 14:09:03.045 +08:00 [INF] Now listening on: http://localhost:5000
+2026-05-08 14:09:03.046 +08:00 [INF] Application started. Press Ctrl+C to shut down.
+2026-05-08 14:09:03.046 +08:00 [INF] Hosting environment: Development
+2026-05-08 14:09:03.046 +08:00 [INF] Content root path: D:\Project\MES-Framework\src\MES.Api
+2026-05-08 14:09:35.345 +08:00 [INF] Request starting HTTP/1.1 POST http://localhost:5000/api/v1/auth/login - application/json 63
+2026-05-08 14:09:35.391 +08:00 [INF] Executing endpoint 'MES.Api.Controllers.AuthController.Login (MES.Api)'
+2026-05-08 14:09:35.402 +08:00 [INF] Route matched with {action = "Login", controller = "Auth"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Login(MES.Api.Dtos.LoginRequest) on controller MES.Api.Controllers.AuthController (MES.Api).
+2026-05-08 14:09:35.501 +08:00 [INF] Executed DbCommand (8ms) [Parameters=[@request_Username='?'], CommandType='"Text"', CommandTimeout='30']
+SELECT m.id, m.created_at, m.created_by, m.display_name, m.email, m.is_deleted, m.last_login_time, m.password_hash, m.phone, m.status, m.updated_at, m.updated_by, m.username
+FROM mes_user AS m
+WHERE NOT (m.is_deleted) AND m.username = @request_Username AND NOT (m.is_deleted)
+LIMIT 1
+2026-05-08 14:09:35.542 +08:00 [INF] Executed DbCommand (15ms) [Parameters=[@p2='?' (DbType = Int64), @p0='?' (DbType = DateTime), @p1='?' (DbType = DateTime)], CommandType='"Text"', CommandTimeout='30']
+UPDATE mes_user SET last_login_time = @p0, updated_at = @p1
+WHERE id = @p2;
+2026-05-08 14:09:35.629 +08:00 [INF] Executing OkObjectResult, writing value of type 'MES.Api.Middleware.ApiResponse'.
+2026-05-08 14:09:35.647 +08:00 [INF] Executed action MES.Api.Controllers.AuthController.Login (MES.Api) in 241.9522ms
+2026-05-08 14:09:35.652 +08:00 [INF] Executed endpoint 'MES.Api.Controllers.AuthController.Login (MES.Api)'
+2026-05-08 14:09:35.653 +08:00 [INF] POST /api/v1/auth/login responded 200 in 294ms
+2026-05-08 14:09:35.660 +08:00 [INF] Request finished HTTP/1.1 POST http://localhost:5000/api/v1/auth/login - 200 null application/json; charset=utf-8 315.3083ms
+2026-05-08 14:09:50.242 +08:00 [INF] Request starting HTTP/1.1 POST http://localhost:5000/api/v1/auth/login - application/json 63
+2026-05-08 14:09:50.244 +08:00 [INF] Executing endpoint 'MES.Api.Controllers.AuthController.Login (MES.Api)'
+2026-05-08 14:09:50.244 +08:00 [INF] Route matched with {action = "Login", controller = "Auth"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Login(MES.Api.Dtos.LoginRequest) on controller MES.Api.Controllers.AuthController (MES.Api).
+2026-05-08 14:09:50.295 +08:00 [INF] Executed DbCommand (2ms) [Parameters=[@request_Username='?'], CommandType='"Text"', CommandTimeout='30']
+SELECT m.id, m.created_at, m.created_by, m.display_name, m.email, m.is_deleted, m.last_login_time, m.password_hash, m.phone, m.status, m.updated_at, m.updated_by, m.username
+FROM mes_user AS m
+WHERE NOT (m.is_deleted) AND m.username = @request_Username AND NOT (m.is_deleted)
+LIMIT 1
+2026-05-08 14:09:50.299 +08:00 [INF] Executed DbCommand (2ms) [Parameters=[@p2='?' (DbType = Int64), @p0='?' (DbType = DateTime), @p1='?' (DbType = DateTime)], CommandType='"Text"', CommandTimeout='30']
+UPDATE mes_user SET last_login_time = @p0, updated_at = @p1
+WHERE id = @p2;
+2026-05-08 14:09:50.299 +08:00 [INF] Executing OkObjectResult, writing value of type 'MES.Api.Middleware.ApiResponse'.
+2026-05-08 14:09:50.300 +08:00 [INF] Executed action MES.Api.Controllers.AuthController.Login (MES.Api) in 55.8037ms
+2026-05-08 14:09:50.300 +08:00 [INF] Executed endpoint 'MES.Api.Controllers.AuthController.Login (MES.Api)'
+2026-05-08 14:09:50.300 +08:00 [INF] POST /api/v1/auth/login responded 200 in 57ms
+2026-05-08 14:09:50.301 +08:00 [INF] Request finished HTTP/1.1 POST http://localhost:5000/api/v1/auth/login - 200 null application/json; charset=utf-8 58.6352ms
+2026-05-08 14:09:50.307 +08:00 [INF] Request starting HTTP/1.1 GET http://localhost:5000/api/v1/factories - null null
+2026-05-08 14:09:50.338 +08:00 [INF] Executing endpoint 'MES.Api.Controllers.FactoryController.GetAll (MES.Api)'
+2026-05-08 14:09:50.341 +08:00 [INF] Route matched with {action = "GetAll", controller = "Factory"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] GetAll() on controller MES.Api.Controllers.FactoryController (MES.Api).
+2026-05-08 14:09:50.351 +08:00 [INF] Executed DbCommand (2ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT m.id, m.address, m.code, m.created_at, m.created_by, m.is_deleted, m.name, m.status, m.updated_at, m.updated_by
+FROM mes_factory AS m
+WHERE NOT (m.is_deleted)
+2026-05-08 14:09:50.352 +08:00 [INF] Executing OkObjectResult, writing value of type 'MES.Api.Middleware.ApiResponse'.
+2026-05-08 14:09:50.365 +08:00 [INF] Executed action MES.Api.Controllers.FactoryController.GetAll (MES.Api) in 23.2603ms
+2026-05-08 14:09:50.365 +08:00 [INF] Executed endpoint 'MES.Api.Controllers.FactoryController.GetAll (MES.Api)'
+2026-05-08 14:09:50.365 +08:00 [INF] GET /api/v1/factories responded 200 in 57ms
+2026-05-08 14:09:50.365 +08:00 [INF] Request finished HTTP/1.1 GET http://localhost:5000/api/v1/factories - 200 null application/json; charset=utf-8 57.3202ms
+2026-05-08 14:10:12.388 +08:00 [INF] Request starting HTTP/1.1 POST http://localhost:5000/api/v1/auth/login - application/json 63
+2026-05-08 14:10:12.389 +08:00 [INF] Executing endpoint 'MES.Api.Controllers.AuthController.Login (MES.Api)'
+2026-05-08 14:10:12.389 +08:00 [INF] Route matched with {action = "Login", controller = "Auth"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Login(MES.Api.Dtos.LoginRequest) on controller MES.Api.Controllers.AuthController (MES.Api).
+2026-05-08 14:10:12.396 +08:00 [INF] Executed DbCommand (3ms) [Parameters=[@request_Username='?'], CommandType='"Text"', CommandTimeout='30']
+SELECT m.id, m.created_at, m.created_by, m.display_name, m.email, m.is_deleted, m.last_login_time, m.password_hash, m.phone, m.status, m.updated_at, m.updated_by, m.username
+FROM mes_user AS m
+WHERE NOT (m.is_deleted) AND m.username = @request_Username AND NOT (m.is_deleted)
+LIMIT 1
+2026-05-08 14:10:12.401 +08:00 [INF] Executed DbCommand (4ms) [Parameters=[@p2='?' (DbType = Int64), @p0='?' (DbType = DateTime), @p1='?' (DbType = DateTime)], CommandType='"Text"', CommandTimeout='30']
+UPDATE mes_user SET last_login_time = @p0, updated_at = @p1
+WHERE id = @p2;
+2026-05-08 14:10:12.402 +08:00 [INF] Executing OkObjectResult, writing value of type 'MES.Api.Middleware.ApiResponse'.
+2026-05-08 14:10:12.402 +08:00 [INF] Executed action MES.Api.Controllers.AuthController.Login (MES.Api) in 12.7693ms
+2026-05-08 14:10:12.402 +08:00 [INF] Executed endpoint 'MES.Api.Controllers.AuthController.Login (MES.Api)'
+2026-05-08 14:10:12.402 +08:00 [INF] POST /api/v1/auth/login responded 200 in 13ms
+2026-05-08 14:10:12.402 +08:00 [INF] Request finished HTTP/1.1 POST http://localhost:5000/api/v1/auth/login - 200 null application/json; charset=utf-8 13.8828ms
+2026-05-08 14:10:12.430 +08:00 [INF] Request starting HTTP/1.1 POST http://localhost:5000/api/v1/factories - application/json 74
+2026-05-08 14:10:12.432 +08:00 [INF] Executing endpoint 'MES.Api.Controllers.FactoryController.Create (MES.Api)'
+2026-05-08 14:10:12.435 +08:00 [INF] Route matched with {action = "Create", controller = "Factory"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] Create(MES.Domain.Entities.Factory) on controller MES.Api.Controllers.FactoryController (MES.Api).
+2026-05-08 14:10:12.473 +08:00 [INF] Executed DbCommand (5ms) [Parameters=[@p0='?', @p1='?', @p2='?' (DbType = DateTime), @p3='?' (DbType = Int64), @p4='?', @p5='?' (DbType = DateTime), @p6='?' (DbType = Int64)], CommandType='"Text"', CommandTimeout='30']
+INSERT INTO mes_factory (address, code, created_at, created_by, name, updated_at, updated_by)
+VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6)
+RETURNING id, is_deleted, status;
+2026-05-08 14:10:12.476 +08:00 [INF] Executing OkObjectResult, writing value of type 'MES.Api.Middleware.ApiResponse'.
+2026-05-08 14:10:12.478 +08:00 [INF] Executed action MES.Api.Controllers.FactoryController.Create (MES.Api) in 42.1008ms
+2026-05-08 14:10:12.478 +08:00 [INF] Executed endpoint 'MES.Api.Controllers.FactoryController.Create (MES.Api)'
+2026-05-08 14:10:12.478 +08:00 [INF] POST /api/v1/factories responded 200 in 48ms
+2026-05-08 14:10:12.478 +08:00 [INF] Request finished HTTP/1.1 POST http://localhost:5000/api/v1/factories - 200 null application/json; charset=utf-8 48.422ms
+2026-05-08 14:10:12.485 +08:00 [INF] Request starting HTTP/1.1 GET http://localhost:5000/api/v1/factories - null null
+2026-05-08 14:10:12.486 +08:00 [INF] Executing endpoint 'MES.Api.Controllers.FactoryController.GetAll (MES.Api)'
+2026-05-08 14:10:12.486 +08:00 [INF] Route matched with {action = "GetAll", controller = "Factory"}. Executing controller action with signature System.Threading.Tasks.Task`1[Microsoft.AspNetCore.Mvc.IActionResult] GetAll() on controller MES.Api.Controllers.FactoryController (MES.Api).
+2026-05-08 14:10:12.489 +08:00 [INF] Executed DbCommand (1ms) [Parameters=[], CommandType='"Text"', CommandTimeout='30']
+SELECT m.id, m.address, m.code, m.created_at, m.created_by, m.is_deleted, m.name, m.status, m.updated_at, m.updated_by
+FROM mes_factory AS m
+WHERE NOT (m.is_deleted)
+2026-05-08 14:10:12.489 +08:00 [INF] Executing OkObjectResult, writing value of type 'MES.Api.Middleware.ApiResponse'.
+2026-05-08 14:10:12.489 +08:00 [INF] Executed action MES.Api.Controllers.FactoryController.GetAll (MES.Api) in 2.9783ms
+2026-05-08 14:10:12.489 +08:00 [INF] Executed endpoint 'MES.Api.Controllers.FactoryController.GetAll (MES.Api)'
+2026-05-08 14:10:12.490 +08:00 [INF] GET /api/v1/factories responded 200 in 4ms
+2026-05-08 14:10:12.490 +08:00 [INF] Request finished HTTP/1.1 GET http://localhost:5000/api/v1/factories - 200 null application/json; charset=utf-8 5.1314ms
+2026-05-08 14:10:24.768 +08:00 [INF] Request starting HTTP/1.1 GET http://localhost:5000/swagger/v1/swagger.json - null null
+2026-05-08 14:10:24.883 +08:00 [INF] GET /swagger/v1/swagger.json responded 200 in 114ms
+2026-05-08 14:10:24.883 +08:00 [INF] Request finished HTTP/1.1 GET http://localhost:5000/swagger/v1/swagger.json - 200 null application/json;charset=utf-8 115.1223ms

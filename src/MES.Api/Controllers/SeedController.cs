@@ -1,0 +1,411 @@
+using System.Security.Cryptography;
+using System.Text;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using MES.Api.Middleware;
+using MES.Domain.Entities;
+using MES.Domain.Enums;
+using MES.Infrastructure.Data;
+
+namespace MES.Api.Controllers;
+
+[ApiController]
+[Route("api/v1/[controller]")]
+public class SeedController : ControllerBase
+{
+    private readonly MesDbContext _db;
+
+    private sealed record SeedStats
+    {
+        public int Factories { get; set; }
+        public int Workshops { get; set; }
+        public int ProductionLines { get; set; }
+        public int Workstations { get; set; }
+        public int Materials { get; set; }
+        public int Boms { get; set; }
+        public int Routings { get; set; }
+        public int RoutingSteps { get; set; }
+        public int WorkOrders { get; set; }
+        public int Users { get; set; }
+    }
+
+    public SeedController(MesDbContext db) => _db = db;
+
+    /// <summary>
+    /// 执行种子数据初始化。
+    /// 所有操作在一个事务中完成，如果数据已存在则跳过（幂等）。
+    /// </summary>
+    [HttpPost]
+    public async Task<IActionResult> Seed()
+    {
+        var stats = new SeedStats();
+
+        await using var tx = await _db.Database.BeginTransactionAsync();
+
+        try
+        {
+            // ── 1. 工厂 ──────────────────────────────────────────
+            var factory = await _db.Factories.FirstOrDefaultAsync(f => f.Code == "FACTORY-001");
+            if (factory == null)
+            {
+                factory = new Factory
+                {
+                    Code = "FACTORY-001",
+                    Name = "Demo Factory",
+                    Address = "中国广东省深圳市南山区科技园",
+                    Status = true
+                };
+                _db.Factories.Add(factory);
+                await _db.SaveChangesAsync();
+            }
+            stats.Factories = 1;
+
+            // ── 2. 车间 ──────────────────────────────────────────
+            var wsSmt = await _db.Workshops.FirstOrDefaultAsync(w => w.Code == "WS-SMT");
+            if (wsSmt == null)
+            {
+                wsSmt = new Workshop { FactoryId = factory.Id, Code = "WS-SMT", Name = "SMT车间", Status = true };
+                _db.Workshops.Add(wsSmt);
+                await _db.SaveChangesAsync();
+                stats.Workshops++;
+            }
+
+            var wsAssembly = await _db.Workshops.FirstOrDefaultAsync(w => w.Code == "WS-ASSEMBLY");
+            if (wsAssembly == null)
+            {
+                wsAssembly = new Workshop { FactoryId = factory.Id, Code = "WS-ASSEMBLY", Name = "组装车间", Status = true };
+                _db.Workshops.Add(wsAssembly);
+                await _db.SaveChangesAsync();
+                stats.Workshops++;
+            }
+
+            // ── 3. 产线 ──────────────────────────────────────────
+            var smt01 = await _db.ProductionLines.FirstOrDefaultAsync(p => p.Code == "SMT-01");
+            if (smt01 == null)
+            {
+                smt01 = new ProductionLine { WorkshopId = wsSmt.Id, Code = "SMT-01", Name = "SMT-01 贴片线", LineType = LineType.FLOW, Status = true };
+                _db.ProductionLines.Add(smt01);
+                await _db.SaveChangesAsync();
+                stats.ProductionLines++;
+            }
+
+            var smt02 = await _db.ProductionLines.FirstOrDefaultAsync(p => p.Code == "SMT-02");
+            if (smt02 == null)
+            {
+                smt02 = new ProductionLine { WorkshopId = wsSmt.Id, Code = "SMT-02", Name = "SMT-02 贴片线", LineType = LineType.FLOW, Status = true };
+                _db.ProductionLines.Add(smt02);
+                await _db.SaveChangesAsync();
+                stats.ProductionLines++;
+            }
+
+            var assy01 = await _db.ProductionLines.FirstOrDefaultAsync(p => p.Code == "ASSY-01");
+            if (assy01 == null)
+            {
+                assy01 = new ProductionLine { WorkshopId = wsAssembly.Id, Code = "ASSY-01", Name = "ASSY-01 组装线", LineType = LineType.CELL, Status = true };
+                _db.ProductionLines.Add(assy01);
+                await _db.SaveChangesAsync();
+                stats.ProductionLines++;
+            }
+
+            var assy02 = await _db.ProductionLines.FirstOrDefaultAsync(p => p.Code == "ASSY-02");
+            if (assy02 == null)
+            {
+                assy02 = new ProductionLine { WorkshopId = wsAssembly.Id, Code = "ASSY-02", Name = "ASSY-02 组装线", LineType = LineType.CELL, Status = true };
+                _db.ProductionLines.Add(assy02);
+                await _db.SaveChangesAsync();
+                stats.ProductionLines++;
+            }
+
+            // ── 4. 工位 ──────────────────────────────────────────
+            // SMT-01: 上板机 → 印刷机 → 贴片机 → 回流焊 → AOI
+            stats.Workstations += await CreateWorkstationIfNotExist(smt01.Id, "SMT01-LOADER", "上板机", 10);
+            stats.Workstations += await CreateWorkstationIfNotExist(smt01.Id, "SMT01-PRINTER", "锡膏印刷机", 20);
+            stats.Workstations += await CreateWorkstationIfNotExist(smt01.Id, "SMT01-PLACER", "高速贴片机", 30);
+            stats.Workstations += await CreateWorkstationIfNotExist(smt01.Id, "SMT01-REFLOW", "回流焊炉", 40);
+            stats.Workstations += await CreateWorkstationIfNotExist(smt01.Id, "SMT01-AOI", "AOI检测机", 50);
+
+            // SMT-02: 上板机 → 印刷机 → 贴片机 → 回流焊
+            stats.Workstations += await CreateWorkstationIfNotExist(smt02.Id, "SMT02-LOADER", "上板机", 10);
+            stats.Workstations += await CreateWorkstationIfNotExist(smt02.Id, "SMT02-PRINTER", "锡膏印刷机", 20);
+            stats.Workstations += await CreateWorkstationIfNotExist(smt02.Id, "SMT02-PLACER", "高速贴片机", 30);
+            stats.Workstations += await CreateWorkstationIfNotExist(smt02.Id, "SMT02-REFLOW", "回流焊炉", 40);
+
+            // ASSY-01: 手工插件 → 波峰焊 → 测试
+            stats.Workstations += await CreateWorkstationIfNotExist(assy01.Id, "ASSY01-TH", "手工插件工位", 10);
+            stats.Workstations += await CreateWorkstationIfNotExist(assy01.Id, "ASSY01-WAVE", "波峰焊", 20);
+            stats.Workstations += await CreateWorkstationIfNotExist(assy01.Id, "ASSY01-TEST", "功能测试", 30);
+
+            // ASSY-02: 组装 → 老化 → 包装
+            stats.Workstations += await CreateWorkstationIfNotExist(assy02.Id, "ASSY02-ASSEMBLE", "整机组装", 10);
+            stats.Workstations += await CreateWorkstationIfNotExist(assy02.Id, "ASSY02-BURNIN", "老化测试", 20);
+            stats.Workstations += await CreateWorkstationIfNotExist(assy02.Id, "ASSY02-PACK", "包装工位", 30);
+
+            // ── 5. 物料 ───────────────────────────────────────��──
+            // 3个成品
+            var fgA001_r = await CreateMaterialIfNotExist("FG-A001", "PCBA板", "V1.0", "PCS", "FG", 0, 0);
+            var fgA002_r = await CreateMaterialIfNotExist("FG-A002", "成品模组", "V1.0", "PCS", "FG", 1, 0);
+            var fgA003_r = await CreateMaterialIfNotExist("FG-A003", "整机", "V1.0", "PCS", "FG", 2, 0);
+            var ic100_r = await CreateMaterialIfNotExist("IC-100", "主控芯片", "STM32F407", "PCS", "RM", 0, 5000);
+            var res101_r = await CreateMaterialIfNotExist("RES-101", "贴片电阻", "10KΩ 0805", "PCS", "RM", 0, 50000);
+            var cap201_r = await CreateMaterialIfNotExist("CAP-201", "电容", "100μF 16V", "PCS", "RM", 0, 20000);
+            var pcbA01_r = await CreateMaterialIfNotExist("PCB-A01", "电路板", "FR-4 四层板 100x80mm", "PCS", "RM", 0, 3000);
+            var cab001_r = await CreateMaterialIfNotExist("CAB-001", "电源线", "DC 5V 2A 1.5m", "PCS", "RM", 0, 10000);
+
+            var fgA001 = fgA001_r.Entity;
+            var fgA002 = fgA002_r.Entity;
+            var fgA003 = fgA003_r.Entity;
+            var ic100 = ic100_r.Entity;
+            var res101 = res101_r.Entity;
+            var cap201 = cap201_r.Entity;
+            var pcbA01 = pcbA01_r.Entity;
+            var cab001 = cab001_r.Entity;
+            stats.Materials = (fgA001_r.Created ? 1 : 0) + (fgA002_r.Created ? 1 : 0) + (fgA003_r.Created ? 1 : 0)
+                + (ic100_r.Created ? 1 : 0) + (res101_r.Created ? 1 : 0) + (cap201_r.Created ? 1 : 0)
+                + (pcbA01_r.Created ? 1 : 0) + (cab001_r.Created ? 1 : 0);
+
+            // ── 6. BOM 清单 ──────────────────────────────────────
+            // FG-A001: 需要 IC-100(2) + RES-101(20) + CAP-201(10) + PCB-A01(1)
+            stats.Boms += await CreateBomIfNotExist(fgA001.Id, ic100.Id, 2, 0.01m, 10);
+            stats.Boms += await CreateBomIfNotExist(fgA001.Id, res101.Id, 20, 0.02m, 20);
+            stats.Boms += await CreateBomIfNotExist(fgA001.Id, cap201.Id, 10, 0.01m, 30);
+            stats.Boms += await CreateBomIfNotExist(fgA001.Id, pcbA01.Id, 1, 0.005m, 40);
+
+            // ── 7. 工艺路线 ──────────────────────────────────────
+            // FG-A001 的 SMT 路线
+            var routing = await _db.Routings.FirstOrDefaultAsync(r => r.RoutingCode == "R-SMT-FGA001");
+            if (routing == null)
+            {
+                routing = new Routing
+                {
+                    MaterialId = fgA001.Id,
+                    RoutingCode = "R-SMT-FGA001",
+                    RoutingName = "PCBA SMT贴片工艺",
+                    Version = "V1.0",
+                    Status = true
+                };
+                _db.Routings.Add(routing);
+                await _db.SaveChangesAsync();
+                stats.Routings = 1;
+
+                // 步骤：上板→涂锡→贴片→回流焊→AOI检测
+                var steps = new List<RoutingStep>
+                {
+                    new() { RoutingId = routing.Id, StepNo = 10, StepName = "上板", StandardTime = 0.5m, IsQcPoint = false, IsScrapPoint = false },
+                    new() { RoutingId = routing.Id, StepNo = 20, StepName = "涂锡", StandardTime = 1.0m, IsQcPoint = false, IsScrapPoint = false },
+                    new() { RoutingId = routing.Id, StepNo = 30, StepName = "贴片", StandardTime = 3.0m, IsQcPoint = false, IsScrapPoint = false },
+                    new() { RoutingId = routing.Id, StepNo = 40, StepName = "回流焊", StandardTime = 2.0m, IsQcPoint = false, IsScrapPoint = false },
+                    new() { RoutingId = routing.Id, StepNo = 50, StepName = "AOI检测", StandardTime = 1.0m, IsQcPoint = true, IsScrapPoint = false },
+                };
+                _db.RoutingSteps.AddRange(steps);
+                await _db.SaveChangesAsync();
+                stats.RoutingSteps = steps.Count;
+            }
+            else
+            {
+                stats.Routings = 1;
+                stats.RoutingSteps = await _db.RoutingSteps.CountAsync(rs => rs.RoutingId == routing.Id);
+            }
+
+            var routingAssy = await _db.Routings.FirstOrDefaultAsync(r => r.RoutingCode == "R-ASSY-FGA002");
+            if (routingAssy == null)
+            {
+                routingAssy = new Routing
+                {
+                    MaterialId = fgA002.Id,
+                    RoutingCode = "R-ASSY-FGA002",
+                    RoutingName = "成品模组组装工艺",
+                    Version = "V1.0",
+                    Status = true
+                };
+                _db.Routings.Add(routingAssy);
+                await _db.SaveChangesAsync();
+                stats.Routings++;
+
+                var stepsAssy = new List<RoutingStep>
+                {
+                    new() { RoutingId = routingAssy.Id, StepNo = 10, StepName = "手工插件", StandardTime = 2.0m, IsQcPoint = false, IsScrapPoint = false },
+                    new() { RoutingId = routingAssy.Id, StepNo = 20, StepName = "波峰焊", StandardTime = 1.5m, IsQcPoint = false, IsScrapPoint = false },
+                    new() { RoutingId = routingAssy.Id, StepNo = 30, StepName = "功能测试", StandardTime = 1.0m, IsQcPoint = true, IsScrapPoint = false },
+                };
+                _db.RoutingSteps.AddRange(stepsAssy);
+                await _db.SaveChangesAsync();
+                stats.RoutingSteps += stepsAssy.Count;
+            }
+            else
+            {
+                stats.Routings++;
+                stats.RoutingSteps += await _db.RoutingSteps.CountAsync(rs => rs.RoutingId == routingAssy.Id);
+            }
+
+            var routingFinal = await _db.Routings.FirstOrDefaultAsync(r => r.RoutingCode == "R-FINAL-FGA003");
+            if (routingFinal == null)
+            {
+                routingFinal = new Routing
+                {
+                    MaterialId = fgA003.Id,
+                    RoutingCode = "R-FINAL-FGA003",
+                    RoutingName = "整机总装工艺",
+                    Version = "V1.0",
+                    Status = true
+                };
+                _db.Routings.Add(routingFinal);
+                await _db.SaveChangesAsync();
+                stats.Routings++;
+
+                var stepsFinal = new List<RoutingStep>
+                {
+                    new() { RoutingId = routingFinal.Id, StepNo = 10, StepName = "整机组装", StandardTime = 3.0m, IsQcPoint = false, IsScrapPoint = false },
+                    new() { RoutingId = routingFinal.Id, StepNo = 20, StepName = "老化测试", StandardTime = 4.0m, IsQcPoint = true, IsScrapPoint = false },
+                    new() { RoutingId = routingFinal.Id, StepNo = 30, StepName = "包装", StandardTime = 1.0m, IsQcPoint = false, IsScrapPoint = false },
+                };
+                _db.RoutingSteps.AddRange(stepsFinal);
+                await _db.SaveChangesAsync();
+                stats.RoutingSteps += stepsFinal.Count;
+            }
+            else
+            {
+                stats.Routings++;
+                stats.RoutingSteps += await _db.RoutingSteps.CountAsync(rs => rs.RoutingId == routingFinal.Id);
+            }
+
+            // ── 8. 测试工单 ──────────────────────────────────────
+            var now = DateTime.UtcNow;
+
+            stats.WorkOrders += await CreateWorkOrderIfNotExist("WO-20260511-001",
+                () => new WorkOrder
+                {
+                    OrderNo = "WO-20260511-001",
+                    SourceType = SourceType.MANUAL,
+                    MaterialId = fgA001.Id,
+                    RoutingId = routing.Id,
+                    PlannedQty = 100,
+                    CompletedQty = 0,
+                    ScrapQty = 0,
+                    Status = WorkOrderStatus.PENDING,
+                    PlanStartTime = now.AddDays(1),
+                    PlanEndTime = now.AddDays(3),
+                    Priority = Priority.NORMAL,
+                    FactoryId = factory.Id,
+                    WorkshopId = wsSmt.Id,
+                    LineId = smt01.Id,
+                    Remark = "PCBA板试产工单"
+                });
+
+            stats.WorkOrders += await CreateWorkOrderIfNotExist("WO-20260511-002",
+                () => new WorkOrder
+                {
+                    OrderNo = "WO-20260511-002",
+                    SourceType = SourceType.MANUAL,
+                    MaterialId = fgA002.Id,
+                    RoutingId = routingAssy.Id,
+                    PlannedQty = 50,
+                    CompletedQty = 0,
+                    ScrapQty = 0,
+                    Status = WorkOrderStatus.PENDING,
+                    PlanStartTime = now.AddDays(2),
+                    PlanEndTime = now.AddDays(5),
+                    Priority = Priority.NORMAL,
+                    FactoryId = factory.Id,
+                    WorkshopId = wsAssembly.Id,
+                    LineId = assy01.Id,
+                    Remark = "成品模组试产工单"
+                });
+
+            stats.WorkOrders += await CreateWorkOrderIfNotExist("WO-20260511-003",
+                () => new WorkOrder
+                {
+                    OrderNo = "WO-20260511-003",
+                    SourceType = SourceType.MANUAL,
+                    MaterialId = fgA003.Id,
+                    RoutingId = routingFinal.Id,
+                    PlannedQty = 200,
+                    CompletedQty = 0,
+                    ScrapQty = 0,
+                    Status = WorkOrderStatus.PENDING,
+                    PlanStartTime = now.AddDays(3),
+                    PlanEndTime = now.AddDays(7),
+                    Priority = Priority.NORMAL,
+                    FactoryId = factory.Id,
+                    WorkshopId = wsAssembly.Id,
+                    LineId = assy02.Id,
+                    Remark = "整机试产工单"
+                });
+
+            // ── 9. 操作员用户 ──────────────────────────────────────
+            var existingUser = await _db.Users.FirstOrDefaultAsync(u => u.Username == "operator");
+            if (existingUser == null)
+            {
+                var pwHash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes("123456")));
+                _db.Users.Add(new User
+                {
+                    Username = "operator",
+                    PasswordHash = pwHash,
+                    DisplayName = "操作员",
+                    Email = "operator@demo.com",
+                    Status = true
+                });
+                await _db.SaveChangesAsync();
+                stats.Users = 1;
+            }
+            else
+            {
+                stats.Users = 1; // already exists
+            }
+
+            await tx.CommitAsync();
+
+            return Ok(new ApiResponse(0, "种子数据创建完成", stats));
+        }
+        catch (Exception ex)
+        {
+            await tx.RollbackAsync();
+            return StatusCode(500, new ApiResponse(500, $"种子数据创建失败: {ex.Message}"));
+        }
+    }
+
+    private async Task<int> CreateWorkstationIfNotExist(long lineId, string code, string name, int seqNo)
+    {
+        var exists = await _db.Workstations.AnyAsync(w => w.Code == code);
+        if (exists) return 0;
+        _db.Workstations.Add(new Workstation { LineId = lineId, Code = code, Name = name, SeqNo = seqNo, Status = true });
+        await _db.SaveChangesAsync();
+        return 1;
+    }
+
+    private async Task<(Material Entity, bool Created)> CreateMaterialIfNotExist(string code, string name, string spec, string unit, string category, int bomLevel, decimal stockQty)
+    {
+        var existing = await _db.Materials.FirstOrDefaultAsync(m => m.Code == code);
+        if (existing != null) return (existing, false);
+        var entity = new Material { Code = code, Name = name, Spec = spec, Unit = unit, Category = category, BomLevel = bomLevel, StockQty = stockQty, Status = true };
+        _db.Materials.Add(entity);
+        await _db.SaveChangesAsync();
+        return (entity, true);
+    }
+
+    private async Task<int> CreateBomIfNotExist(long productId, long materialId, decimal quantity, decimal scrapRate, int seqNo)
+    {
+        var exists = await _db.Boms.AnyAsync(b => b.ProductId == productId && b.MaterialId == materialId);
+        if (exists) return 0;
+        _db.Boms.Add(new Bom
+        {
+            ProductId = productId,
+            MaterialId = materialId,
+            Quantity = quantity,
+            ScrapRate = scrapRate,
+            SeqNo = seqNo,
+            ValidFrom = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+            Status = true
+        });
+        await _db.SaveChangesAsync();
+        return 1;
+    }
+
+    private async Task<int> CreateWorkOrderIfNotExist(string orderNo, Func<WorkOrder> factory)
+    {
+        var exists = await _db.WorkOrders.AnyAsync(wo => wo.OrderNo == orderNo);
+        if (exists) return 0;
+        _db.WorkOrders.Add(factory());
+        await _db.SaveChangesAsync();
+        return 1;
+    }
+}
