@@ -1,0 +1,25 @@
+{
+  "baseUrl": "http://localhost:5180",
+  "credentials": {
+    "admin": {
+      "username": "admin",
+      "password": "Admin@2026!"
+    },
+    "operator": {
+      "username": "operator",
+      "password": "123456"
+    }
+  },
+  "thresholds": {
+    "p95": 500,
+    "p99": 1000,
+    "errorRate": 0.01
+  },
+  "defaultScenario": {
+    "vus": 10,
+    "duration": "30s"
+  },
+  "influxdb": {
+    "url": "http://localhost:8086/k6"
+  }
+}

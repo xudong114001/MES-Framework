@@ -1,0 +1,20 @@
+{
+  "name": "mes-e2e-tests",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:headed": "playwright test --headed",
+    "test:api": "newman run tests/postman/MES-Framework.postman_collection.json -e tests/postman/mes-local.postman_environment.json",
+    "test:api:report": "newman run tests/postman/MES-Framework.postman_collection.json -e tests/postman/mes-local.postman_environment.json -r html --reporter-html-export tests/postman/report.html",
+    "test:perf": "k6 run tests/performance/",
+    "test:perf:monitor": "k6 run tests/performance/ --out influxdb=http://localhost:8086/k6",
+    "test:perf:basic": "k6 run tests/performance/basic-workflow.js",
+    "test:perf:report": "k6 run tests/performance/work-report.js",
+    "test:perf:dashboard": "k6 run tests/performance/dashboard.js"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.60.0"
+  }
+}

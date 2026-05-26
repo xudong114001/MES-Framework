@@ -1,0 +1,791 @@
+{
+	"info": {
+		"_postman_id": "mes-framework-collection",
+		"name": "MES Framework API",
+		"description": "MES Framework 后端 API 测试集合",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "认证",
+			"item": [
+				{
+					"name": "登录",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('登录成功', function () {",
+									"    pm.response.to.have.status(200);",
+									"    var json = pm.response.json();",
+									"    pm.expect(json.success).to.be.true;",
+									"    pm.expect(json.data.token).to.be.a('string');",
+									"    pm.collectionVariables.set('auth_token', json.data.token);",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"username\": \"admin\",\n\t\"password\": \"Admin@2026!\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/auth/login",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "auth", "login"]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "基础数据",
+			"item": [
+				{
+					"name": "工厂列表",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('获取工厂列表成功', function () {",
+									"    pm.response.to.have.status(200);",
+									"    var json = pm.response.json();",
+									"    pm.expect(json.success).to.be.true;",
+									"    pm.expect(json.data).to.be.an('array');",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/factories",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "factories"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "创建工厂",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('创建工厂成功', function () {",
+									"    pm.response.to.have.status(200);",
+									"    var json = pm.response.json();",
+									"    pm.expect(json.success).to.be.true;",
+									"    pm.expect(json.data.id).to.be.a('number');",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"name\": \"测试工厂\",\n\t\"code\": \"FACT_TEST\",\n\t\"address\": \"测试地址\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/factories",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "factories"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "车间列表",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('获取车间列表成功', function () {",
+									"    pm.response.to.have.status(200);",
+									"    var json = pm.response.json();",
+									"    pm.expect(json.success).to.be.true;",
+									"    pm.expect(json.data).to.be.an('array');",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/workshops",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "workshops"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "产线列表",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('获取产线列表成功', function () {",
+									"    pm.response.to.have.status(200);",
+									"    var json = pm.response.json();",
+									"    pm.expect(json.success).to.be.true;",
+									"    pm.expect(json.data).to.be.an('array');",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/production-lines",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "production-lines"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "工位列表",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('获取工位列表成功', function () {",
+									"    pm.response.to.have.status(200);",
+									"    var json = pm.response.json();",
+									"    pm.expect(json.success).to.be.true;",
+									"    pm.expect(json.data).to.be.an('array');",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/workstations",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "workstations"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "物料列表",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('获取物料列表成功', function () {",
+									"    pm.response.to.have.status(200);",
+									"    var json = pm.response.json();",
+									"    pm.expect(json.success).to.be.true;",
+									"    pm.expect(json.data).to.be.an('array');",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/materials",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "materials"]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "工单管理",
+			"item": [
+				{
+					"name": "工单列表",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('获取工单列表成功', function () {",
+									"    pm.response.to.have.status(200);",
+									"    var json = pm.response.json();",
+									"    pm.expect(json.success).to.be.true;",
+									"    pm.expect(json.data).to.be.an('array');",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/work-orders",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "work-orders"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "创建工单",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('创建工单成功', function () {",
+									"    pm.response.to.have.status(200);",
+									"    var json = pm.response.json();",
+									"    pm.expect(json.success).to.be.true;",
+									"    pm.expect(json.data.id).to.be.a('number');",
+									"    pm.collectionVariables.set('work_order_id', json.data.id);",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"orderNo\": \"WO-TEST-001\",\n\t\"materialId\": 1,\n\t\"plannedQty\": 100,\n\t\"status\": 0,\n\t\"priority\": 1\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/work-orders",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "work-orders"]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "报工管理",
+			"item": [
+				{
+					"name": "报工列表",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('获取报工列表成功', function () {",
+									"    pm.response.to.have.status(200);",
+									"    var json = pm.response.json();",
+									"    pm.expect(json.success).to.be.true;",
+									"    pm.expect(json.data).to.be.an('array');",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/work-reports",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "work-reports"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "提交报工",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('提交报工成功', function () {",
+									"    pm.response.to.have.status(200);",
+									"    var json = pm.response.json();",
+									"    pm.expect(json.success).to.be.true;",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"reportNo\": \"RPT-001\",\n\t\"workOrderId\": 1,\n\t\"reportType\": 0,\n\t\"goodQty\": 50,\n\t\"scrapQty\": 2,\n\t\"reworkQty\": 0,\n\t\"durationMin\": 60,\n\t\"reportTime\": \"2026-05-26T10:00:00Z\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/work-reports",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "work-reports"]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "质量管理",
+			"item": [
+				{
+					"name": "质检单列表",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('获取质检单列表成功', function () {",
+									"    pm.response.to.have.status(200);",
+									"    var json = pm.response.json();",
+									"    pm.expect(json.success).to.be.true;",
+									"    pm.expect(json.data).to.be.an('array');",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/qc/inspections",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "qc", "inspections"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "创建质检单",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('创建质检单成功', function () {",
+									"    pm.response.to.have.status(200);",
+									"    var json = pm.response.json();",
+									"    pm.expect(json.success).to.be.true;",
+									"    pm.expect(json.data.id).to.be.a('number');",
+									"    pm.collectionVariables.set('qc_inspection_id', json.data.id);",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"inspectNo\": \"QC-001\",\n\t\"sourceType\": 0,\n\t\"workOrderId\": 1,\n\t\"materialId\": 1,\n\t\"inspectResult\": 0,\n\t\"inspectTime\": \"2026-05-26T10:00:00Z\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/qc/inspections",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "qc", "inspections"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "判定质检结果",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('判定质检结果成功', function () {",
+									"    pm.response.to.have.status(200);",
+									"    var json = pm.response.json();",
+									"    pm.expect(json.success).to.be.true;",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"result\": \"PASS\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/qc/inspections/{{qc_inspection_id}}/verify",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "qc", "inspections", "{{qc_inspection_id}}", "verify"]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "设备管理",
+			"item": [
+				{
+					"name": "设备列表",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('获取设备列表成功', function () {",
+									"    pm.response.to.have.status(200);",
+									"    var json = pm.response.json();",
+									"    pm.expect(json.success).to.be.true;",
+									"    pm.expect(json.data).to.be.an('array');",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/equipment",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "equipment"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "创建设备",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('创建设备成功', function () {",
+									"    pm.response.to.have.status(200);",
+									"    var json = pm.response.json();",
+									"    pm.expect(json.success).to.be.true;",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"name\": \"测试设备\",\n\t\"code\": \"EQ-TEST-001\",\n\t\"status\": 0\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/equipment",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "equipment"]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "看板",
+			"item": [
+				{
+					"name": "今日工单统计",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('获取今日统计成功', function () {",
+									"    pm.response.to.have.status(200);",
+									"    var json = pm.response.json();",
+									"    pm.expect(json.success).to.be.true;",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/dashboard/orders/today",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "dashboard", "orders", "today"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "工单状态分布",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('获取工单状态分布成功', function () {",
+									"    pm.response.to.have.status(200);",
+									"    var json = pm.response.json();",
+									"    pm.expect(json.success).to.be.true;",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/dashboard/orders/status",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "dashboard", "orders", "status"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "产量统计",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('获取产量统计成功', function () {",
+									"    pm.response.to.have.status(200);",
+									"    var json = pm.response.json();",
+									"    pm.expect(json.success).to.be.true;",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/dashboard/output",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "dashboard", "output"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "设备状态",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('获取设备状态成功', function () {",
+									"    pm.response.to.have.status(200);",
+									"    var json = pm.response.json();",
+									"    pm.expect(json.success).to.be.true;",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/v1/dashboard/equipment",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "dashboard", "equipment"]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:5180"
+		},
+		{
+			"key": "auth_token",
+			"value": ""
+		},
+		{
+			"key": "work_order_id",
+			"value": ""
+		},
+		{
+			"key": "qc_inspection_id",
+			"value": ""
+		}
+	]
+}
