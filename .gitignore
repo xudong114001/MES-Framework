@@ -1,0 +1,126 @@
+# .NET Core
+## .NET Core: https://github.com/github/gitignore/blob/main/Community/dotnet/core.gitignore
+
+# User-specific files
+*.rsuser
+*.user
+*.userosscache
+*.sln.docstates
+
+# User-specific files (MonoDevelop/Xamarin Studio)
+*.userprefs
+
+# User-specific files (MonoDevelop/Xamarin Studio)
+userprefs.user
+
+# Build results
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+bld/
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+
+# Visual Studio 2015/2017 cache/options directory
+.vs/
+.vscode/
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# Visual Studio Code
+.vscode/
+
+# NuGet packages
+*.nupkg
+# NuGet Symbol files
+snupkg/
+# The packages folder can be ignored because of Package Restore
+**/[Pp]ackages/*
+# except build/, which is used as an MSBuild target.
+!**/[Pp]ackages/build/
+# Uncomment if you have trust issues removing list below
+#**/[Pp]ackages/project.lock.json
+
+# Build directory
+bld/
+
+# Visual Studio cache files
+# files ending in .cache can be ignored
+*.[Cc]ache
+# but keep track of directories ending in .cache
+!*.[Cc]ache/
+
+# ASP.NET Core
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+# VS Cache
+.vs/
+
+# dotnet tools
+global.json
+*.dotnet-tools.json
+
+# IDE
+.idea/
+*.swp
+*.swo
+*~
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Mac
+.DS_Store
+
+# Logs
+*.log
+logs/
+
+# Test results
+TestResults/
+coverage/
+*.coverage
+*.coveragexml
+
+# Secrets
+*.pfx
+*.key
+*.snk
+*.p12
+.env
+appsettings.*.json
+!appsettings.Development.json
+!appsettings.Local.json
+
+# Build
+[Bb]uild/
+[Dd]ebug[Pp]rofile/
+[Rr]elease[Pp]rofile/
+[Tt]est[Pp]rofile/
+msbuild.log
+msbuild.err
+msbuild.wrn
+
+# Benchmark Results
+benchmarking-results/
+
+# SQL
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
