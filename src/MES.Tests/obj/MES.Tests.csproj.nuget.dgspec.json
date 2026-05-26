@@ -1104,6 +1104,10 @@
               "target": "Package",
               "version": "[10.0.7, )"
             },
+            "Microsoft.EntityFrameworkCore.Design": {
+              "target": "Package",
+              "version": "[10.0.7, )"
+            },
             "Microsoft.EntityFrameworkCore.InMemory": {
               "target": "Package",
               "version": "[10.0.7, )"
@@ -1119,6 +1123,14 @@
             "Moq": {
               "target": "Package",
               "version": "[4.20.72, )"
+            },
+            "Testcontainers.PostgreSql": {
+              "target": "Package",
+              "version": "[3.7.0, )"
+            },
+            "Testcontainers.Redis": {
+              "target": "Package",
+              "version": "[3.7.0, )"
             },
             "xunit": {
               "target": "Package",

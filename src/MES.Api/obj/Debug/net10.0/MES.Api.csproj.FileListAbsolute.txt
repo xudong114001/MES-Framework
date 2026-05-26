@@ -66,3 +66,4 @@ D:\Project\MES-Framework\src\MES.Api\obj\Debug\net10.0\refint\MES.Api.dll
 D:\Project\MES-Framework\src\MES.Api\obj\Debug\net10.0\MES.Api.pdb
 D:\Project\MES-Framework\src\MES.Api\obj\Debug\net10.0\MES.Api.genruntimeconfig.cache
 D:\Project\MES-Framework\src\MES.Api\obj\Debug\net10.0\ref\MES.Api.dll
+D:\Project\MES-Framework\src\MES.Api\obj\Debug\net10.0\MES.Api.sourcelink.json

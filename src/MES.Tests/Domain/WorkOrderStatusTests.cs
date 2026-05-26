@@ -76,6 +76,7 @@ public class WorkOrderStatusTests
     [InlineData(WorkOrderStatus.COMPLETED, new[] { WorkOrderStatus.CLOSED })]
     public void WorkOrderStatus_ValidTransitions(WorkOrderStatus from, WorkOrderStatus[] validTargets)
     {
+        _ = from; // 参数用于语义说明，此处未使用
         foreach (var target in validTargets)
         {
             Assert.True(Enum.IsDefined(target), $"Target status {target} should be defined");

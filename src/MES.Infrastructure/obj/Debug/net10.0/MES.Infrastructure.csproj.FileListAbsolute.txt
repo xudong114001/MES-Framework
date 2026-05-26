@@ -15,3 +15,4 @@ D:\Project\MES-Framework\src\MES.Infrastructure\obj\Debug\net10.0\refint\MES.Inf
 D:\Project\MES-Framework\src\MES.Infrastructure\obj\Debug\net10.0\MES.Infrastructure.pdb
 D:\Project\MES-Framework\src\MES.Infrastructure\obj\Debug\net10.0\MES.Infrastructure.genruntimeconfig.cache
 D:\Project\MES-Framework\src\MES.Infrastructure\obj\Debug\net10.0\ref\MES.Infrastructure.dll
+D:\Project\MES-Framework\src\MES.Infrastructure\obj\Debug\net10.0\MES.Infrastructure.sourcelink.json

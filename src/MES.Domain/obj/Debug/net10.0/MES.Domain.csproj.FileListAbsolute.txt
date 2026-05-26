@@ -9,3 +9,4 @@ D:\Project\MES-Framework\src\MES.Domain\obj\Debug\net10.0\MES.Domain.dll
 D:\Project\MES-Framework\src\MES.Domain\obj\Debug\net10.0\refint\MES.Domain.dll
 D:\Project\MES-Framework\src\MES.Domain\obj\Debug\net10.0\MES.Domain.pdb
 D:\Project\MES-Framework\src\MES.Domain\obj\Debug\net10.0\ref\MES.Domain.dll
+D:\Project\MES-Framework\src\MES.Domain\obj\Debug\net10.0\MES.Domain.sourcelink.json

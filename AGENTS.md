@@ -5,6 +5,7 @@
 - Use **sub-agents** for parallel task execution when appropriate
 - Clearly label each sub-agent with descriptive names (e.g., "分析后端代码")
 - Summarize results from all sub-agents before presenting to user
+- Git commit messages should be in **Chinese** (中文)
 
 ## Quick Start
 

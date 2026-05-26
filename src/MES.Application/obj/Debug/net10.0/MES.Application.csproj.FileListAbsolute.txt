@@ -15,3 +15,4 @@ D:\Project\MES-Framework\src\MES.Application\obj\Debug\net10.0\MES.Application.d
 D:\Project\MES-Framework\src\MES.Application\obj\Debug\net10.0\refint\MES.Application.dll
 D:\Project\MES-Framework\src\MES.Application\obj\Debug\net10.0\MES.Application.pdb
 D:\Project\MES-Framework\src\MES.Application\obj\Debug\net10.0\ref\MES.Application.dll
+D:\Project\MES-Framework\src\MES.Application\obj\Debug\net10.0\MES.Application.sourcelink.json

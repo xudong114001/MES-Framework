@@ -89,4 +89,15 @@ MES-Framework/
 | RabbitMQ | ✅ 已部署 | 消息队列已就绪，待应用集成 |
 | Docker Compose | ✅ 已编排 | PostgreSQL + Redis + RabbitMQ |
 
+### 测试覆盖
+
+| 类型 | 状态 | 工具 |
+|------|------|------|
+| 单元测试 | ✅ 101 用例 | xUnit + Moq |
+| E2E 测试 | ✅ 28/29 通过 | PowerShell |
+| 集成测试 | ✅ 9 用例 | TestContainers |
+| UI 测试 | ✅ 11 用例 | Playwright |
+| 性能测试 | ✅ 3 场景 | k6 |
+| API 测试 | ✅ 60+ 用例 | Postman (newman) |
+
 
