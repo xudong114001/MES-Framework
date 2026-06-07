@@ -1,6 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
+    <PackageReference Include="StackExchange.Redis" Version="2.12.14" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\MES.Domain\MES.Domain.csproj" />
     <ProjectReference Include="..\MES.Infrastructure\MES.Infrastructure.csproj" />
   </ItemGroup>

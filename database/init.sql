@@ -317,6 +317,23 @@ CREATE INDEX idx_trace_material ON mes_material_trace(material_id);
 CREATE INDEX idx_equipment_code ON mes_equipment(code);
 CREATE INDEX idx_user_username ON mes_user(username);
 
+-- Work Report composite indexes for step-level reporting
+CREATE INDEX idx_work_report_work_order_step ON mes_work_report(work_order_id, step_id);
+CREATE INDEX idx_work_report_operator ON mes_work_report(operator_id);
+CREATE INDEX idx_work_report_batch ON mes_work_report(batch_no);
+
+-- Material Trace for work order traceability
+CREATE INDEX idx_material_trace_work_order ON mes_material_trace(work_order_id);
+
+-- Equipment status filtering
+CREATE INDEX idx_equipment_status ON mes_equipment(status);
+
+-- Maintenance plan overdue queries
+CREATE INDEX idx_maintenance_plan_status_due ON mes_maintenance_plan(status, next_due_date);
+
+-- Dashboard queries: status + line + priority
+CREATE INDEX idx_work_order_status_line_priority ON mes_work_order(status, line_id, priority);
+
 -- ==================== 种子数据 ====================
 
 INSERT INTO mes_user (username, password_hash, display_name, status) VALUES

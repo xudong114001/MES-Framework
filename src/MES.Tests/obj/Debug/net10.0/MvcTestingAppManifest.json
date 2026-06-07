@@ -1,5 +1,8 @@
 {
+  "MES.AI.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null": "D:\\Project\\MES-Framework\\src\\MES.AI.Application",
+  "MES.AI.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null": "D:\\Project\\MES-Framework\\src\\MES.AI.Domain",
   "MES.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null": "D:\\Project\\MES-Framework\\src\\MES.Application",
   "MES.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null": "D:\\Project\\MES-Framework\\src\\MES.Domain",
-  "MES.Infrastructure, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null": "D:\\Project\\MES-Framework\\src\\MES.Infrastructure"
+  "MES.Infrastructure, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null": "D:\\Project\\MES-Framework\\src\\MES.Infrastructure",
+  "MES.Integration, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null": "D:\\Project\\MES-Framework\\src\\MES.Integration"
 }

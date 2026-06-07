@@ -9,7 +9,8 @@
       "MES.Application/1.0.0": {
         "dependencies": {
           "MES.Domain": "1.0.0",
-          "MES.Infrastructure": "1.0.0"
+          "MES.Infrastructure": "1.0.0",
+          "StackExchange.Redis": "2.12.14"
         },
         "runtime": {
           "MES.Application.dll": {}

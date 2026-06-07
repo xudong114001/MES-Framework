@@ -1,3 +1,6 @@
+using Microsoft.Extensions.Logging;
+using MES.Application.Interfaces;
+using MES.Application.Integration.Events;
 using MES.Domain.Entities;
 using MES.Domain.Enums;
 using MES.Infrastructure.Repositories;
@@ -15,6 +18,9 @@ public class WorkReportService
     private readonly IRepository<QcCheckpoint> _checkpointRepo;
     private readonly IRepository<QcInspection> _inspectionRepo;
     private readonly IDatabase _redis;
+    private readonly IEventBus? _eventBus;
+    private readonly InMemoryEventLogService? _eventLog;
+    private readonly ILogger<WorkReportService>? _logger;
 
     public WorkReportService(
         IRepository<WorkReport> reportRepo,
@@ -24,7 +30,10 @@ public class WorkReportService
         IRepository<User> userRepo,
         IRepository<QcCheckpoint> checkpointRepo,
         IRepository<QcInspection> inspectionRepo,
-        IConnectionMultiplexer redisConn)
+        IConnectionMultiplexer redisConn,
+        IEventBus? eventBus = null,
+        InMemoryEventLogService? eventLog = null,
+        ILogger<WorkReportService>? logger = null)
     {
         _reportRepo = reportRepo;
         _workOrderRepo = workOrderRepo;
@@ -34,6 +43,9 @@ public class WorkReportService
         _checkpointRepo = checkpointRepo;
         _inspectionRepo = inspectionRepo;
         _redis = redisConn.GetDatabase();
+        _eventBus = eventBus;
+        _eventLog = eventLog;
+        _logger = logger;
     }
 
     /// <summary>
@@ -105,7 +117,44 @@ public class WorkReportService
             }
         }
 
-        return await _reportRepo.AddAsync(report);
+        var created = await _reportRepo.AddAsync(report);
+
+        // 发布报工提交事件（失败不影响主事务）
+        try
+        {
+            if (_eventBus != null)
+            {
+                var evt = new WorkReportSubmittedEvent
+                {
+                    WorkReportId = created.Id,
+                    ReportNo = created.ReportNo,
+                    WorkOrderId = created.WorkOrderId,
+                    GoodQty = created.GoodQty,
+                    ScrapQty = created.ScrapQty,
+                    ReworkQty = created.ReworkQty,
+                    ReportType = created.ReportType,
+                    BatchNo = created.BatchNo
+                };
+                await _eventBus.Publish(evt);
+                _eventLog?.Log(evt, "Published");
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger?.LogError(ex, "Failed to publish WorkReportSubmittedEvent");
+            _eventLog?.Log(new WorkReportSubmittedEvent
+            {
+                WorkReportId = created.Id,
+                ReportNo = created.ReportNo,
+                WorkOrderId = created.WorkOrderId,
+                GoodQty = created.GoodQty,
+                ScrapQty = created.ScrapQty,
+                ReworkQty = created.ReworkQty,
+                ReportType = created.ReportType
+            }, "Failed", ex.Message);
+        }
+
+        return created;
     }
 
     /// <summary>

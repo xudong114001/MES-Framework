@@ -10,6 +10,11 @@ using MES.Application.Interfaces;
 using MES.Application.Services;
 using MES.Infrastructure.Data;
 using MES.Infrastructure.Extensions;
+using MES.Integration;
+using MES.Integration.EventBus;
+using MES.AI.Application.Interfaces;
+using MES.AI.Application.Services;
+using MES.Integration.Adapters;
 using Microsoft.OpenApi;
 using Serilog;
 
@@ -104,13 +109,16 @@ builder.Services.AddScoped<IDispatchService, MES.Application.Services.DispatchSe
 builder.Services.AddScoped<TraceService>();
 builder.Services.AddScoped<EquipmentService>();
 
-// Redis 连接（防重复提交 + 批次号生成）
+// Redis 连接（防重复提交 + 批次号生成 + 缓存）
 builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
 {
     var config = sp.GetRequiredService<IConfiguration>();
     var redisConnStr = config.GetConnectionString("Redis") ?? "localhost:6379";
     return ConnectionMultiplexer.Connect(redisConnStr);
 });
+builder.Services.AddScoped<ICacheService, CacheService>();
+builder.Services.AddScoped<CachedMaterialService>();
+builder.Services.AddScoped<CachedRoutingService>();
 
 // SignalR
 builder.Services.AddSignalR();
@@ -121,6 +129,18 @@ builder.Services.AddSingleton<AndonService>();
 
 // SignalR Notification Service
 builder.Services.AddScoped<HubNotificationService>();
+
+// P5 Integration Services
+builder.Services.AddEventBus();
+builder.Services.AddIntegrationAdapters();
+
+// P5 Event Log Service
+builder.Services.AddSingleton<MES.Application.Integration.Events.InMemoryEventLogService>();
+
+// AI Services
+builder.Services.AddScoped<IQualityAlertService, QualityAlertService>();
+builder.Services.AddScoped<ISchedulingRecommendationService, SchedulingRecommendationService>();
+builder.Services.AddScoped<IEquipmentHealthService, EquipmentHealthService>();
 
 var app = builder.Build();
 

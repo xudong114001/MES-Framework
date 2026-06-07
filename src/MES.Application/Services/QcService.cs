@@ -1,3 +1,6 @@
+using Microsoft.Extensions.Logging;
+using MES.Application.Interfaces;
+using MES.Application.Integration.Events;
 using MES.Domain.Entities;
 using MES.Domain.Enums;
 using MES.Infrastructure.Repositories;
@@ -10,17 +13,26 @@ public class QcService
     private readonly IRepository<QcInspectionItem> _itemRepo;
     private readonly IRepository<WorkOrder> _workOrderRepo1;
     private readonly IRepository<WorkOrderStep> _stepRepo;
+    private readonly IEventBus? _eventBus;
+    private readonly InMemoryEventLogService? _eventLog;
+    private readonly ILogger<QcService>? _logger;
 
     public QcService(
         IRepository<QcInspection> inspectionRepo,
         IRepository<QcInspectionItem> itemRepo,
         IRepository<WorkOrder> workOrderRepo,
-        IRepository<WorkOrderStep> stepRepo)
+        IRepository<WorkOrderStep> stepRepo,
+        IEventBus? eventBus = null,
+        InMemoryEventLogService? eventLog = null,
+        ILogger<QcService>? logger = null)
     {
         _inspectionRepo = inspectionRepo;
         _itemRepo = itemRepo;
         _workOrderRepo1 = workOrderRepo;
         _stepRepo = stepRepo;
+        _eventBus = eventBus;
+        _eventLog = eventLog;
+        _logger = logger;
     }
 
     /// <summary>
@@ -50,6 +62,38 @@ public class QcService
         inspection.InspectResult = result;
         inspection.InspectTime = DateTime.UtcNow;
         await _inspectionRepo.UpdateAsync(inspection);
+
+        // 发布质检完成事件（失败不影响主事务）
+        try
+        {
+            if (_eventBus != null)
+            {
+                var evt = new QcInspectionCompletedEvent
+                {
+                    InspectionId = inspection.Id,
+                    InspectNo = inspection.InspectNo,
+                    WorkOrderId = inspection.WorkOrderId,
+                    MaterialId = inspection.MaterialId,
+                    Result = result,
+                    HandlingAction = inspection.HandlingAction,
+                    HandledAt = inspection.HandledAt
+                };
+                await _eventBus.Publish(evt);
+                _eventLog?.Log(evt, "Published");
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger?.LogError(ex, "Failed to publish QcInspectionCompletedEvent");
+            _eventLog?.Log(new QcInspectionCompletedEvent
+            {
+                InspectionId = inspection.Id,
+                InspectNo = inspection.InspectNo,
+                WorkOrderId = inspection.WorkOrderId,
+                MaterialId = inspection.MaterialId,
+                Result = result
+            }, "Failed", ex.Message);
+        }
 
         // 质检不通过时，暂停该工单下游所有未开始的工序
         if (result == QcResult.FAIL && inspection.WorkOrderId.HasValue)

@@ -27,6 +27,8 @@
     <ProjectReference Include="..\MES.Domain\MES.Domain.csproj" />
     <ProjectReference Include="..\MES.Application\MES.Application.csproj" />
     <ProjectReference Include="..\MES.Infrastructure\MES.Infrastructure.csproj" />
+    <ProjectReference Include="..\MES.Integration\MES.Integration.csproj" />
+    <ProjectReference Include="..\MES.AI.Application\MES.AI.Application.csproj" />
   </ItemGroup>
 
 </Project>

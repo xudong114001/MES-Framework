@@ -155,6 +155,24 @@ const router = createRouter({
           name: 'SeedData',
           component: () => import('../views/system/SeedData.vue'),
           meta: { title: '种子数据' }
+        },
+        {
+          path: 'integration',
+          redirect: '/integration/dashboard',
+          children: [
+            {
+              path: 'dashboard',
+              name: 'IntegrationDashboard',
+              component: () => import('../views/integration/IntegrationDashboard.vue'),
+              meta: { title: '系统集成', icon: 'Link' }
+            },
+            {
+              path: 'logs',
+              name: 'IntegrationLogs',
+              component: () => import('../views/integration/IntegrationLogs.vue'),
+              meta: { title: '同步日志', icon: 'Document' }
+            }
+          ]
         }
       ]
     }

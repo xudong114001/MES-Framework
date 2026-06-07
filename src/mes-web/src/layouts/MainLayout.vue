@@ -71,6 +71,14 @@
           <el-icon><Monitor /></el-icon>
           <span>大屏看板</span>
         </el-menu-item>
+        <el-sub-menu index="integration">
+          <template #title>
+            <el-icon><Link /></el-icon>
+            <span>系统集成</span>
+          </template>
+          <el-menu-item index="/integration/dashboard">系统集成</el-menu-item>
+          <el-menu-item index="/integration/logs">同步日志</el-menu-item>
+        </el-sub-menu>
         <el-sub-menu index="system">
           <template #title>
             <el-icon><Setting /></el-icon>
@@ -116,7 +124,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 import {
   Monitor, HomeFilled, Folder, List, Document, CircleCheck, CircleCheckFilled, Tools, Search, WarningFilled,
-  UserFilled, ArrowDown, TrendCharts, Grid, DataAnalysis, Setting
+  UserFilled, ArrowDown, TrendCharts, Grid, DataAnalysis, Setting, Link
 } from '@element-plus/icons-vue'
 
 const route = useRoute()

@@ -1,0 +1,32 @@
+version: '3.9'
+
+services:
+  mes-api:
+    build:
+      context: ./src
+      dockerfile: MES.Api/Dockerfile
+    ports:
+      - "5180:5180"
+    environment:
+      - ConnectionStrings__DefaultConnection=Host=mes-postgres;Database=mes_db;Username=mes_user;Password=Mes@2026!
+      - ConnectionStrings__Redis=mes-redis:6379
+    depends_on:
+      mes-postgres:
+        condition: service_healthy
+      mes-redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+  mes-nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - mes-api
+    restart: unless-stopped
+
+networks:
+  default:
+    name: mes-network

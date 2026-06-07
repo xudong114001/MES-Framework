@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Logging;
 using MES.Application.Interfaces;
+using MES.Application.Integration.Events;
 using MES.Domain.Entities;
 using MES.Domain.Enums;
 using MES.Infrastructure.Repositories;
@@ -17,6 +18,8 @@ public class WorkOrderService : IWorkOrderService
     private readonly IRepository<Routing> _routingRepo;
     private readonly IRepository<Bom> _bomRepo;
     private readonly ILogger<WorkOrderService> _logger;
+    private readonly IEventBus? _eventBus;
+    private readonly InMemoryEventLogService? _eventLog;
 
     public WorkOrderService(
         IRepository<WorkOrder> workOrderRepo,
@@ -24,7 +27,9 @@ public class WorkOrderService : IWorkOrderService
         IRepository<Material> materialRepo,
         IRepository<Routing> routingRepo,
         IRepository<Bom> bomRepo,
-        ILogger<WorkOrderService> logger)
+        ILogger<WorkOrderService> logger,
+        IEventBus? eventBus = null,
+        InMemoryEventLogService? eventLog = null)
     {
         _workOrderRepo = workOrderRepo;
         _stepRepo = stepRepo;
@@ -32,6 +37,8 @@ public class WorkOrderService : IWorkOrderService
         _routingRepo = routingRepo;
         _bomRepo = bomRepo;
         _logger = logger;
+        _eventBus = eventBus;
+        _eventLog = eventLog;
     }
 
     /// <summary>
@@ -83,6 +90,35 @@ public class WorkOrderService : IWorkOrderService
 
         var created = await _workOrderRepo.AddAsync(workOrder);
 
+        // 发布工单创建事件（失败不影响主事务）
+        try
+        {
+            if (_eventBus != null)
+            {
+                var evt = new WorkOrderCreatedEvent
+                {
+                    WorkOrderId = created.Id,
+                    OrderNo = created.OrderNo,
+                    MaterialId = created.MaterialId,
+                    PlannedQty = created.PlannedQty,
+                    SourceRef = created.SourceRef
+                };
+                await _eventBus.Publish(evt);
+                _eventLog?.Log(evt, "Published");
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to publish WorkOrderCreatedEvent");
+            _eventLog?.Log(new WorkOrderCreatedEvent
+            {
+                WorkOrderId = created.Id,
+                OrderNo = created.OrderNo,
+                MaterialId = created.MaterialId,
+                PlannedQty = created.PlannedQty
+            }, "Failed", ex.Message);
+        }
+
         // 如果提供了 RoutingId，自动生成工序任务（状态 PENDING）
         if (workOrder.RoutingId.HasValue)
         {
@@ -125,8 +161,38 @@ public class WorkOrderService : IWorkOrderService
         if (wo.Status != WorkOrderStatus.PENDING)
             throw new InvalidOperationException($"工单状态 {wo.Status} 不允许下达，仅 PENDING 可下达");
 
+        var oldStatus = wo.Status;
         wo.Status = WorkOrderStatus.RELEASED;
         await _workOrderRepo.UpdateAsync(wo);
+
+        // 发布工单状态变更事件（失败不影响主事务）
+        try
+        {
+            if (_eventBus != null)
+            {
+                var evt = new WorkOrderStatusChangedEvent
+                {
+                    WorkOrderId = wo.Id,
+                    OrderNo = wo.OrderNo,
+                    OldStatus = oldStatus,
+                    NewStatus = WorkOrderStatus.RELEASED,
+                    ChangedAt = DateTime.UtcNow
+                };
+                await _eventBus.Publish(evt);
+                _eventLog?.Log(evt, "Published");
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to publish WorkOrderStatusChangedEvent");
+            _eventLog?.Log(new WorkOrderStatusChangedEvent
+            {
+                WorkOrderId = wo.Id,
+                OrderNo = wo.OrderNo,
+                OldStatus = oldStatus,
+                NewStatus = WorkOrderStatus.RELEASED
+            }, "Failed", ex.Message);
+        }
 
         // 如果有 RoutingId 且尚未生成工序，则生成
         if (wo.RoutingId.HasValue)
