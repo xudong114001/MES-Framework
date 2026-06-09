@@ -5,6 +5,11 @@ using MES.Api.Middleware;
 
 namespace MES.Api.Controllers;
 
+public class ProcessAlertRequest
+{
+    public string ProcessedBy { get; set; } = string.Empty;
+}
+
 [ApiController]
 [Route("api/v1/ai")]
 [Authorize]
@@ -42,9 +47,9 @@ public class AiController : ControllerBase
     }
 
     [HttpPost("quality/alerts/{id}/process")]
-    public async Task<IActionResult> ProcessAlert(long id, [FromBody] string processedBy)
+    public async Task<IActionResult> ProcessAlert(long id, [FromBody] ProcessAlertRequest request)
     {
-        await _qualityAlertService.MarkAsProcessedAsync(id, processedBy);
+        await _qualityAlertService.MarkAsProcessedAsync(id, request.ProcessedBy);
         return Ok(ApiResponse.Ok("已处理"));
     }
 

@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("MES.Infrastructure")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+34e309ab09b6b6c6f2ac1b9422a0216e5fab6431")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+7233d946c877d2be847861509c575d22fcb7e154")]
 [assembly: System.Reflection.AssemblyProductAttribute("MES.Infrastructure")]
 [assembly: System.Reflection.AssemblyTitleAttribute("MES.Infrastructure")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
