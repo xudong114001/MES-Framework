@@ -20,6 +20,18 @@ using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// HttpClient for external adapters
+builder.Services.AddHttpClient("SapB1")
+    .ConfigureHttpClient(client =>
+    {
+        client.Timeout = TimeSpan.FromSeconds(30);
+    });
+builder.Services.AddHttpClient("Kingdee")
+    .ConfigureHttpClient(client =>
+    {
+        client.Timeout = TimeSpan.FromSeconds(30);
+    });
+
 // Serilog
 Log.Logger = new LoggerConfiguration()
     .ReadFrom.Configuration(builder.Configuration)
@@ -132,7 +144,7 @@ builder.Services.AddScoped<HubNotificationService>();
 
 // P5 Integration Services
 builder.Services.AddEventBus();
-builder.Services.AddIntegrationAdapters();
+builder.Services.AddIntegrationAdapters(builder.Configuration);
 
 // P5 Event Log Service
 builder.Services.AddSingleton<MES.Application.Integration.Events.InMemoryEventLogService>();

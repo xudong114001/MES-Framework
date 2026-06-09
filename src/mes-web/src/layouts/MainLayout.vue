@@ -119,6 +119,7 @@
         <router-view />
       </el-main>
     </el-container>
+    <AiFloatButton />
   </el-container>
 </template>
 
@@ -128,8 +129,9 @@ import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 import {
   Monitor, HomeFilled, Folder, List, Document, CircleCheck, CircleCheckFilled, Tools, Search, WarningFilled,
-  UserFilled, ArrowDown, TrendCharts, Grid, DataAnalysis, Setting, Link
+  UserFilled, ArrowDown, TrendCharts, Grid, DataAnalysis, Setting, Link, Cpu, Close
 } from '@element-plus/icons-vue'
+import AiFloatButton from '../components/AiFloatButton.vue'
 
 const route = useRoute()
 const router = useRouter()
