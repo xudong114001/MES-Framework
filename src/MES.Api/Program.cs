@@ -141,6 +141,7 @@ builder.Services.AddSingleton<MES.Application.Integration.Events.InMemoryEventLo
 builder.Services.AddScoped<IQualityAlertService, QualityAlertService>();
 builder.Services.AddScoped<ISchedulingRecommendationService, SchedulingRecommendationService>();
 builder.Services.AddScoped<IEquipmentHealthService, EquipmentHealthService>();
+builder.Services.AddScoped<IAlertPushService, AlertPushService>();
 
 var app = builder.Build();
 

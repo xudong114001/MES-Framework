@@ -6,4 +6,8 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\MES.Domain\MES.Domain.csproj" />
+  </ItemGroup>
+
 </Project>

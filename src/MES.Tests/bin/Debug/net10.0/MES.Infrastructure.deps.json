@@ -9,6 +9,7 @@
       "MES.Infrastructure/1.0.0": {
         "dependencies": {
           "EntityFrameworkCore.NamingConventions": "8.0.0",
+          "MES.AI.Domain": "1.0.0",
           "MES.Domain": "1.0.0",
           "Microsoft.EntityFrameworkCore": "10.0.7",
           "Microsoft.EntityFrameworkCore.Design": "10.0.7",
@@ -639,6 +640,17 @@
           }
         }
       },
+      "MES.AI.Domain/1.0.0": {
+        "dependencies": {
+          "MES.Domain": "1.0.0"
+        },
+        "runtime": {
+          "MES.AI.Domain.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.0.0.0"
+          }
+        }
+      },
       "MES.Domain/1.0.0": {
         "runtime": {
           "MES.Domain.dll": {
@@ -913,6 +925,11 @@
       "sha512": "sha512-AKJknIFi9O3+rGExxTry188JPvUoZAPcCtS2qdqyFhIzsxQ1Ap94BeGDG0VzVEHakhmRxmJtVih6TsHoghIt/g==",
       "path": "system.io.hashing/10.0.2",
       "hashPath": "system.io.hashing.10.0.2.nupkg.sha512"
+    },
+    "MES.AI.Domain/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
     },
     "MES.Domain/1.0.0": {
       "type": "project",

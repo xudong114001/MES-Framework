@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using MES.Domain.Entities;
+using MES.AI.Domain.Entities;
 
 namespace MES.Infrastructure.Data;
 
@@ -24,6 +25,7 @@ public class MesDbContext : DbContext
     public DbSet<Equipment> Equipment => Set<Equipment>();
     public DbSet<MaintenancePlan> MaintenancePlans => Set<MaintenancePlan>();
     public DbSet<User> Users => Set<User>();
+    public DbSet<AlertRecord> AiAlerts => Set<AlertRecord>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

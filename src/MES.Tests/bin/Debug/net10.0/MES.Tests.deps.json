@@ -1960,6 +1960,9 @@
         }
       },
       "MES.AI.Domain/1.0.0": {
+        "dependencies": {
+          "MES.Domain": "1.0.0"
+        },
         "runtime": {
           "MES.AI.Domain.dll": {
             "assemblyVersion": "1.0.0.0",
@@ -2000,6 +2003,7 @@
       "MES.Infrastructure/1.0.0": {
         "dependencies": {
           "EntityFrameworkCore.NamingConventions": "8.0.0",
+          "MES.AI.Domain": "1.0.0",
           "MES.Domain": "1.0.0",
           "Microsoft.EntityFrameworkCore": "10.0.7",
           "Microsoft.EntityFrameworkCore.Relational": "10.0.7",

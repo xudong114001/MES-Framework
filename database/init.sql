@@ -427,3 +427,22 @@ INSERT INTO mes_work_order_step (work_order_id, step_no, step_name, workstation_
 (2, 50, '总装',     7, 500, 200, 0,  'IN_PROGRESS', '2025-06-28 08:00:00+08', '2025-06-29 18:00:00+08'),
 (2, 60, '功能测试', 8, 500, 0,   0,  'PENDING', '2025-06-30 08:00:00+08', '2025-06-30 17:00:00+08'),
 (2, 70, '包装',     9, 500, 0,   0,  'PENDING', '2025-07-01 08:00:00+08', '2025-07-01 17:00:00+08');
+
+-- ==================== AI 预警记录表 ====================
+CREATE TABLE IF NOT EXISTS mes_ai_alerts (
+    id                      BIGINT PRIMARY KEY,
+    rule_name               VARCHAR(100) NOT NULL,
+    title                   VARCHAR(200) NOT NULL,
+    message                 TEXT,
+    level                   INT NOT NULL DEFAULT 0,
+    related_entity_type     VARCHAR(50),
+    related_entity_id       BIGINT,
+    is_processed            BOOLEAN DEFAULT FALSE,
+    processed_by            VARCHAR(50),
+    processed_at            TIMESTAMPTZ,
+    created_at              TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_ai_alerts_created_at ON mes_ai_alerts(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_ai_alerts_is_processed ON mes_ai_alerts(is_processed);
+CREATE INDEX IF NOT EXISTS idx_ai_alerts_level ON mes_ai_alerts(level);

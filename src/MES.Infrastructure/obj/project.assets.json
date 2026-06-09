@@ -883,6 +883,19 @@
           "buildTransitive/net8.0/_._": {}
         }
       },
+      "MES.AI.Domain/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v10.0",
+        "dependencies": {
+          "MES.Domain": "1.0.0"
+        },
+        "compile": {
+          "bin/placeholder/MES.AI.Domain.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/MES.AI.Domain.dll": {}
+        }
+      },
       "MES.Domain/1.0.0": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v10.0",
@@ -2801,6 +2814,11 @@
         "useSharedDesignerContext.txt"
       ]
     },
+    "MES.AI.Domain/1.0.0": {
+      "type": "project",
+      "path": "../MES.AI.Domain/MES.AI.Domain.csproj",
+      "msbuildProject": "../MES.AI.Domain/MES.AI.Domain.csproj"
+    },
     "MES.Domain/1.0.0": {
       "type": "project",
       "path": "../MES.Domain/MES.Domain.csproj",
@@ -2810,6 +2828,7 @@
   "projectFileDependencyGroups": {
     "net10.0": [
       "EntityFrameworkCore.NamingConventions >= 8.0.0",
+      "MES.AI.Domain >= 1.0.0",
       "MES.Domain >= 1.0.0",
       "Microsoft.EntityFrameworkCore >= 10.0.7",
       "Microsoft.EntityFrameworkCore.Design >= 10.0.7",
@@ -2844,6 +2863,9 @@
           "framework": "net10.0",
           "targetAlias": "net10.0",
           "projectReferences": {
+            "D:\\Project\\MES-Framework\\src\\MES.AI.Domain\\MES.AI.Domain.csproj": {
+              "projectPath": "D:\\Project\\MES-Framework\\src\\MES.AI.Domain\\MES.AI.Domain.csproj"
+            },
             "D:\\Project\\MES-Framework\\src\\MES.Domain\\MES.Domain.csproj": {
               "projectPath": "D:\\Project\\MES-Framework\\src\\MES.Domain\\MES.Domain.csproj"
             }

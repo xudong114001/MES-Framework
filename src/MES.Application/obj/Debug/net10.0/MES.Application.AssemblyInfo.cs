@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("MES.Application")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+7233d946c877d2be847861509c575d22fcb7e154")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+e1b3dedb07d69d18e80f449200b14d49d85dd453")]
 [assembly: System.Reflection.AssemblyProductAttribute("MES.Application")]
 [assembly: System.Reflection.AssemblyTitleAttribute("MES.Application")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

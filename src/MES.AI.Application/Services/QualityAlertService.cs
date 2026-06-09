@@ -13,6 +13,7 @@ public class QualityAlertService : IQualityAlertService
     private readonly IRepository<WorkOrder> _workOrderRepo;
     private readonly IRepository<WorkReport> _workReportRepo;
     private readonly IRepository<MaterialTrace> _materialTraceRepo;
+    private readonly IRepository<AlertRecord> _alertRepo;
     private readonly ILogger<QualityAlertService>? _logger;
 
     private static readonly List<AlertRule> _rules =
@@ -40,24 +41,23 @@ public class QualityAlertService : IQualityAlertService
         }
     ];
 
-    private readonly List<AlertRecord> _alertStore = [];
-
     public QualityAlertService(
         IRepository<WorkOrder> workOrderRepo,
         IRepository<WorkReport> workReportRepo,
         IRepository<MaterialTrace> materialTraceRepo,
+        IRepository<AlertRecord> alertRepo,
         ILogger<QualityAlertService>? logger = null)
     {
         _workOrderRepo = workOrderRepo;
         _workReportRepo = workReportRepo;
         _materialTraceRepo = materialTraceRepo;
+        _alertRepo = alertRepo;
         _logger = logger;
     }
 
     public async Task<List<AlertRecord>> AnalyzeAsync(long? workOrderId = null)
     {
         var alerts = new List<AlertRecord>();
-
         var enabledRules = _rules.Where(r => r.IsEnabled).ToList();
 
         foreach (var rule in enabledRules)
@@ -86,41 +86,46 @@ public class QualityAlertService : IQualityAlertService
             }
         }
 
-        _alertStore.AddRange(alerts);
+        if (alerts.Count > 0)
+        {
+            await _alertRepo.AddRangeAsync(alerts);
+            await _alertRepo.SaveChangesAsync();
+        }
+
         return alerts;
     }
 
-    public Task<List<AlertRecord>> GetActiveAlertsAsync()
+    public async Task<List<AlertRecord>> GetActiveAlertsAsync()
     {
-        return Task.FromResult(_alertStore.Where(a => !a.IsProcessed).ToList());
+        var result = await _alertRepo.FindAsync(a => !a.IsProcessed);
+        return result.ToList();
     }
 
-    public Task<List<AlertRecord>> GetAlertHistoryAsync(int page = 1, int pageSize = 20)
+    public async Task<List<AlertRecord>> GetAlertHistoryAsync(int page = 1, int pageSize = 20)
     {
-        var result = _alertStore
+        var all = await _alertRepo.FindAsync(a => true);
+        return all
             .OrderByDescending(a => a.CreatedAt)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .ToList();
-        return Task.FromResult(result);
     }
 
-    public Task MarkAsProcessedAsync(long alertId, string processedBy)
+    public async Task MarkAsProcessedAsync(long alertId, string processedBy)
     {
-        var alert = _alertStore.FirstOrDefault(a => a.Id == alertId);
+        var alert = await _alertRepo.GetByIdAsync(alertId);
         if (alert != null)
         {
             alert.IsProcessed = true;
             alert.ProcessedAt = DateTime.UtcNow;
             alert.ProcessedBy = processedBy;
+            await _alertRepo.SaveChangesAsync();
         }
-        return Task.CompletedTask;
     }
 
     private async Task<List<AlertRecord>> CheckConsecutiveScrapRate(long? workOrderId)
     {
         var alerts = new List<AlertRecord>();
-
         var reports = await _workReportRepo.GetAllAsync();
         var orders = await _workOrderRepo.GetAllAsync();
 
@@ -171,7 +176,6 @@ public class QualityAlertService : IQualityAlertService
     private async Task<List<AlertRecord>> CheckBatchDefectRate(long? workOrderId)
     {
         var alerts = new List<AlertRecord>();
-
         var traces = await _materialTraceRepo.GetAllAsync();
         var reports = await _workReportRepo.GetAllAsync();
 
@@ -183,7 +187,6 @@ public class QualityAlertService : IQualityAlertService
         {
             var woIds = batch.Select(t => t.WorkOrderId!.Value).Distinct().ToList();
             if (woIds.Count < 2) continue;
-
             if (workOrderId.HasValue && !woIds.Contains(workOrderId.Value)) continue;
 
             var batchReports = reports.Where(r => woIds.Contains(r.WorkOrderId)).ToList();
@@ -211,7 +214,6 @@ public class QualityAlertService : IQualityAlertService
     private async Task<List<AlertRecord>> CheckConsecutiveRework(long? workOrderId)
     {
         var alerts = new List<AlertRecord>();
-
         var reports = await _workReportRepo.GetAllAsync();
 
         var reworkReports = reports

@@ -37,6 +37,12 @@ public class Repository<T> : IRepository<T> where T : class
         return entity;
     }
 
+    public virtual async Task AddRangeAsync(IEnumerable<T> entities)
+    {
+        await _dbSet.AddRangeAsync(entities);
+        await _context.SaveChangesAsync();
+    }
+
     public virtual async Task UpdateAsync(T entity)
     {
         _dbSet.Update(entity);
@@ -59,6 +65,11 @@ public class Repository<T> : IRepository<T> where T : class
         if (predicate == null)
             return await _dbSet.CountAsync();
         return await _dbSet.CountAsync(predicate);
+    }
+
+    public virtual async Task SaveChangesAsync()
+    {
+        await _context.SaveChangesAsync();
     }
 
     public virtual IQueryable<T> Query()
