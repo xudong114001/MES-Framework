@@ -1,6 +1,69 @@
 version: '3.9'
 
 services:
+  # Infrastructure Services
+  mes-postgres:
+    image: postgres:16
+    container_name: mes-postgres
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: mes_db
+      POSTGRES_USER: mes_user
+      POSTGRES_PASSWORD: Mes@2026!
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./database/init.sql:/docker-entrypoint-initdb.d/01-init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U mes_user -d mes_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - mes-network
+
+  mes-redis:
+    image: redis:7
+    container_name: mes-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    networks:
+      - mes-network
+
+  mes-rabbitmq:
+    image: rabbitmq:4-management
+    container_name: mes-rabbitmq
+    restart: unless-stopped
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: mes_user
+      RABBITMQ_DEFAULT_PASS: Mes@2026!
+      RABBITMQ_ERLANG_COOKIE: MES_RABBIT_COOKIE_2026
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - mes-network
+
+  # Application Services
   mes-api:
     build:
       context: ./src
@@ -10,12 +73,15 @@ services:
     environment:
       - ConnectionStrings__DefaultConnection=Host=mes-postgres;Database=mes_db;Username=mes_user;Password=Mes@2026!
       - ConnectionStrings__Redis=mes-redis:6379
+      - ConnectionStrings__RabbitMQ=mes-rabbitmq:5672
     depends_on:
       mes-postgres:
         condition: service_healthy
       mes-redis:
         condition: service_healthy
     restart: unless-stopped
+    networks:
+      - mes-network
 
   mes-nginx:
     image: nginx:alpine
@@ -26,7 +92,17 @@ services:
     depends_on:
       - mes-api
     restart: unless-stopped
+    networks:
+      - mes-network
+
+volumes:
+  postgres-data:
+    driver: local
+  redis-data:
+    driver: local
+  rabbitmq-data:
+    driver: local
 
 networks:
-  default:
-    name: mes-network
+  mes-network:
+    driver: bridge

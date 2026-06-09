@@ -1,14 +1,59 @@
-name: CD
+name: CD - Production
 
 on:
   push:
     branches: [main]
 
 jobs:
-  deploy:
+  build-docker:
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
     steps:
       - uses: actions/checkout@v4
-      - name: Build and start services
-        run: docker-compose -f docker-compose.prod.yml up -d
+      
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      
+      - name: Build API image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./src
+          file: ./src/MES.Api/Dockerfile
+          push: false
+          tags: mes-api:${{ github.sha }}
+          load: true
+      
+      - name: Build Frontend image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./src/mes-web
+          file: ./src/mes-web/Dockerfile
+          push: false
+          tags: mes-web:${{ github.sha }}
+          load: true
+
+  test-e2e:
+    runs-on: ubuntu-latest
+    needs: build-docker
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Start infrastructure
+        run: docker-compose -f docker-compose.yml up -d
+      
+      - name: Wait for services
+        run: sleep 30
+      
+      - name: Run E2E tests
+        run: |
+          docker build -t mes-api:test -f src/MES.Api/Dockerfile src
+          docker run -d --name mes-api-test --network mes-network -p 5180:5180 mes-api:test
+          sleep 20
+          docker run --rm --network mes-network powershell -File tests/e2e-test.ps1 || true
+      
+      - name: Run AI tests
+        run: powershell -File tests/ai-test.ps1 || true
+      
+      - name: Cleanup
+        if: always()
+        run: docker-compose -f docker-compose.yml down

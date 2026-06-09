@@ -1,0 +1,65 @@
+name: CD - Local Test
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Start infrastructure services
+        run: docker-compose -f docker-compose.prod.yml up -d mes-postgres mes-redis mes-rabbitmq
+      
+      - name: Wait for PostgreSQL
+        run: |
+          Write-Host "Waiting for PostgreSQL..."
+          $i = 0
+          while ($i -lt 30) {
+            $result = docker exec mes-postgres pg_isready -U mes_user -d mes_db 2>$null
+            if ($LASTEXITCODE -eq 0) {
+              Write-Host "PostgreSQL is ready"
+              exit 0
+            }
+            Start-Sleep -Seconds 5
+            $i++
+          }
+          Write-Host "PostgreSQL failed to start"
+          exit 1
+      
+      - name: Build API
+        run: dotnet build src/MES.Api/MES.Api.csproj --configuration Release
+      
+      - name: Start API
+        run: |
+          Start-Process -FilePath "dotnet" -ArgumentList "run","--project","src/MES.Api/MES.Api.csproj","--configuration","Release" -NoNewWindow
+          Write-Host "API started, waiting for ready..."
+          Start-Sleep -Seconds 15
+      
+      - name: Verify API health
+        run: |
+          $i = 0
+          while ($i -lt 10) {
+            try {
+              $response = Invoke-WebRequest -Uri "http://localhost:5180/api/v1/dashboard/orders/today" -UseBasicParsing -TimeoutSec 5
+              if ($response.StatusCode -eq 200) {
+                Write-Host "API is ready"
+                exit 0
+              }
+            } catch {}
+            Start-Sleep -Seconds 3
+            $i++
+          }
+          Write-Host "API failed to respond"
+          exit 1
+
+  smoke-tests:
+    runs-on: windows-latest
+    needs: build-and-deploy
+    steps:
+      - name: Run E2E tests
+        run: powershell -File tests/e2e-test.ps1
+      
+      - name: Run AI tests
+        run: powershell -File tests/ai-test.ps1
