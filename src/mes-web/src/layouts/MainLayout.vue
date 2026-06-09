@@ -79,6 +79,10 @@
           <el-menu-item index="/integration/dashboard">系统集成</el-menu-item>
           <el-menu-item index="/integration/logs">同步日志</el-menu-item>
         </el-sub-menu>
+        <el-menu-item index="/ai/dashboard">
+          <el-icon><Cpu /></el-icon>
+          <span>AI智能分析</span>
+        </el-menu-item>
         <el-sub-menu index="system">
           <template #title>
             <el-icon><Setting /></el-icon>

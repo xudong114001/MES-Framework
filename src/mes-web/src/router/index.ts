@@ -173,6 +173,18 @@ const router = createRouter({
               meta: { title: '同步日志', icon: 'Document' }
             }
           ]
+        },
+        {
+          path: 'ai',
+          redirect: '/ai/dashboard',
+          children: [
+            {
+              path: 'dashboard',
+              name: 'AiDashboard',
+              component: () => import('../views/ai/AiDashboard.vue'),
+              meta: { title: 'AI智能分析', icon: 'Cpu' }
+            }
+          ]
         }
       ]
     }
