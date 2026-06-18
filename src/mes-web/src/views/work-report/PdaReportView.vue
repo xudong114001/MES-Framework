@@ -138,6 +138,8 @@
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { workReportApi } from '../../api/work-report'
+import { useNetworkStatus } from '../../utils/network-status'
+import { offlineQueue } from '../../utils/offline-queue'
 
 const scanCodeRef = ref<any>(null)
 const stepSelectRef = ref<any>(null)

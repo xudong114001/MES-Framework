@@ -31,3 +31,15 @@ export const aiApi = {
     return http.get('/ai/equipment/high-risk')
   }
 }
+
+export const knowledgeBaseApi = {
+  search(params: { q?: string; category?: number; page?: number; pageSize?: number }) {
+    return http.get('/ai/knowledge/search', { params })
+  },
+  list(params: { category?: number; page?: number; pageSize?: number }) {
+    return http.get('/ai/knowledge/entries', { params })
+  },
+  add(data: any) { return http.post('/ai/knowledge/entries', data) },
+  update(id: number, data: any) { return http.put(`/ai/knowledge/entries/${id}`, data) },
+  delete(id: number) { return http.delete(`/ai/knowledge/entries/${id}`) }
+}

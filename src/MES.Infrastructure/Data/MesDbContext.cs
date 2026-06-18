@@ -26,6 +26,8 @@ public class MesDbContext : DbContext
     public DbSet<MaintenancePlan> MaintenancePlans => Set<MaintenancePlan>();
     public DbSet<User> Users => Set<User>();
     public DbSet<AlertRecord> AiAlerts => Set<AlertRecord>();
+    public DbSet<Role> Roles => Set<Role>();
+    public DbSet<UserRole> UserRoles => Set<UserRole>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

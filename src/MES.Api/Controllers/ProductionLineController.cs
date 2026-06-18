@@ -8,7 +8,7 @@ namespace MES.Api.Controllers;
 
 [ApiController]
 [Route("api/v1/production-lines")]
-[Authorize]
+[Authorize(Roles = "admin,supervisor")]
 public class ProductionLineController : ControllerBase
 {
     private readonly IRepository<ProductionLine> _repo;

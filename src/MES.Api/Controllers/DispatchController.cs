@@ -7,7 +7,7 @@ namespace MES.Api.Controllers;
 
 [ApiController]
 [Route("api/v1/dispatch")]
-[Authorize]
+[Authorize(Roles = "admin,supervisor")]
 public class DispatchController : ControllerBase
 {
     private readonly IDispatchService _dispatchService;

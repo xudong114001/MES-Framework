@@ -9,7 +9,7 @@ namespace MES.Api.Controllers;
 
 [ApiController]
 [Route("api/v1/routings")]
-[Authorize]
+[Authorize(Roles = "admin,supervisor")]
 public class RoutingController : ControllerBase
 {
     private readonly IRepository<Routing> _repo;

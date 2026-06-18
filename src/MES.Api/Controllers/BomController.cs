@@ -8,7 +8,7 @@ namespace MES.Api.Controllers;
 
 [ApiController]
 [Route("api/v1/boms")]
-[Authorize]
+[Authorize(Roles = "admin,supervisor")]
 public class BomController : ControllerBase
 {
     private readonly IRepository<Bom> _repo;

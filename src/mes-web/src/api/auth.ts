@@ -9,6 +9,7 @@ export interface UserInfo {
   id: number
   username: string
   displayName: string
+  roles?: string[]
 }
 
 export interface LoginResponse {

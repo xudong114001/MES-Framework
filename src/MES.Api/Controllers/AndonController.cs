@@ -8,7 +8,7 @@ namespace MES.Api.Controllers;
 
 [ApiController]
 [Route("api/v1/andon")]
-[Authorize]
+[Authorize(Roles = "admin,supervisor,viewer")]
 public class AndonController : ControllerBase
 {
     private readonly AndonService _service;

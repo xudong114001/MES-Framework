@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
+    "typecheck": "tsc --noEmit",
     "preview": "vite preview",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
@@ -23,6 +24,7 @@
     "axios": "^1.16.0",
     "echarts": "^6.1.0",
     "element-plus": "^2.13.7",
+    "idb": "^8.0.3",
     "pinia": "^3.0.4",
     "vue-echarts": "^8.0.1",
     "vue-router": "^4.6.4"

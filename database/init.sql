@@ -446,3 +446,48 @@ CREATE TABLE IF NOT EXISTS mes_ai_alerts (
 CREATE INDEX IF NOT EXISTS idx_ai_alerts_created_at ON mes_ai_alerts(created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_ai_alerts_is_processed ON mes_ai_alerts(is_processed);
 CREATE INDEX IF NOT EXISTS idx_ai_alerts_level ON mes_ai_alerts(level);
+
+-- ==================== RBAC 权限管理 ====================
+
+CREATE TABLE mes_role (
+    id BIGSERIAL PRIMARY KEY,
+    name VARCHAR(50) NOT NULL UNIQUE,
+    description VARCHAR(200),
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    created_by BIGINT,
+    updated_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_by BIGINT,
+    is_deleted SMALLINT DEFAULT 0
+);
+
+CREATE TABLE mes_user_role (
+    id BIGSERIAL PRIMARY KEY,
+    user_id BIGINT NOT NULL REFERENCES mes_user(id),
+    role_id BIGINT NOT NULL REFERENCES mes_role(id),
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    created_by BIGINT,
+    updated_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_by BIGINT,
+    is_deleted SMALLINT DEFAULT 0,
+    UNIQUE(user_id, role_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_user_role_user ON mes_user_role(user_id);
+CREATE INDEX IF NOT EXISTS idx_user_role_role ON mes_user_role(role_id);
+
+-- ==================== 知识库 ====================
+
+CREATE TABLE mes_knowledge_entry (
+    id BIGSERIAL PRIMARY KEY,
+    category INT NOT NULL DEFAULT 0,
+    title VARCHAR(300) NOT NULL,
+    content TEXT NOT NULL,
+    keywords VARCHAR(500),
+    material_id BIGINT,
+    equipment_id BIGINT,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    created_by BIGINT,
+    updated_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_by BIGINT,
+    is_deleted SMALLINT DEFAULT 0
+);

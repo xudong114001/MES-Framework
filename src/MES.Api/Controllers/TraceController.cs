@@ -7,7 +7,7 @@ namespace MES.Api.Controllers;
 
 [ApiController]
 [Route("api/v1/trace")]
-[Authorize]
+[Authorize(Roles = "admin,supervisor,inspector,viewer")]
 public class TraceController : ControllerBase
 {
     private readonly TraceService _service;

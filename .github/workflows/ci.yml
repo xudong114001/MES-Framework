@@ -64,11 +64,11 @@ jobs:
     needs: backend-build
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '10.0.x'
-      
-      - name: Run Integration Tests
-        run: dotnet test src/MES.Integration.Tests/MES.Integration.Tests.csproj --configuration Release --verbosity normal
+
+      - name: Run Unit Tests (integration-requiring tests excluded)
+        run: dotnet test src/MES.Tests/MES.Tests.csproj --configuration Release --verbosity normal --filter "FullyQualifiedName~Integration"

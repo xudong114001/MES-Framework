@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using System.Security.Cryptography;
 using System.Text;
 using Microsoft.AspNetCore.Mvc;
@@ -11,6 +12,7 @@ namespace MES.Api.Controllers;
 
 [ApiController]
 [Route("api/v1/[controller]")]
+[Authorize(Roles = "admin")]
 public class SeedController : ControllerBase
 {
     private readonly MesDbContext _db;

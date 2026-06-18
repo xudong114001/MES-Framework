@@ -154,6 +154,7 @@ builder.Services.AddScoped<IQualityAlertService, QualityAlertService>();
 builder.Services.AddScoped<ISchedulingRecommendationService, SchedulingRecommendationService>();
 builder.Services.AddScoped<IEquipmentHealthService, EquipmentHealthService>();
 builder.Services.AddScoped<IAlertPushService, AlertPushService>();
+builder.Services.AddScoped<IKnowledgeBaseService, KnowledgeBaseService>();
 
 var app = builder.Build();
 

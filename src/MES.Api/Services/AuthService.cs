@@ -30,12 +30,19 @@ public class AuthService : IAuthService
         var passwordHash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(request.Password)));
         if (user.PasswordHash != passwordHash) return null;
 
-        var claims = new[]
+        // 加载用户角色
+        var roles = await _db.UserRoles
+            .Where(ur => ur.UserId == user.Id)
+            .Select(ur => ur.Role!.Name)
+            .ToListAsync();
+
+        var claims = new List<Claim>
         {
-            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-            new Claim(ClaimTypes.Name, user.Username),
-            new Claim(ClaimTypes.GivenName, user.DisplayName ?? user.Username),
+            new(ClaimTypes.NameIdentifier, user.Id.ToString()),
+            new(ClaimTypes.Name, user.Username),
+            new(ClaimTypes.GivenName, user.DisplayName ?? user.Username),
         };
+        claims.AddRange(roles.Select(r => new Claim(ClaimTypes.Role, r)));
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwt.SecretKey));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
@@ -60,16 +67,9 @@ public class AuthService : IAuthService
             {
                 Id = user.Id,
                 Username = user.Username,
-                DisplayName = user.DisplayName ?? user.Username
+                DisplayName = user.DisplayName ?? user.Username,
+                Roles = roles
             }
         };
     }
-}
-
-public class JwtSettings
-{
-    public string SecretKey { get; set; } = "MES-SuperSecret-Key-Must-Be-At-Least-32-Characters!";
-    public string Issuer { get; set; } = "MES.Api";
-    public string Audience { get; set; } = "MES.Client";
-    public int ExpireHours { get; set; } = 8;
 }
