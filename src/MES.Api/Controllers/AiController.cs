@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using MES.AI.Application.Dtos;
 using MES.AI.Application.Interfaces;
 using MES.Api.Middleware;
 
@@ -18,17 +19,20 @@ public class AiController : ControllerBase
     private readonly IQualityAlertService _qualityAlertService;
     private readonly ISchedulingRecommendationService _schedulingService;
     private readonly IEquipmentHealthService _equipmentHealthService;
+    private readonly IKnowledgeBaseService _knowledgeBaseService;
     private readonly ILogger<AiController> _logger;
 
     public AiController(
         IQualityAlertService qualityAlertService,
         ISchedulingRecommendationService schedulingService,
         IEquipmentHealthService equipmentHealthService,
+        IKnowledgeBaseService knowledgeBaseService,
         ILogger<AiController> logger)
     {
         _qualityAlertService = qualityAlertService;
         _schedulingService = schedulingService;
         _equipmentHealthService = equipmentHealthService;
+        _knowledgeBaseService = knowledgeBaseService;
         _logger = logger;
     }
 
@@ -86,5 +90,44 @@ public class AiController : ControllerBase
     {
         var equipment = await _equipmentHealthService.GetHighRiskEquipmentAsync();
         return Ok(ApiResponse.Ok(equipment));
+    }
+
+    [HttpGet("knowledge/search")]
+    public async Task<IActionResult> SearchKnowledge([FromQuery] string? q, [FromQuery] int? category, [FromQuery] int page = 1, [FromQuery] int pageSize = 20)
+    {
+        var result = await _knowledgeBaseService.SearchAsync(q, category, page, pageSize);
+        return Ok(ApiResponse.Ok(result));
+    }
+
+    [HttpGet("knowledge/entries")]
+    public async Task<IActionResult> GetKnowledgeEntries([FromQuery] int? category, [FromQuery] int page = 1, [FromQuery] int pageSize = 20)
+    {
+        var entries = await _knowledgeBaseService.GetAllAsync(category, page, pageSize);
+        return Ok(ApiResponse.Ok(entries));
+    }
+
+    [HttpPost("knowledge/entries")]
+    public async Task<IActionResult> AddKnowledgeEntry([FromBody] KnowledgeEntryDto dto)
+    {
+        var entry = await _knowledgeBaseService.AddAsync(dto);
+        return Ok(ApiResponse.Ok(entry));
+    }
+
+    [HttpPut("knowledge/entries/{id}")]
+    public async Task<IActionResult> UpdateKnowledgeEntry(long id, [FromBody] KnowledgeEntryDto dto)
+    {
+        var entry = await _knowledgeBaseService.UpdateAsync(id, dto);
+        if (entry == null)
+            return Ok(ApiResponse.Fail("知识条目不存在"));
+        return Ok(ApiResponse.Ok(entry));
+    }
+
+    [HttpDelete("knowledge/entries/{id}")]
+    public async Task<IActionResult> DeleteKnowledgeEntry(long id)
+    {
+        var success = await _knowledgeBaseService.DeleteAsync(id);
+        if (!success)
+            return Ok(ApiResponse.Fail("知识条目不存在"));
+        return Ok(ApiResponse.Ok("已删除"));
     }
 }

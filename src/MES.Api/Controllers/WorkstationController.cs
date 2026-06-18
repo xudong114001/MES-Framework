@@ -8,7 +8,7 @@ namespace MES.Api.Controllers;
 
 [ApiController]
 [Route("api/v1/workstations")]
-[Authorize]
+[Authorize(Roles = "admin,supervisor")]
 public class WorkstationController : ControllerBase
 {
     private readonly IRepository<Workstation> _repo;

@@ -145,6 +145,12 @@ const router = createRouter({
           meta: { title: 'PDA扫码报工', displayInMenu: false }
         },
         {
+          path: 'pda-offline-queue',
+          name: 'PdaOfflineQueue',
+          component: () => import('../views/work-report/PdaOfflineQueue.vue'),
+          meta: { title: '离线队列', displayInMenu: false }
+        },
+        {
           path: 'qc-checkpoint',
           name: 'QcCheckpoint',
           component: () => import('../views/qc/QcCheckpointList.vue'),
@@ -183,6 +189,18 @@ const router = createRouter({
               name: 'AiDashboard',
               component: () => import('../views/ai/AiDashboard.vue'),
               meta: { title: 'AI智能分析', icon: 'Cpu' }
+            },
+            {
+              path: 'knowledge',
+              name: 'KnowledgeSearch',
+              component: () => import('../views/ai/KnowledgeSearch.vue'),
+              meta: { title: '知识库查询' }
+            },
+            {
+              path: 'knowledge/manage',
+              name: 'KnowledgeManage',
+              component: () => import('../views/ai/KnowledgeBase.vue'),
+              meta: { title: '知识库管理' }
             }
           ]
         }

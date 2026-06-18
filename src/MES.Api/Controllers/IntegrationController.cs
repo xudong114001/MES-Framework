@@ -14,7 +14,7 @@ namespace MES.Api.Controllers;
 /// </summary>
 [ApiController]
 [Route("api/v1/integration")]
-[Authorize]
+[Authorize(Roles = "admin")]
 public class IntegrationController : ControllerBase
 {
     private readonly IERPAdapter _erpAdapter;

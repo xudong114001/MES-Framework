@@ -8,7 +8,7 @@ namespace MES.Api.Controllers;
 
 [ApiController]
 [Route("api/v1/qc-checkpoints")]
-[Authorize]
+[Authorize(Roles = "admin,supervisor,inspector")]
 public class QcCheckpointController : ControllerBase
 {
     private readonly IQcCheckpointService _checkpointService;

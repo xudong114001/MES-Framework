@@ -10,7 +10,7 @@ namespace MES.Api.Controllers;
 
 [ApiController]
 [Route("api/v1/qc")]
-[Authorize]
+[Authorize(Roles = "admin,supervisor,inspector")]
 public class QcController : ControllerBase
 {
     private readonly IRepository<QcInspection> _inspectionRepo;

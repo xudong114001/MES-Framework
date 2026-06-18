@@ -9,7 +9,7 @@ namespace MES.Api.Controllers;
 
 [ApiController]
 [Route("api/v1/work-orders")]
-[Authorize]
+[Authorize(Roles = "admin,supervisor,operator")]
 public class WorkOrderController : ControllerBase
 {
     private readonly IRepository<WorkOrder> _repo;

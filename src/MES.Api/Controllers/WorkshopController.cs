@@ -8,7 +8,7 @@ namespace MES.Api.Controllers;
 
 [ApiController]
 [Route("api/v1/workshops")]
-[Authorize]
+[Authorize(Roles = "admin,supervisor")]
 public class WorkshopController : ControllerBase
 {
     private readonly IRepository<Workshop> _repo;

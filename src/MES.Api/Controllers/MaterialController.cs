@@ -8,7 +8,7 @@ namespace MES.Api.Controllers;
 
 [ApiController]
 [Route("api/v1/materials")]
-[Authorize]
+[Authorize(Roles = "admin,supervisor")]
 public class MaterialController : ControllerBase
 {
     private readonly IRepository<Material> _repo;
