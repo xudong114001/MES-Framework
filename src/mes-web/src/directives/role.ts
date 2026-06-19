@@ -63,6 +63,12 @@ function updateVisibility(
     return
   }
 
+  // admin 角色始终拥有所有权限，直接放行
+  if (authStore.roles.includes('admin')) {
+    el.style.display = ''
+    return
+  }
+
   const userValues = mode === 'role' ? authStore.roles : authStore.permissions
   const hasAccess = required.some((item) => userValues.includes(item))
 
