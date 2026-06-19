@@ -36,6 +36,15 @@ public class AuthService : IAuthService
             .Select(ur => ur.Role!.Name)
             .ToListAsync();
 
+        // 加载用户权限（合并所有角色对应的权限）
+        var permissions = await _db.UserRoles
+            .Where(ur => ur.UserId == user.Id)
+            .SelectMany(ur => _db.RolePermissions
+                .Where(rp => rp.RoleId == ur.RoleId && !rp.IsDeleted)
+                .Select(rp => rp.Permission))
+            .Distinct()
+            .ToListAsync();
+
         var claims = new List<Claim>
         {
             new(ClaimTypes.NameIdentifier, user.Id.ToString()),
@@ -43,6 +52,7 @@ public class AuthService : IAuthService
             new(ClaimTypes.GivenName, user.DisplayName ?? user.Username),
         };
         claims.AddRange(roles.Select(r => new Claim(ClaimTypes.Role, r)));
+        claims.AddRange(permissions.Select(p => new Claim("permission", p)));
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwt.SecretKey));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
@@ -68,7 +78,8 @@ public class AuthService : IAuthService
                 Id = user.Id,
                 Username = user.Username,
                 DisplayName = user.DisplayName ?? user.Username,
-                Roles = roles
+                Roles = roles,
+                Permissions = permissions
             }
         };
     }

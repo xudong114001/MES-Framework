@@ -79,6 +79,12 @@ const router = createRouter({
           meta: { title: '设备管理' }
         },
         {
+          path: 'equipment/maintenance',
+          name: 'EquipmentMaintenance',
+          component: () => import('../views/equipment/MaintenancePlanList.vue'),
+          meta: { title: '设备保养' }
+        },
+        {
           path: 'work-order',
           name: 'WorkOrder',
           component: () => import('../views/work-order/WorkOrderList.vue'),
@@ -161,6 +167,18 @@ const router = createRouter({
           name: 'SeedData',
           component: () => import('../views/system/SeedData.vue'),
           meta: { title: '种子数据' }
+        },
+        {
+          path: 'system/users',
+          name: 'UserManagement',
+          component: () => import('../views/system/UserManagement.vue'),
+          meta: { title: '用户管理' }
+        },
+        {
+          path: 'system/roles',
+          name: 'RoleManagement',
+          component: () => import('../views/system/RoleManagement.vue'),
+          meta: { title: '角色管理' }
         },
         {
           path: 'integration',

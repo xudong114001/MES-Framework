@@ -21,6 +21,9 @@ public class WorkOrderController : ControllerBase
         _service = service;
     }
 
+    /// <summary>
+    /// 获取所有工单列表
+    /// </summary>
     [HttpGet]
     public async Task<IActionResult> GetAll()
     {
@@ -28,6 +31,9 @@ public class WorkOrderController : ControllerBase
         return Ok(ApiResponse.Ok(list));
     }
 
+    /// <summary>
+    /// 根据ID获取工单
+    /// </summary>
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(long id)
     {
@@ -36,6 +42,9 @@ public class WorkOrderController : ControllerBase
         return Ok(ApiResponse.Ok(entity));
     }
 
+    /// <summary>
+    /// 创建工单
+    /// </summary>
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] WorkOrder entity)
     {
@@ -50,6 +59,9 @@ public class WorkOrderController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// 更新工单
+    /// </summary>
     [HttpPut("{id}")]
     public async Task<IActionResult> Update(long id, [FromBody] WorkOrder entity)
     {
@@ -58,6 +70,9 @@ public class WorkOrderController : ControllerBase
         return Ok(ApiResponse.Ok("更新成功"));
     }
 
+    /// <summary>
+    /// 删除工单
+    /// </summary>
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(long id)
     {
@@ -67,8 +82,9 @@ public class WorkOrderController : ControllerBase
         return Ok(ApiResponse.Ok("删除成功"));
     }
 
-    // ---- 工单流转 ----
-
+    /// <summary>
+    /// 下达工单
+    /// </summary>
     [HttpPost("{id}/release")]
     public async Task<IActionResult> Release(long id)
     {
@@ -83,6 +99,9 @@ public class WorkOrderController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// 暂停工单
+    /// </summary>
     [HttpPost("{id}/hold")]
     public async Task<IActionResult> Hold(long id)
     {
@@ -97,6 +116,9 @@ public class WorkOrderController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// 恢复工单
+    /// </summary>
     [HttpPost("{id}/resume")]
     public async Task<IActionResult> Resume(long id)
     {
@@ -111,6 +133,9 @@ public class WorkOrderController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// 取消工单
+    /// </summary>
     [HttpPost("{id}/cancel")]
     public async Task<IActionResult> Cancel(long id)
     {
@@ -125,6 +150,9 @@ public class WorkOrderController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// 关闭工单
+    /// </summary>
     [HttpPost("{id}/close")]
     public async Task<IActionResult> Close(long id)
     {
@@ -139,6 +167,9 @@ public class WorkOrderController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// 拆单
+    /// </summary>
     [HttpPost("{id}/split")]
     public async Task<IActionResult> Split(long id, [FromBody] SplitRequest request)
     {
@@ -153,6 +184,9 @@ public class WorkOrderController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// 返工
+    /// </summary>
     [HttpPost("{id}/rework")]
     public async Task<IActionResult> Rework(long id, [FromBody] ReworkRequest request)
     {
@@ -167,6 +201,9 @@ public class WorkOrderController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// 报废
+    /// </summary>
     [HttpPost("{id}/scrap")]
     public async Task<IActionResult> Scrap(long id, [FromBody] ScrapRequest request)
     {

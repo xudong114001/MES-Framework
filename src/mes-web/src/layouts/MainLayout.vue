@@ -30,6 +30,7 @@
           <el-menu-item index="/bom">BOM 管理</el-menu-item>
           <el-menu-item index="/routing">工艺路线</el-menu-item>
           <el-menu-item index="/equipment">设备管理</el-menu-item>
+          <el-menu-item index="/equipment/maintenance">设备保养</el-menu-item>
         </el-sub-menu>
         <el-menu-item index="/work-order">
           <el-icon><List /></el-icon>
@@ -83,11 +84,13 @@
           <el-icon><Cpu /></el-icon>
           <span>AI智能分析</span>
         </el-menu-item>
-        <el-sub-menu index="system">
+        <el-sub-menu index="system" v-role="['admin', 'supervisor']">
           <template #title>
             <el-icon><Setting /></el-icon>
             <span>系统设置</span>
           </template>
+          <el-menu-item index="/system/users">用户管理</el-menu-item>
+          <el-menu-item index="/system/roles">角色管理</el-menu-item>
           <el-menu-item index="/system/seed">种子数据</el-menu-item>
         </el-sub-menu>
       </el-menu>

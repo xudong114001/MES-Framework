@@ -14,6 +14,9 @@ public class WorkshopController : ControllerBase
     private readonly IRepository<Workshop> _repo;
     public WorkshopController(IRepository<Workshop> repo) => _repo = repo;
 
+    /// <summary>
+    /// 获取所有车间
+    /// </summary>
     [HttpGet]
     public async Task<IActionResult> GetAll()
     {
@@ -21,6 +24,9 @@ public class WorkshopController : ControllerBase
         return Ok(ApiResponse.Ok(list));
     }
 
+    /// <summary>
+    /// 根据ID获取车间
+    /// </summary>
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(long id)
     {
@@ -29,6 +35,9 @@ public class WorkshopController : ControllerBase
         return Ok(ApiResponse.Ok(entity));
     }
 
+    /// <summary>
+    /// 根据工厂ID获取车间列表
+    /// </summary>
     [HttpGet("by-factory/{factoryId}")]
     public async Task<IActionResult> GetByFactory(long factoryId)
     {
@@ -36,6 +45,9 @@ public class WorkshopController : ControllerBase
         return Ok(ApiResponse.Ok(list));
     }
 
+    /// <summary>
+    /// 创建车间
+    /// </summary>
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] Workshop entity)
     {
@@ -43,6 +55,9 @@ public class WorkshopController : ControllerBase
         return Ok(ApiResponse.Ok(created));
     }
 
+    /// <summary>
+    /// 更新车间
+    /// </summary>
     [HttpPut("{id}")]
     public async Task<IActionResult> Update(long id, [FromBody] Workshop entity)
     {
@@ -51,6 +66,9 @@ public class WorkshopController : ControllerBase
         return Ok(ApiResponse.Ok("更新成功"));
     }
 
+    /// <summary>
+    /// 删除车间
+    /// </summary>
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(long id)
     {

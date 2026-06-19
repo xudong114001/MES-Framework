@@ -19,6 +19,46 @@ public class QcCheckpointController : ControllerBase
     }
 
     /// <summary>
+    /// 获取所有质检点（兼容前端）
+    /// </summary>
+    [HttpGet]
+    public async Task<IActionResult> GetAll()
+    {
+        var list = await _checkpointService.GetAllCheckpointsAsync();
+        return Ok(ApiResponse.Ok(list));
+    }
+
+    /// <summary>
+    /// 根据 ID 获取质检点（兼容前端）
+    /// </summary>
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetById(long id)
+    {
+        var checkpoint = await _checkpointService.GetCheckpointByIdAsync(id);
+        if (checkpoint == null)
+            return Ok(ApiResponse.Fail("质检点不存在"));
+        return Ok(ApiResponse.Ok(checkpoint));
+    }
+
+    /// <summary>
+    /// 更新质检点（兼容前端）
+    /// </summary>
+    [HttpPut("{id}")]
+    public async Task<IActionResult> Update(long id, [FromBody] QcCheckpoint checkpoint)
+    {
+        checkpoint.Id = id;
+        try
+        {
+            await _checkpointService.UpdateCheckpointAsync(checkpoint);
+            return Ok(ApiResponse.Ok("更新成功"));
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(ApiResponse.Fail(ex.Message));
+        }
+    }
+
+    /// <summary>
     /// 查询某工序配置的质检点
     /// </summary>
     [HttpGet("by-step/{stepId}")]

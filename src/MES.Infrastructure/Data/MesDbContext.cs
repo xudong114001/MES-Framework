@@ -28,7 +28,9 @@ public class MesDbContext : DbContext
     public DbSet<AlertRecord> AiAlerts => Set<AlertRecord>();
     public DbSet<Role> Roles => Set<Role>();
     public DbSet<UserRole> UserRoles => Set<UserRole>();
+    public DbSet<RolePermission> RolePermissions => Set<RolePermission>();
     public DbSet<KnowledgeEntry> KnowledgeEntries => Set<KnowledgeEntry>();
+    public DbSet<AndonEvent> AndonEvents => Set<AndonEvent>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

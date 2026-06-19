@@ -14,6 +14,9 @@ public class AuthController : ControllerBase
 
     public AuthController(IAuthService authService) => _authService = authService;
 
+    /// <summary>
+    /// 用户登录
+    /// </summary>
     [HttpPost("login")]
     [AllowAnonymous]
     public async Task<IActionResult> Login([FromBody] LoginRequest request)

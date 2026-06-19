@@ -1,5 +1,6 @@
 using System.Text;
 using System.Text.Json.Serialization;
+using System.Reflection;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using MES.Api.Hubs;
@@ -63,6 +64,15 @@ builder.Services.AddCors(options =>
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo { Title = "MES API", Version = "v1" });
+
+    // 配置 XML 文档注释
+    var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+    if (File.Exists(xmlPath))
+    {
+        c.IncludeXmlComments(xmlPath, true);
+    }
+
     c.AddSecurityDefinition("bearer", new OpenApiSecurityScheme
     {
         Type = SecuritySchemeType.Http,
@@ -137,7 +147,7 @@ builder.Services.AddSignalR();
 
 // P4 Dashboard & Andon Services
 builder.Services.AddScoped<DashboardService>();
-builder.Services.AddSingleton<AndonService>();
+builder.Services.AddScoped<AndonService>();
 
 // SignalR Notification Service
 builder.Services.AddScoped<HubNotificationService>();
