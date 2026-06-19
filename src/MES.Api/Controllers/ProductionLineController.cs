@@ -14,6 +14,9 @@ public class ProductionLineController : ControllerBase
     private readonly IRepository<ProductionLine> _repo;
     public ProductionLineController(IRepository<ProductionLine> repo) => _repo = repo;
 
+    /// <summary>
+    /// 获取所有产线
+    /// </summary>
     [HttpGet]
     public async Task<IActionResult> GetAll()
     {
@@ -21,6 +24,9 @@ public class ProductionLineController : ControllerBase
         return Ok(ApiResponse.Ok(list));
     }
 
+    /// <summary>
+    /// 根据ID获取产线
+    /// </summary>
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(long id)
     {
@@ -29,6 +35,9 @@ public class ProductionLineController : ControllerBase
         return Ok(ApiResponse.Ok(entity));
     }
 
+    /// <summary>
+    /// 根据车间ID获取产线列表
+    /// </summary>
     [HttpGet("by-workshop/{workshopId}")]
     public async Task<IActionResult> GetByWorkshop(long workshopId)
     {
@@ -36,6 +45,9 @@ public class ProductionLineController : ControllerBase
         return Ok(ApiResponse.Ok(list));
     }
 
+    /// <summary>
+    /// 创建产线
+    /// </summary>
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] ProductionLine entity)
     {
@@ -43,6 +55,9 @@ public class ProductionLineController : ControllerBase
         return Ok(ApiResponse.Ok(created));
     }
 
+    /// <summary>
+    /// 更新产线
+    /// </summary>
     [HttpPut("{id}")]
     public async Task<IActionResult> Update(long id, [FromBody] ProductionLine entity)
     {
@@ -51,6 +66,9 @@ public class ProductionLineController : ControllerBase
         return Ok(ApiResponse.Ok("更新成功"));
     }
 
+    /// <summary>
+    /// 删除产线
+    /// </summary>
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(long id)
     {

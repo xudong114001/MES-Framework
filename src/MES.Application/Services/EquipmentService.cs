@@ -214,6 +214,81 @@ public class EquipmentService
             await _equipmentRepo.UpdateAsync(eq);
         }
     }
+
+    /// <summary>
+    /// 获取所有保养计划（支持按设备名称、状态筛选）
+    /// </summary>
+    public async Task<List<MaintenancePlan>> GetAllMaintenancePlansAsync(
+        string? equipmentName = null, string? status = null)
+    {
+        var query = _maintenancePlanRepo.Query();
+
+        if (!string.IsNullOrEmpty(status))
+        {
+            if (Enum.TryParse<MaintenancePlanStatus>(status, out var statusEnum))
+                query = query.Where(p => p.Status == statusEnum);
+        }
+
+        var plans = await query.ToListAsync();
+
+        // 加载设备信息
+        var equipmentIds = plans.Select(p => p.EquipmentId).Distinct().ToList();
+        var equipmentDict = (await _equipmentRepo.FindAsync(e => equipmentIds.Contains(e.Id)))
+            .ToDictionary(e => e.Id, e => e.Name);
+
+        // 添加设备名称到计划对象
+        foreach (var plan in plans)
+        {
+            if (plan.Equipment == null && equipmentDict.ContainsKey(plan.EquipmentId))
+            {
+                plan.Equipment = new Equipment { Id = plan.EquipmentId, Name = equipmentDict[plan.EquipmentId] };
+            }
+        }
+
+        // 按设备名称筛选
+        if (!string.IsNullOrEmpty(equipmentName))
+        {
+            plans = plans
+                .Where(p => p.Equipment != null && p.Equipment.Name.Contains(equipmentName, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+        }
+
+        return plans;
+    }
+
+    /// <summary>
+    /// 获取所有设备（下拉列表用）
+    /// </summary>
+    public async Task<List<Equipment>> GetAllEquipmentAsync()
+    {
+        return await _equipmentRepo.GetAllAsync().ContinueWith(t => t.Result.ToList());
+    }
+
+    /// <summary>
+    /// 更新保养计划
+    /// </summary>
+    public async Task<MaintenancePlan> UpdateMaintenancePlanAsync(
+        long planId, string planName, int cycleDays, string? description)
+    {
+        var plan = await _maintenancePlanRepo.GetByIdAsync(planId);
+        if (plan == null) throw new InvalidOperationException("保养计划不存在");
+
+        plan.PlanName = planName;
+        plan.CycleDays = cycleDays;
+        plan.Description = description;
+        await _maintenancePlanRepo.UpdateAsync(plan);
+        return plan;
+    }
+
+    /// <summary>
+    /// 删除保养计划
+    /// </summary>
+    public async Task DeleteMaintenancePlanAsync(long planId)
+    {
+        var plan = await _maintenancePlanRepo.GetByIdAsync(planId);
+        if (plan == null) throw new InvalidOperationException("保养计划不存在");
+        await _maintenancePlanRepo.DeleteAsync(plan);
+    }
 }
 
 public class OeeResult

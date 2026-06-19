@@ -19,6 +19,22 @@ public class QcCheckpointService : IQcCheckpointService
     }
 
     /// <summary>
+    /// 获取所有质检点（兼容前端）
+    /// </summary>
+    public async Task<IEnumerable<QcCheckpoint>> GetAllCheckpointsAsync()
+    {
+        return await _checkpointRepo0.GetAllAsync();
+    }
+
+    /// <summary>
+    /// 根据 ID 获取质检点（兼容前端）
+    /// </summary>
+    public async Task<QcCheckpoint?> GetCheckpointByIdAsync(long id)
+    {
+        return await _checkpointRepo0.GetByIdAsync(id);
+    }
+
+    /// <summary>
     /// 查询某工序配置的质检点
     /// </summary>
     public async Task<IEnumerable<QcCheckpoint>> GetCheckpointsByStepAsync(long stepId)
@@ -37,6 +53,23 @@ public class QcCheckpointService : IQcCheckpointService
             throw new InvalidOperationException("该工序已配置相同类型的质检点");
 
         return await _checkpointRepo0.AddAsync(checkpoint);
+    }
+
+    /// <summary>
+    /// 更新质检点（兼容前端）
+    /// </summary>
+    public async Task UpdateCheckpointAsync(QcCheckpoint checkpoint)
+    {
+        var existing = await _checkpointRepo0.GetByIdAsync(checkpoint.Id);
+        if (existing == null)
+            throw new InvalidOperationException("质检点配置不存在");
+
+        existing.StepId = checkpoint.StepId;
+        existing.CheckType = checkpoint.CheckType;
+        existing.IsMandatory = checkpoint.IsMandatory;
+        existing.Remark = checkpoint.Remark;
+
+        await _checkpointRepo0.UpdateAsync(existing);
     }
 
     /// <summary>

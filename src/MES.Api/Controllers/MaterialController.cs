@@ -57,7 +57,11 @@ public class MaterialController : ControllerBase
         if (existing == null)
             return NotFound(ApiResponse.Fail("物料不存在"));
 
+        // 保留原有导航属性和审计字段
         entity.Id = id;
+        entity.CreatedAt = existing.CreatedAt;
+        entity.CreatedBy = existing.CreatedBy;
+        entity.UpdatedAt = DateTime.UtcNow;
         await _repo.UpdateAsync(entity);
         return Ok(ApiResponse.Ok("更新成功"));
     }

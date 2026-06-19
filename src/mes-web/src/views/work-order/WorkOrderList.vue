@@ -4,7 +4,7 @@
       <template #header>
         <div class="card-header">
           <span>工单管理</span>
-          <el-button type="primary" @click="openCreate">新增工单</el-button>
+          <el-button type="primary" @click="openCreate" v-permission="'workorder:create'">新增工单</el-button>
         </div>
       </template>
 
@@ -70,7 +70,7 @@
               <el-button size="small" type="success" @click="handleRelease(row)">下达</el-button>
               <el-button size="small" @click="openSplitDialog(row)">拆分</el-button>
               <el-button size="small" type="warning" @click="handleCancel(row)">取消</el-button>
-              <el-button size="small" type="danger" @click="handleDelete(row)">删除</el-button>
+              <el-button size="small" type="danger" @click="handleDelete(row)" v-permission="'workorder:delete'">删除</el-button>
             </template>
             <el-button v-else-if="row.status === 'RELEASED'" size="small" @click="handleHold(row)">暂停</el-button>
             <el-button v-else-if="row.status === 'IN_PROGRESS'" size="small" @click="handleHold(row)">暂停</el-button>

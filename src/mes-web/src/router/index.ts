@@ -1,5 +1,17 @@
 import { createRouter, createWebHistory } from 'vue-router'
 
+// 扩展路由 meta 类型，添加角色和权限字段
+declare module 'vue-router' {
+  interface RouteMeta {
+    requiresAuth?: boolean
+    title?: string
+    icon?: string
+    displayInMenu?: boolean
+    roles?: string[]
+    permissions?: string[]
+  }
+}
+
 const router = createRouter({
   history: createWebHistory(),
   routes: [
@@ -77,6 +89,12 @@ const router = createRouter({
           name: 'Equipment',
           component: () => import('../views/equipment/EquipmentList.vue'),
           meta: { title: '设备管理' }
+        },
+        {
+          path: 'equipment/maintenance',
+          name: 'EquipmentMaintenance',
+          component: () => import('../views/equipment/MaintenancePlanList.vue'),
+          meta: { title: '设备保养', permissions: ['equipment:maintain'] }
         },
         {
           path: 'work-order',
@@ -163,6 +181,18 @@ const router = createRouter({
           meta: { title: '种子数据' }
         },
         {
+          path: 'system/users',
+          name: 'UserManagement',
+          component: () => import('../views/system/UserManagement.vue'),
+          meta: { title: '用户管理', roles: ['admin'] }
+        },
+        {
+          path: 'system/roles',
+          name: 'RoleManagement',
+          component: () => import('../views/system/RoleManagement.vue'),
+          meta: { title: '角色管理', roles: ['admin'] }
+        },
+        {
           path: 'integration',
           redirect: '/integration/dashboard',
           children: [
@@ -214,7 +244,24 @@ router.beforeEach((to, _from, next) => {
   const token = localStorage.getItem('mes_token')
   if (to.meta.requiresAuth !== false && !token) {
     next('/login')
-  } else if (to.path === '/login' && token) {
+    return
+  }
+
+  // 页面级权限检查
+  if (to.meta.roles || to.meta.permissions) {
+    const roles = JSON.parse(localStorage.getItem('mes_roles') || '[]') as string[]
+    const permissions = JSON.parse(localStorage.getItem('mes_permissions') || '[]') as string[]
+
+    const hasRole = to.meta.roles?.some((r: string) => roles.includes(r))
+    const hasPermission = to.meta.permissions?.some((p: string) => permissions.includes(p))
+
+    if (!hasRole && !hasPermission) {
+      next('/dashboard')
+      return
+    }
+  }
+
+  if (to.path === '/login' && token) {
     next('/dashboard')
   } else {
     next()

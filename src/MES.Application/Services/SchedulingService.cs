@@ -47,25 +47,16 @@ public class SchedulingService : ISchedulingService
         wo.LineId = lineId;
         await _workOrderRepo.UpdateAsync(wo);
 
-        // 如果有工序步骤，关联分配到产线下的工位（按工序顺序均分）
+        // 如果有工序步骤，设置计划时间（工位由派工环节决定）
         var steps = await _stepRepo2.FindAsync(s => s.WorkOrderId == workOrderId);
         if (steps.Any())
         {
-            var workstations = await GetWorkstationsByLineAsync(lineId);
-            var sortedStations = workstations.OrderBy(ws => ws.SeqNo).ToList();
-
-            if (sortedStations.Any())
+            var orderedSteps = steps.OrderBy(s => s.StepNo).ToList();
+            foreach (var step in orderedSteps)
             {
-                var orderedSteps = steps.OrderBy(s => s.StepNo).ToList();
-                for (int i = 0; i < orderedSteps.Count; i++)
-                {
-                    // 按 StepNo 顺序轮询分配工位
-                    var wsIdx = i % sortedStations.Count;
-                    orderedSteps[i].PlanStartTime = wo.PlanStartTime;
-                    orderedSteps[i].PlanEndTime = wo.PlanEndTime;
-                    // 仅设置计划时间，工位由派工环节决定
-                    await _stepRepo2.UpdateAsync(orderedSteps[i]);
-                }
+                step.PlanStartTime = wo.PlanStartTime;
+                step.PlanEndTime = wo.PlanEndTime;
+                await _stepRepo2.UpdateAsync(step);
             }
         }
     }
@@ -162,13 +153,5 @@ public class SchedulingService : ISchedulingService
         wo.Status = WorkOrderStatus.RELEASED;
         wo.LineId = null;
         await _workOrderRepo.UpdateAsync(wo);
-    }
-
-    private async Task<IEnumerable<Workstation>> GetWorkstationsByLineAsync(long lineId)
-    {
-        // 从 Repository 通过 FindAsync 获取
-        // 由于 IRepository<Workstation> 注入不同的泛型，需要在这里通过注入另一个 repo 来处理
-        // 实际上通过调度排产不直接操作工位，这里留空
-        return Enumerable.Empty<Workstation>();
     }
 }

@@ -13,6 +13,9 @@ public class TraceController : ControllerBase
     private readonly TraceService _service;
     public TraceController(TraceService service) => _service = service;
 
+    /// <summary>
+    /// 根据批次号追溯
+    /// </summary>
     [HttpGet("by-batch/{batchNo}")]
     public async Task<IActionResult> ByBatch(string batchNo)
     {
@@ -20,6 +23,9 @@ public class TraceController : ControllerBase
         return Ok(ApiResponse.Ok(result));
     }
 
+    /// <summary>
+    /// 根据序列号追溯
+    /// </summary>
     [HttpGet("by-serial/{serialNo}")]
     public async Task<IActionResult> BySerial(string serialNo)
     {
@@ -27,6 +33,9 @@ public class TraceController : ControllerBase
         return Ok(ApiResponse.Ok(result));
     }
 
+    /// <summary>
+    /// 正向追溯（物料用到哪些工单）
+    /// </summary>
     [HttpGet("forward/{materialId}/{batchNo}")]
     public async Task<IActionResult> Forward(long materialId, string batchNo)
     {
@@ -34,6 +43,9 @@ public class TraceController : ControllerBase
         return Ok(ApiResponse.Ok(result));
     }
 
+    /// <summary>
+    /// 反向追溯（产品来自哪些物料）
+    /// </summary>
     [HttpGet("backward/{serialNo}")]
     public async Task<IActionResult> Backward(string serialNo)
     {

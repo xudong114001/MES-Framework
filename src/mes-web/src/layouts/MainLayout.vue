@@ -22,24 +22,25 @@
             <el-icon><Folder /></el-icon>
             <span>基础数据</span>
           </template>
-          <el-menu-item index="/factory">工厂管理</el-menu-item>
-          <el-menu-item index="/workshop">车间管理</el-menu-item>
-          <el-menu-item index="/production-line">产线管理</el-menu-item>
-          <el-menu-item index="/workstation">工位管理</el-menu-item>
-          <el-menu-item index="/material">物料管理</el-menu-item>
-          <el-menu-item index="/bom">BOM 管理</el-menu-item>
-          <el-menu-item index="/routing">工艺路线</el-menu-item>
-          <el-menu-item index="/equipment">设备管理</el-menu-item>
+          <el-menu-item index="/factory" v-role="['admin', 'supervisor']">工厂管理</el-menu-item>
+          <el-menu-item index="/workshop" v-role="['admin', 'supervisor']">车间管理</el-menu-item>
+          <el-menu-item index="/production-line" v-role="['admin', 'supervisor']">产线管理</el-menu-item>
+          <el-menu-item index="/workstation" v-role="['admin', 'supervisor']">工位管理</el-menu-item>
+          <el-menu-item index="/material" v-permission="'material:view'">物料管理</el-menu-item>
+          <el-menu-item index="/bom" v-permission="'material:view'">BOM 管理</el-menu-item>
+          <el-menu-item index="/routing" v-permission="'material:view'">工艺路线</el-menu-item>
+          <el-menu-item index="/equipment" v-permission="'equipment:view'">设备管理</el-menu-item>
+          <el-menu-item index="/equipment/maintenance" v-permission="'equipment:maintain'">设备保养</el-menu-item>
         </el-sub-menu>
-        <el-menu-item index="/work-order">
+        <el-menu-item index="/work-order" v-permission="'workorder:view'">
           <el-icon><List /></el-icon>
           <span>工单管理</span>
         </el-menu-item>
-        <el-menu-item index="/work-report">
+        <el-menu-item index="/work-report" v-permission="'workorder:view'">
           <el-icon><Document /></el-icon>
           <span>报工管理</span>
         </el-menu-item>
-        <el-menu-item index="/qc">
+        <el-menu-item index="/qc" v-permission="'qc:view'">
           <el-icon><CircleCheck /></el-icon>
           <span>质量管理</span>
         </el-menu-item>
@@ -47,23 +48,23 @@
           <el-icon><Search /></el-icon>
           <span>追溯查询</span>
         </el-menu-item>
-        <el-menu-item index="/andon">
+        <el-menu-item index="/andon" v-permission="'andon:view'">
           <el-icon><WarningFilled /></el-icon>
           <span>异常看板</span>
         </el-menu-item>
-        <el-menu-item index="/scheduling">
+        <el-menu-item index="/scheduling" v-permission="'workorder:view'">
           <el-icon><TrendCharts /></el-icon>
           <span>排产管理</span>
         </el-menu-item>
-        <el-menu-item index="/line-task-board">
+        <el-menu-item index="/line-task-board" v-permission="'workorder:view'">
           <el-icon><Grid /></el-icon>
           <span>产线任务看板</span>
         </el-menu-item>
-        <el-menu-item index="/qc-dashboard">
+        <el-menu-item index="/qc-dashboard" v-permission="'qc:view'">
           <el-icon><DataAnalysis /></el-icon>
           <span>质检看板</span>
         </el-menu-item>
-        <el-menu-item index="/qc-checkpoint">
+        <el-menu-item index="/qc-checkpoint" v-permission="'qc:view'">
           <el-icon><CircleCheckFilled /></el-icon>
           <span>质检检查点</span>
         </el-menu-item>
@@ -71,7 +72,7 @@
           <el-icon><Monitor /></el-icon>
           <span>大屏看板</span>
         </el-menu-item>
-        <el-sub-menu index="integration">
+        <el-sub-menu index="integration" v-permission="'integration:view'">
           <template #title>
             <el-icon><Link /></el-icon>
             <span>系统集成</span>
@@ -79,15 +80,17 @@
           <el-menu-item index="/integration/dashboard">系统集成</el-menu-item>
           <el-menu-item index="/integration/logs">同步日志</el-menu-item>
         </el-sub-menu>
-        <el-menu-item index="/ai/dashboard">
+        <el-menu-item index="/ai/dashboard" v-permission="'ai:view'">
           <el-icon><Cpu /></el-icon>
           <span>AI智能分析</span>
         </el-menu-item>
-        <el-sub-menu index="system">
+        <el-sub-menu index="system" v-role="'admin'">
           <template #title>
             <el-icon><Setting /></el-icon>
             <span>系统设置</span>
           </template>
+          <el-menu-item index="/system/users">用户管理</el-menu-item>
+          <el-menu-item index="/system/roles">角色管理</el-menu-item>
           <el-menu-item index="/system/seed">种子数据</el-menu-item>
         </el-sub-menu>
       </el-menu>

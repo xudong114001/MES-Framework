@@ -14,6 +14,9 @@ public class FactoryController : ControllerBase
     private readonly IRepository<Factory> _repo;
     public FactoryController(IRepository<Factory> repo) => _repo = repo;
 
+    /// <summary>
+    /// 获取所有工厂
+    /// </summary>
     [HttpGet]
     public async Task<IActionResult> GetAll()
     {
@@ -21,6 +24,9 @@ public class FactoryController : ControllerBase
         return Ok(ApiResponse.Ok(list));
     }
 
+    /// <summary>
+    /// 根据ID获取工厂
+    /// </summary>
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(long id)
     {
@@ -29,6 +35,9 @@ public class FactoryController : ControllerBase
         return Ok(ApiResponse.Ok(entity));
     }
 
+    /// <summary>
+    /// 创建工厂
+    /// </summary>
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] Factory entity)
     {
@@ -36,6 +45,9 @@ public class FactoryController : ControllerBase
         return Ok(ApiResponse.Ok(created));
     }
 
+    /// <summary>
+    /// 更新工厂
+    /// </summary>
     [HttpPut("{id}")]
     public async Task<IActionResult> Update(long id, [FromBody] Factory entity)
     {
@@ -44,6 +56,9 @@ public class FactoryController : ControllerBase
         return Ok(ApiResponse.Ok("更新成功"));
     }
 
+    /// <summary>
+    /// 删除工厂
+    /// </summary>
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(long id)
     {

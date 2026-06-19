@@ -63,6 +63,82 @@ public class IntegrationController : ControllerBase
     }
 
     /// <summary>
+    /// 获取所有适配器（兼容前端）
+    /// </summary>
+    [HttpGet("adapters")]
+    public IActionResult GetAdapters() => GetAdapterStatus();
+
+    /// <summary>
+    /// 测试指定适配器（兼容前端）
+    /// </summary>
+    [HttpPost("adapters/{name}/test")]
+    [AllowAnonymous]
+    public async Task<IActionResult> TestAdapter(string name)
+    {
+        var result = name.ToLower() switch
+        {
+            "erp" or "sap" or "kingdee" => await _erpAdapter.TestConnectionAsync(),
+            "wms" => await _wmsAdapter.TestConnectionAsync(),
+            "plc" => _plcCollector.IsConnected,
+            _ => false
+        };
+        return Ok(ApiResponse.Ok(new { connected = result, name }));
+    }
+
+    /// <summary>
+    /// 同步指定适配器（兼容前端）
+    /// </summary>
+    [HttpPost("adapters/{name}/sync")]
+    public async Task<IActionResult> SyncAdapter(string name, [FromBody] SyncAdapterRequest? request)
+    {
+        var direction = request?.Direction?.ToLower() ?? "pull";
+
+        try
+        {
+            object? result = name.ToLower() switch
+            {
+                "erp" or "sap" or "kingdee" when direction == "pull" =>
+                    await _erpAdapter.PullWorkOrdersAsync(null),
+                "wms" when direction == "pull" =>
+                    await _wmsAdapter.PullInventoryAsync(null),
+                _ => null
+            };
+            return Ok(ApiResponse.Ok(new { success = true, data = result }));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "同步适配器失败: {Name}", name);
+            return Ok(ApiResponse.Fail($"同步失败: {ex.Message}"));
+        }
+    }
+
+    /// <summary>
+    /// 获取事件日志（兼容前端）
+    /// </summary>
+    [HttpGet("events")]
+    public IActionResult GetEvents()
+    {
+        var logs = _eventLog.GetLogs();
+        return Ok(ApiResponse.Ok(logs));
+    }
+
+    /// <summary>
+    /// 获取事件日志（兼容后端）
+    /// </summary>
+    [HttpGet("event-logs")]
+    public IActionResult GetEventLogs() => GetEvents();
+
+    /// <summary>
+    /// 清空事件日志（兼容前端）
+    /// </summary>
+    [HttpDelete("events")]
+    public IActionResult ClearEvents()
+    {
+        _eventLog.Clear();
+        return Ok(ApiResponse.Ok("已清空"));
+    }
+
+    /// <summary>
     /// 测试 ERP 连接
     /// </summary>
     [HttpGet("erp/test")]
@@ -195,22 +271,20 @@ public class IntegrationController : ControllerBase
     }
 
     /// <summary>
-    /// 查看事件发布日志
-    /// </summary>
-    [HttpGet("event-logs")]
-    public IActionResult GetEventLogs()
-    {
-        var logs = _eventLog.GetLogs();
-        return Ok(ApiResponse.Ok(logs));
-    }
-
-    /// <summary>
     /// 清空事件日志
     /// </summary>
     [HttpDelete("event-logs")]
-    public IActionResult ClearEventLogs()
-    {
-        _eventLog.Clear();
-        return Ok(ApiResponse.Ok("已清空"));
-    }
+    public IActionResult ClearEventLogs() => ClearEvents();
+}
+
+public class SyncAdapterRequest
+{
+    public string? Direction { get; set; }
+    public DateTime? Since { get; set; }
+}
+
+public class SyncRequest
+{
+    public DateTime? Since { get; set; }
+    public string? MaterialCode { get; set; }
 }

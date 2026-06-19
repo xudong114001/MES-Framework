@@ -475,6 +475,21 @@ CREATE TABLE mes_user_role (
 CREATE INDEX IF NOT EXISTS idx_user_role_user ON mes_user_role(user_id);
 CREATE INDEX IF NOT EXISTS idx_user_role_role ON mes_user_role(role_id);
 
+CREATE TABLE mes_role_permission (
+    id BIGSERIAL PRIMARY KEY,
+    role_id BIGINT NOT NULL REFERENCES mes_role(id),
+    permission VARCHAR(100) NOT NULL,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    created_by BIGINT,
+    updated_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_by BIGINT,
+    is_deleted SMALLINT DEFAULT 0,
+    UNIQUE(role_id, permission)
+);
+
+CREATE INDEX IF NOT EXISTS idx_role_permission_role ON mes_role_permission(role_id);
+CREATE INDEX IF NOT EXISTS idx_role_permission_permission ON mes_role_permission(permission);
+
 -- ==================== 知识库 ====================
 
 CREATE TABLE mes_knowledge_entry (
@@ -491,3 +506,32 @@ CREATE TABLE mes_knowledge_entry (
     updated_by BIGINT,
     is_deleted SMALLINT DEFAULT 0
 );
+
+-- ==================== 安灯事件 ====================
+
+CREATE TABLE mes_andon_events (
+    id BIGSERIAL PRIMARY KEY,
+    event_type INT NOT NULL DEFAULT 0,
+    level INT NOT NULL DEFAULT 1,
+    title VARCHAR(200) NOT NULL,
+    description VARCHAR(1000),
+    workstation_id BIGINT,
+    workstation_name VARCHAR(100),
+    work_order_id BIGINT,
+    work_order_no VARCHAR(50),
+    triggered_by_id BIGINT,
+    triggered_by_name VARCHAR(100),
+    triggered_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    resolved_by_id BIGINT,
+    resolved_by_name VARCHAR(100),
+    resolved_at TIMESTAMPTZ,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    created_by BIGINT,
+    updated_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_by BIGINT,
+    is_deleted SMALLINT DEFAULT 0
+);
+
+CREATE INDEX IF NOT EXISTS idx_andon_event_work_order ON mes_andon_events(work_order_id);
+CREATE INDEX IF NOT EXISTS idx_andon_event_triggered_at ON mes_andon_events(triggered_at);
+CREATE INDEX IF NOT EXISTS idx_andon_event_is_resolved ON mes_andon_events(resolved_at);

@@ -10,6 +10,7 @@ export interface UserInfo {
   username: string
   displayName: string
   roles?: string[]
+  permissions?: string[]
 }
 
 export interface LoginResponse {

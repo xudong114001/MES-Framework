@@ -36,6 +36,9 @@ public class AiController : ControllerBase
         _logger = logger;
     }
 
+    /// <summary>
+    /// 获取活跃的质量异常告警
+    /// </summary>
     [HttpGet("quality/alerts")]
     public async Task<IActionResult> GetActiveAlerts()
     {
@@ -43,6 +46,9 @@ public class AiController : ControllerBase
         return Ok(ApiResponse.Ok(alerts));
     }
 
+    /// <summary>
+    /// 分析质量数据（AI 分析）
+    /// </summary>
     [HttpPost("quality/analyze")]
     public async Task<IActionResult> AnalyzeQuality([FromBody] long? workOrderId)
     {
@@ -50,6 +56,9 @@ public class AiController : ControllerBase
         return Ok(ApiResponse.Ok(alerts));
     }
 
+    /// <summary>
+    /// 处理质量告警
+    /// </summary>
     [HttpPost("quality/alerts/{id}/process")]
     public async Task<IActionResult> ProcessAlert(long id, [FromBody] ProcessAlertRequest request)
     {
@@ -57,6 +66,9 @@ public class AiController : ControllerBase
         return Ok(ApiResponse.Ok("已处理"));
     }
 
+    /// <summary>
+    /// 获取质量告警历史
+    /// </summary>
     [HttpGet("quality/history")]
     public async Task<IActionResult> GetAlertHistory([FromQuery] int page = 1, [FromQuery] int pageSize = 20)
     {
@@ -64,6 +76,9 @@ public class AiController : ControllerBase
         return Ok(ApiResponse.Ok(history));
     }
 
+    /// <summary>
+    /// 获取排产推荐
+    /// </summary>
     [HttpGet("scheduling/recommend/{workOrderId}")]
     public async Task<IActionResult> GetSchedulingRecommendation(long workOrderId)
     {
@@ -71,6 +86,9 @@ public class AiController : ControllerBase
         return Ok(ApiResponse.Ok(recommendations));
     }
 
+    /// <summary>
+    /// 获取所有设备健康状态
+    /// </summary>
     [HttpGet("equipment/health")]
     public async Task<IActionResult> GetAllEquipmentHealth()
     {
@@ -78,6 +96,9 @@ public class AiController : ControllerBase
         return Ok(ApiResponse.Ok(health));
     }
 
+    /// <summary>
+    /// 获取指定设备健康状态
+    /// </summary>
     [HttpGet("equipment/health/{equipmentId}")]
     public async Task<IActionResult> GetEquipmentHealth(long equipmentId)
     {
@@ -85,6 +106,9 @@ public class AiController : ControllerBase
         return Ok(ApiResponse.Ok(health));
     }
 
+    /// <summary>
+    /// 获取高风险设备列表
+    /// </summary>
     [HttpGet("equipment/high-risk")]
     public async Task<IActionResult> GetHighRiskEquipment()
     {
@@ -92,6 +116,9 @@ public class AiController : ControllerBase
         return Ok(ApiResponse.Ok(equipment));
     }
 
+    /// <summary>
+    /// 搜索知识库
+    /// </summary>
     [HttpGet("knowledge/search")]
     public async Task<IActionResult> SearchKnowledge([FromQuery] string? q, [FromQuery] int? category, [FromQuery] int page = 1, [FromQuery] int pageSize = 20)
     {
@@ -99,6 +126,9 @@ public class AiController : ControllerBase
         return Ok(ApiResponse.Ok(result));
     }
 
+    /// <summary>
+    /// 获取知识库条目列表
+    /// </summary>
     [HttpGet("knowledge/entries")]
     public async Task<IActionResult> GetKnowledgeEntries([FromQuery] int? category, [FromQuery] int page = 1, [FromQuery] int pageSize = 20)
     {
@@ -106,6 +136,9 @@ public class AiController : ControllerBase
         return Ok(ApiResponse.Ok(entries));
     }
 
+    /// <summary>
+    /// 添加知识库条目
+    /// </summary>
     [HttpPost("knowledge/entries")]
     public async Task<IActionResult> AddKnowledgeEntry([FromBody] KnowledgeEntryDto dto)
     {
@@ -113,6 +146,9 @@ public class AiController : ControllerBase
         return Ok(ApiResponse.Ok(entry));
     }
 
+    /// <summary>
+    /// 更新知识库条目
+    /// </summary>
     [HttpPut("knowledge/entries/{id}")]
     public async Task<IActionResult> UpdateKnowledgeEntry(long id, [FromBody] KnowledgeEntryDto dto)
     {
@@ -122,6 +158,9 @@ public class AiController : ControllerBase
         return Ok(ApiResponse.Ok(entry));
     }
 
+    /// <summary>
+    /// 删除知识库条目
+    /// </summary>
     [HttpDelete("knowledge/entries/{id}")]
     public async Task<IActionResult> DeleteKnowledgeEntry(long id)
     {

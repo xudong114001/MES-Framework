@@ -6,6 +6,7 @@ import router from "./router";
 import { createPinia } from "pinia";
 import * as ElementPlusIconsVue from "@element-plus/icons-vue";
 import { echartsPlugin } from "./plugins/echarts";
+import { vRole, vPermission } from "./directives/role";
 
 const app = createApp(App);
 app.use(ElementPlus);
@@ -17,5 +18,9 @@ app.use(echartsPlugin);
 for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
   app.component(key, component);
 }
+
+// 注册自定义指令
+app.directive("role", vRole);
+app.directive("permission", vPermission);
 
 app.mount("#app");

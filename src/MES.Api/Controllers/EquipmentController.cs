@@ -32,6 +32,16 @@ public class EquipmentController : ControllerBase
     }
 
     /// <summary>
+    /// 获取设备列表（下拉用）
+    /// </summary>
+    [HttpGet("list")]
+    public async Task<IActionResult> GetEquipmentList()
+    {
+        var list = await _equipmentService.GetAllEquipmentAsync();
+        return Ok(ApiResponse.Ok(list));
+    }
+
+    /// <summary>
     /// 根据 ID 获取设备
     /// </summary>
     [HttpGet("{id}")]
@@ -142,9 +152,48 @@ public class EquipmentController : ControllerBase
         await _equipmentService.CompleteMaintenanceAsync(planId);
         return Ok(ApiResponse.Ok("保养完成"));
     }
+
+    /// <summary>
+    /// 获取所有保养计划（可筛选）
+    /// </summary>
+    [HttpGet("maintenance-plans")]
+    public async Task<IActionResult> GetAllMaintenancePlans(
+        [FromQuery] string? equipmentName,
+        [FromQuery] string? status)
+    {
+        var result = await _equipmentService.GetAllMaintenancePlansAsync(equipmentName, status);
+        return Ok(ApiResponse.Ok(result));
+    }
+
+    /// <summary>
+    /// 更新保养计划
+    /// </summary>
+    [HttpPut("maintenance-plans/{id}")]
+    public async Task<IActionResult> UpdateMaintenancePlan(long id, [FromBody] UpdateMaintenancePlanRequest request)
+    {
+        var result = await _equipmentService.UpdateMaintenancePlanAsync(id, request.PlanName, request.CycleDays, request.Description);
+        return Ok(ApiResponse.Ok(result));
+    }
+
+    /// <summary>
+    /// 删除保养计划
+    /// </summary>
+    [HttpDelete("maintenance-plans/{id}")]
+    public async Task<IActionResult> DeleteMaintenancePlan(long id)
+    {
+        await _equipmentService.DeleteMaintenancePlanAsync(id);
+        return Ok(ApiResponse.Ok("删除成功"));
+    }
 }
 
 public class CreateMaintenancePlanRequest
+{
+    public string PlanName { get; set; } = string.Empty;
+    public int CycleDays { get; set; }
+    public string? Description { get; set; }
+}
+
+public class UpdateMaintenancePlanRequest
 {
     public string PlanName { get; set; } = string.Empty;
     public int CycleDays { get; set; }
