@@ -3,6 +3,7 @@ using System.Net.Http.Json;
 using MES.Api.Dtos;
 using MES.Domain.Entities;
 using MES.Domain.Enums;
+using MES.Tests;
 using Xunit;
 using Xunit.Abstractions;
 using Assert = Xunit.Assert;
@@ -156,16 +157,16 @@ public class ControllerTests : IAsyncLifetime
         _factory.DbContext.Materials.Add(material);
         await _factory.DbContext.SaveChangesAsync();
 
-        var workOrder = new WorkOrder
-        {
-            OrderNo = $"WO-TEST-{Guid.NewGuid():N}",
-            SourceType = SourceType.MANUAL,
-            MaterialId = material.Id,
-            PlannedQty = 100,
-            CompletedQty = 0,
-            Status = WorkOrderStatus.PENDING,
-            Priority = Priority.NORMAL
-        };
+        var workOrder = TestEntityFactory.CreateWorkOrderDirect(
+            id: 0,
+            orderNo: $"WO-TEST-{Guid.NewGuid():N}",
+            materialId: material.Id,
+            plannedQty: 100,
+            completedQty: 0,
+            scrapQty: 0,
+            status: WorkOrderStatus.PENDING,
+            priority: Priority.NORMAL
+        );
         _factory.DbContext.WorkOrders.Add(workOrder);
         await _factory.DbContext.SaveChangesAsync();
 
@@ -276,15 +277,16 @@ public class ControllerTests : IAsyncLifetime
         _factory.DbContext.Materials.Add(material);
         await _factory.DbContext.SaveChangesAsync();
 
-        var workOrder = new WorkOrder
-        {
-            OrderNo = $"WO-GETBYID-{Guid.NewGuid():N}",
-            SourceType = SourceType.MANUAL,
-            MaterialId = material.Id,
-            PlannedQty = 150,
-            Status = WorkOrderStatus.RELEASED,
-            Priority = Priority.NORMAL
-        };
+        var workOrder = TestEntityFactory.CreateWorkOrderDirect(
+            id: 0,
+            orderNo: $"WO-GETBYID-{Guid.NewGuid():N}",
+            materialId: material.Id,
+            plannedQty: 150,
+            completedQty: 0,
+            scrapQty: 0,
+            status: WorkOrderStatus.RELEASED,
+            priority: Priority.NORMAL
+        );
         _factory.DbContext.WorkOrders.Add(workOrder);
         await _factory.DbContext.SaveChangesAsync();
 

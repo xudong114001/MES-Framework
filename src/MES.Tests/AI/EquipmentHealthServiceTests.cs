@@ -38,14 +38,14 @@ public class EquipmentHealthServiceTests
     [Fact]
     public async Task AnalyzeEquipmentAsync_ReturnsResult_WhenValidEquipment()
     {
-        var equipment = new Equipment
-        {
-            Id = 1,
-            Name = "TestEquipment",
-            Status = EquipmentStatus.RUNNING,
-            PlannedRunTime = 480,
-            TheoreticalCycleTime = 30
-        };
+        var equipment = TestEntityFactory.CreateEquipmentDirect(
+            id: 1,
+            code: "EQ-001",
+            name: "TestEquipment",
+            status: EquipmentStatus.RUNNING,
+            plannedRunTime: 480,
+            theoreticalCycleTime: 30
+        );
 
         _equipmentRepo.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(equipment);
         _workReportRepo.Setup(r => r.FindAsync(It.IsAny<System.Linq.Expressions.Expression<Func<WorkReport, bool>>>()))
@@ -63,8 +63,8 @@ public class EquipmentHealthServiceTests
     {
         var equipment = new List<Equipment>
         {
-            new() { Id = 1, Name = "Equipment1", Status = EquipmentStatus.RUNNING, PlannedRunTime = 480 },
-            new() { Id = 2, Name = "Equipment2", Status = EquipmentStatus.RUNNING, PlannedRunTime = 480 }
+            TestEntityFactory.CreateEquipmentDirect(id: 1, code: "EQ-001", name: "Equipment1", status: EquipmentStatus.RUNNING, plannedRunTime: 480),
+            TestEntityFactory.CreateEquipmentDirect(id: 2, code: "EQ-002", name: "Equipment2", status: EquipmentStatus.RUNNING, plannedRunTime: 480)
         };
 
         _equipmentRepo.Setup(r => r.GetAllAsync()).ReturnsAsync(equipment);
@@ -82,7 +82,7 @@ public class EquipmentHealthServiceTests
     {
         var equipment = new List<Equipment>
         {
-            new() { Id = 1, Name = "Equipment1", Status = EquipmentStatus.RUNNING, PlannedRunTime = 480 }
+            TestEntityFactory.CreateEquipmentDirect(id: 1, code: "EQ-001", name: "Equipment1", status: EquipmentStatus.RUNNING, plannedRunTime: 480)
         };
 
         _equipmentRepo.Setup(r => r.GetAllAsync()).ReturnsAsync(equipment);

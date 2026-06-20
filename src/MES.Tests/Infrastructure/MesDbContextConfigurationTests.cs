@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using MES.AI.Domain.Entities;
 using MES.Domain.Entities;
 using MES.Infrastructure.Data;
+using MES.Tests;
 using Xunit;
 
 namespace MES.Tests.Infrastructure;
@@ -19,12 +20,12 @@ public class MesDbContextConfigurationTests
         using var db = new MesDbContext(options);
 
         // Act
-        db.WorkOrders.Add(new WorkOrder
-        {
-            OrderNo = "WO-TEST-001",
-            MaterialId = 1,
-            PlannedQty = 100
-        });
+        db.WorkOrders.Add(TestEntityFactory.CreateWorkOrderDirect(
+            id: 0,
+            orderNo: "WO-TEST-001",
+            materialId: 1,
+            plannedQty: 100
+        ));
         db.SaveChanges();
 
         var workOrders = db.WorkOrders.ToList();

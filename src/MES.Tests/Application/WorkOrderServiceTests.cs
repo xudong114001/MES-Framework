@@ -36,40 +36,59 @@ public class WorkOrderServiceTests
             _logger.Object);
     }
 
-    private WorkOrder CreateValidWorkOrder(long? routingId = null)
+    private WorkOrder CreateValidWorkOrder(
+        WorkOrderStatus status = WorkOrderStatus.PENDING,
+        long? routingId = null,
+        decimal completedQty = 0,
+        decimal scrapQty = 0,
+        decimal plannedQty = 100,
+        string? orderNo = null,
+        long? lineId = null)
     {
-        return new WorkOrder
-        {
-            Id = 1,
-            OrderNo = "WO-001",
-            SourceType = SourceType.MANUAL,
-            MaterialId = 100,
-            RoutingId = routingId,
-            PlannedQty = 100,
-            CompletedQty = 0,
-            ScrapQty = 0,
-            Status = WorkOrderStatus.PENDING,
-            Priority = Priority.NORMAL
-        };
+        return TestEntityFactory.CreateWorkOrderWithStatus(
+            orderNo: orderNo ?? "WO-001",
+            materialId: 100,
+            plannedQty: plannedQty,
+            status: status,
+            completedQty: completedQty,
+            scrapQty: scrapQty,
+            routingId: routingId,
+            lineId: lineId
+        );
     }
 
     private Material CreateValidMaterial(long id, decimal stockQty = 1000)
     {
-        return new Material
+        return TestEntityFactory.CreateMaterial(id: id, stockQty: stockQty);
+    }
+
+    private Routing CreateTestRouting(long id, int stepCount = 3)
+    {
+        var routing = TestEntityFactory.CreateRouting(
+            materialId: 100,
+            routingCode: "R-TEST-001",
+            routingName: "Test Routing");
+
+        // 使用反射设置 Id
+        TestEntityFactory.SetProperty(routing, "Id", id);
+
+        for (int i = 1; i <= stepCount; i++)
         {
-            Id = id,
-            Code = "MAT-001",
-            Name = "Test Material",
-            StockQty = stockQty,
-            Status = true
-        };
+            var routingStep = TestEntityFactory.CreateRoutingStep(
+                routingId: id,
+                stepNo: i,
+                stepName: $"Step {i}");
+            routing.AddStep(routingStep);
+        }
+
+        return routing;
     }
 
     [Fact]
     public async Task CreateWorkOrderAsync_SetsStatusToPending()
     {
-        var wo = CreateValidWorkOrder();
-        wo.Status = WorkOrderStatus.RELEASED;
+        // 创建时设置状态为 RELEASED，但服务应该重置为 PENDING
+        var wo = CreateValidWorkOrder(status: WorkOrderStatus.RELEASED);
 
         _materialRepo.Setup(r => r.GetByIdAsync(wo.MaterialId)).ReturnsAsync(CreateValidMaterial(wo.MaterialId));
         _bomRepo.Setup(r => r.FindAsync(It.IsAny<System.Linq.Expressions.Expression<Func<Bom, bool>>>()))
@@ -84,9 +103,8 @@ public class WorkOrderServiceTests
     [Fact]
     public async Task CreateWorkOrderAsync_ResetsCompletedAndScrapQty()
     {
-        var wo = CreateValidWorkOrder();
-        wo.CompletedQty = 50;
-        wo.ScrapQty = 10;
+        // 创建时设置数量，但服务应该重置为 0
+        var wo = CreateValidWorkOrder(completedQty: 50, scrapQty: 10);
 
         _materialRepo.Setup(r => r.GetByIdAsync(wo.MaterialId)).ReturnsAsync(CreateValidMaterial(wo.MaterialId));
         _bomRepo.Setup(r => r.FindAsync(It.IsAny<System.Linq.Expressions.Expression<Func<Bom, bool>>>()))
@@ -111,12 +129,11 @@ public class WorkOrderServiceTests
     [Fact]
     public async Task CreateWorkOrderAsync_ThrowsWhenBomComponentInsufficientStock()
     {
-        var wo = CreateValidWorkOrder();
-        wo.PlannedQty = 100;
+        var wo = CreateValidWorkOrder(plannedQty: 100);
 
         var material = CreateValidMaterial(wo.MaterialId);
         var componentMaterial = CreateValidMaterial(200, stockQty: 5);
-        var bomItem = new Bom { ProductId = wo.MaterialId, MaterialId = 200, Quantity = 1, Status = true };
+        var bomItem = TestEntityFactory.CreateBom(productId: wo.MaterialId, materialId: 200, quantity: 1);
 
         _materialRepo.Setup(r => r.GetByIdAsync(wo.MaterialId)).ReturnsAsync(material);
         _bomRepo.Setup(r => r.FindAsync(It.IsAny<System.Linq.Expressions.Expression<Func<Bom, bool>>>()))
@@ -132,16 +149,7 @@ public class WorkOrderServiceTests
     {
         var wo = CreateValidWorkOrder(routingId: 10);
 
-        var routing = new Routing
-        {
-            Id = 10,
-            Steps = new List<RoutingStep>
-            {
-                new() { StepNo = 1, StepName = "Cut" },
-                new() { StepNo = 2, StepName = "Weld" },
-                new() { StepNo = 3, StepName = "Paint" }
-            }
-        };
+        var routing = CreateTestRouting(10);
 
         _materialRepo.Setup(r => r.GetByIdAsync(wo.MaterialId)).ReturnsAsync(CreateValidMaterial(wo.MaterialId));
         _bomRepo.Setup(r => r.FindAsync(It.IsAny<System.Linq.Expressions.Expression<Func<Bom, bool>>>()))
@@ -157,8 +165,8 @@ public class WorkOrderServiceTests
     [Fact]
     public async Task ReleaseWorkOrderAsync_TransitionsPendingToReleased()
     {
-        var wo = CreateValidWorkOrder();
-        wo.Status = WorkOrderStatus.PENDING;
+        // 初始状态为 PENDING，服务应该调用 Release() 将其变为 RELEASED
+        var wo = CreateValidWorkOrder(status: WorkOrderStatus.PENDING);
 
         _workOrderRepo.Setup(r => r.GetByIdAsync(wo.Id)).ReturnsAsync(wo);
         _stepRepo.Setup(r => r.FindAsync(It.IsAny<System.Linq.Expressions.Expression<Func<WorkOrderStep, bool>>>()))
@@ -173,8 +181,7 @@ public class WorkOrderServiceTests
     [Fact]
     public async Task ReleaseWorkOrderAsync_ThrowsWhenNotPending()
     {
-        var wo = CreateValidWorkOrder();
-        wo.Status = WorkOrderStatus.IN_PROGRESS;
+        var wo = CreateValidWorkOrder(status: WorkOrderStatus.IN_PROGRESS);
 
         _workOrderRepo.Setup(r => r.GetByIdAsync(wo.Id)).ReturnsAsync(wo);
 
@@ -185,8 +192,7 @@ public class WorkOrderServiceTests
     [Fact]
     public async Task HoldWorkOrderAsync_TransitionsReleasedToOnHold()
     {
-        var wo = CreateValidWorkOrder();
-        wo.Status = WorkOrderStatus.RELEASED;
+        var wo = CreateValidWorkOrder(status: WorkOrderStatus.RELEASED);
 
         _workOrderRepo.Setup(r => r.GetByIdAsync(wo.Id)).ReturnsAsync(wo);
 
@@ -198,8 +204,7 @@ public class WorkOrderServiceTests
     [Fact]
     public async Task HoldWorkOrderAsync_TransitionsInProgressToOnHold()
     {
-        var wo = CreateValidWorkOrder();
-        wo.Status = WorkOrderStatus.IN_PROGRESS;
+        var wo = CreateValidWorkOrder(status: WorkOrderStatus.IN_PROGRESS);
 
         _workOrderRepo.Setup(r => r.GetByIdAsync(wo.Id)).ReturnsAsync(wo);
 
@@ -211,8 +216,7 @@ public class WorkOrderServiceTests
     [Fact]
     public async Task HoldWorkOrderAsync_ThrowsWhenInvalidStatus()
     {
-        var wo = CreateValidWorkOrder();
-        wo.Status = WorkOrderStatus.COMPLETED;
+        var wo = CreateValidWorkOrder(status: WorkOrderStatus.COMPLETED);
 
         _workOrderRepo.Setup(r => r.GetByIdAsync(wo.Id)).ReturnsAsync(wo);
 
@@ -222,8 +226,7 @@ public class WorkOrderServiceTests
     [Fact]
     public async Task ResumeWorkOrderAsync_TransitionsOnHoldToInProgress()
     {
-        var wo = CreateValidWorkOrder();
-        wo.Status = WorkOrderStatus.ON_HOLD;
+        var wo = CreateValidWorkOrder(status: WorkOrderStatus.ON_HOLD);
 
         _workOrderRepo.Setup(r => r.GetByIdAsync(wo.Id)).ReturnsAsync(wo);
 
@@ -235,8 +238,7 @@ public class WorkOrderServiceTests
     [Fact]
     public async Task ResumeWorkOrderAsync_ThrowsWhenNotOnHold()
     {
-        var wo = CreateValidWorkOrder();
-        wo.Status = WorkOrderStatus.RELEASED;
+        var wo = CreateValidWorkOrder(status: WorkOrderStatus.RELEASED);
 
         _workOrderRepo.Setup(r => r.GetByIdAsync(wo.Id)).ReturnsAsync(wo);
 
@@ -246,8 +248,7 @@ public class WorkOrderServiceTests
     [Fact]
     public async Task CancelWorkOrderAsync_TransitionsPendingToCancelled()
     {
-        var wo = CreateValidWorkOrder();
-        wo.Status = WorkOrderStatus.PENDING;
+        var wo = CreateValidWorkOrder(status: WorkOrderStatus.PENDING);
 
         _workOrderRepo.Setup(r => r.GetByIdAsync(wo.Id)).ReturnsAsync(wo);
 
@@ -259,8 +260,7 @@ public class WorkOrderServiceTests
     [Fact]
     public async Task CancelWorkOrderAsync_TransitionsReleasedToCancelled()
     {
-        var wo = CreateValidWorkOrder();
-        wo.Status = WorkOrderStatus.RELEASED;
+        var wo = CreateValidWorkOrder(status: WorkOrderStatus.RELEASED);
 
         _workOrderRepo.Setup(r => r.GetByIdAsync(wo.Id)).ReturnsAsync(wo);
 
@@ -272,8 +272,7 @@ public class WorkOrderServiceTests
     [Fact]
     public async Task CancelWorkOrderAsync_TransitionsOnHoldToCancelled()
     {
-        var wo = CreateValidWorkOrder();
-        wo.Status = WorkOrderStatus.ON_HOLD;
+        var wo = CreateValidWorkOrder(status: WorkOrderStatus.ON_HOLD);
 
         _workOrderRepo.Setup(r => r.GetByIdAsync(wo.Id)).ReturnsAsync(wo);
 
@@ -285,8 +284,7 @@ public class WorkOrderServiceTests
     [Fact]
     public async Task CancelWorkOrderAsync_ThrowsWhenInProgress()
     {
-        var wo = CreateValidWorkOrder();
-        wo.Status = WorkOrderStatus.IN_PROGRESS;
+        var wo = CreateValidWorkOrder(status: WorkOrderStatus.IN_PROGRESS);
 
         _workOrderRepo.Setup(r => r.GetByIdAsync(wo.Id)).ReturnsAsync(wo);
 
@@ -296,8 +294,7 @@ public class WorkOrderServiceTests
     [Fact]
     public async Task CancelWorkOrderAsync_ThrowsWhenCompleted()
     {
-        var wo = CreateValidWorkOrder();
-        wo.Status = WorkOrderStatus.COMPLETED;
+        var wo = CreateValidWorkOrder(status: WorkOrderStatus.COMPLETED);
 
         _workOrderRepo.Setup(r => r.GetByIdAsync(wo.Id)).ReturnsAsync(wo);
 
@@ -307,8 +304,7 @@ public class WorkOrderServiceTests
     [Fact]
     public async Task CloseWorkOrderAsync_TransitionsCompletedToClosed()
     {
-        var wo = CreateValidWorkOrder();
-        wo.Status = WorkOrderStatus.COMPLETED;
+        var wo = CreateValidWorkOrder(status: WorkOrderStatus.COMPLETED);
 
         _workOrderRepo.Setup(r => r.GetByIdAsync(wo.Id)).ReturnsAsync(wo);
 
@@ -321,8 +317,7 @@ public class WorkOrderServiceTests
     [Fact]
     public async Task CloseWorkOrderAsync_ThrowsWhenNotCompleted()
     {
-        var wo = CreateValidWorkOrder();
-        wo.Status = WorkOrderStatus.IN_PROGRESS;
+        var wo = CreateValidWorkOrder(status: WorkOrderStatus.IN_PROGRESS);
 
         _workOrderRepo.Setup(r => r.GetByIdAsync(wo.Id)).ReturnsAsync(wo);
 
@@ -332,14 +327,11 @@ public class WorkOrderServiceTests
     [Fact]
     public async Task SplitWorkOrderAsync_SplitsCorrectly()
     {
-        var wo = CreateValidWorkOrder();
-        wo.Status = WorkOrderStatus.PENDING;
-        wo.PlannedQty = 100;
-        wo.OrderNo = "WO-001";
+        var wo = CreateValidWorkOrder(status: WorkOrderStatus.PENDING, plannedQty: 100, orderNo: "WO-001");
 
         _workOrderRepo.Setup(r => r.GetByIdAsync(wo.Id)).ReturnsAsync(wo);
         _workOrderRepo.Setup(r => r.AddAsync(It.IsAny<WorkOrder>()))
-            .ReturnsAsync((WorkOrder w) => { w.Id = 2; return w; });
+            .ReturnsAsync((WorkOrder w) => { TestEntityFactory.SetProperty(w, "Id", 2); return w; });
         _bomRepo.Setup(r => r.FindAsync(It.IsAny<System.Linq.Expressions.Expression<Func<Bom, bool>>>()))
             .ReturnsAsync(Enumerable.Empty<Bom>());
 
@@ -354,9 +346,7 @@ public class WorkOrderServiceTests
     [Fact]
     public async Task SplitWorkOrderAsync_ThrowsWhenSplitQtyZero()
     {
-        var wo = CreateValidWorkOrder();
-        wo.Status = WorkOrderStatus.PENDING;
-        wo.PlannedQty = 100;
+        var wo = CreateValidWorkOrder(status: WorkOrderStatus.PENDING, plannedQty: 100);
 
         _workOrderRepo.Setup(r => r.GetByIdAsync(wo.Id)).ReturnsAsync(wo);
 
@@ -366,9 +356,7 @@ public class WorkOrderServiceTests
     [Fact]
     public async Task SplitWorkOrderAsync_ThrowsWhenSplitQtyExceedsPlanned()
     {
-        var wo = CreateValidWorkOrder();
-        wo.Status = WorkOrderStatus.PENDING;
-        wo.PlannedQty = 100;
+        var wo = CreateValidWorkOrder(status: WorkOrderStatus.PENDING, plannedQty: 100);
 
         _workOrderRepo.Setup(r => r.GetByIdAsync(wo.Id)).ReturnsAsync(wo);
 
@@ -378,9 +366,7 @@ public class WorkOrderServiceTests
     [Fact]
     public async Task SplitWorkOrderAsync_ThrowsWhenInvalidStatus()
     {
-        var wo = CreateValidWorkOrder();
-        wo.Status = WorkOrderStatus.IN_PROGRESS;
-        wo.PlannedQty = 100;
+        var wo = CreateValidWorkOrder(status: WorkOrderStatus.IN_PROGRESS, plannedQty: 100);
 
         _workOrderRepo.Setup(r => r.GetByIdAsync(wo.Id)).ReturnsAsync(wo);
 
@@ -390,14 +376,11 @@ public class WorkOrderServiceTests
     [Fact]
     public async Task ReworkWorkOrderAsync_CreatesReworkChildOrder()
     {
-        var wo = CreateValidWorkOrder();
-        wo.Status = WorkOrderStatus.COMPLETED;
-        wo.CompletedQty = 50;
-        wo.OrderNo = "WO-001";
+        var wo = CreateValidWorkOrder(status: WorkOrderStatus.COMPLETED, completedQty: 50, orderNo: "WO-001");
 
         _workOrderRepo.Setup(r => r.GetByIdAsync(wo.Id)).ReturnsAsync(wo);
         _workOrderRepo.Setup(r => r.AddAsync(It.IsAny<WorkOrder>()))
-            .ReturnsAsync((WorkOrder w) => { w.Id = 2; return w; });
+            .ReturnsAsync((WorkOrder w) => { TestEntityFactory.SetProperty(w, "Id", 2); return w; });
 
         var child = await _service.ReworkWorkOrderAsync(wo.Id, 20, "quality issue");
 
@@ -411,9 +394,7 @@ public class WorkOrderServiceTests
     [Fact]
     public async Task ReworkWorkOrderAsync_ThrowsWhenReworkQtyExceedsCompleted()
     {
-        var wo = CreateValidWorkOrder();
-        wo.Status = WorkOrderStatus.COMPLETED;
-        wo.CompletedQty = 10;
+        var wo = CreateValidWorkOrder(status: WorkOrderStatus.COMPLETED, completedQty: 10);
 
         _workOrderRepo.Setup(r => r.GetByIdAsync(wo.Id)).ReturnsAsync(wo);
 
@@ -423,9 +404,7 @@ public class WorkOrderServiceTests
     [Fact]
     public async Task ReworkWorkOrderAsync_ThrowsWhenInvalidStatus()
     {
-        var wo = CreateValidWorkOrder();
-        wo.Status = WorkOrderStatus.PENDING;
-        wo.CompletedQty = 50;
+        var wo = CreateValidWorkOrder(status: WorkOrderStatus.PENDING, completedQty: 50);
 
         _workOrderRepo.Setup(r => r.GetByIdAsync(wo.Id)).ReturnsAsync(wo);
 
@@ -435,11 +414,11 @@ public class WorkOrderServiceTests
     [Fact]
     public async Task ScrapWorkOrderAsync_AddsScrapQty()
     {
-        var wo = CreateValidWorkOrder();
-        wo.Status = WorkOrderStatus.IN_PROGRESS;
-        wo.PlannedQty = 100;
-        wo.CompletedQty = 40;
-        wo.ScrapQty = 10;
+        var wo = CreateValidWorkOrder(
+            status: WorkOrderStatus.IN_PROGRESS,
+            plannedQty: 100,
+            completedQty: 40,
+            scrapQty: 10);
 
         _workOrderRepo.Setup(r => r.GetByIdAsync(wo.Id)).ReturnsAsync(wo);
 
@@ -452,11 +431,11 @@ public class WorkOrderServiceTests
     [Fact]
     public async Task ScrapWorkOrderAsync_CancelsWhenFullyScrapped()
     {
-        var wo = CreateValidWorkOrder();
-        wo.Status = WorkOrderStatus.IN_PROGRESS;
-        wo.PlannedQty = 100;
-        wo.CompletedQty = 30;
-        wo.ScrapQty = 0;
+        var wo = CreateValidWorkOrder(
+            status: WorkOrderStatus.IN_PROGRESS,
+            plannedQty: 100,
+            completedQty: 30,
+            scrapQty: 0);
 
         _workOrderRepo.Setup(r => r.GetByIdAsync(wo.Id)).ReturnsAsync(wo);
 
@@ -468,11 +447,11 @@ public class WorkOrderServiceTests
     [Fact]
     public async Task ScrapWorkOrderAsync_ThrowsWhenScrapExceedsRemaining()
     {
-        var wo = CreateValidWorkOrder();
-        wo.Status = WorkOrderStatus.IN_PROGRESS;
-        wo.PlannedQty = 100;
-        wo.CompletedQty = 80;
-        wo.ScrapQty = 10;
+        var wo = CreateValidWorkOrder(
+            status: WorkOrderStatus.IN_PROGRESS,
+            plannedQty: 100,
+            completedQty: 80,
+            scrapQty: 10);
 
         _workOrderRepo.Setup(r => r.GetByIdAsync(wo.Id)).ReturnsAsync(wo);
 
@@ -484,8 +463,7 @@ public class WorkOrderServiceTests
     [Fact]
     public async Task ScrapWorkOrderAsync_ThrowsWhenInvalidStatus()
     {
-        var wo = CreateValidWorkOrder();
-        wo.Status = WorkOrderStatus.PENDING;
+        var wo = CreateValidWorkOrder(status: WorkOrderStatus.PENDING);
 
         _workOrderRepo.Setup(r => r.GetByIdAsync(wo.Id)).ReturnsAsync(wo);
 
@@ -511,14 +489,14 @@ public class WorkOrderServiceTests
     [Fact]
     public async Task ReworkWorkOrderAsync_WorksWithInProgressStatus()
     {
-        var wo = CreateValidWorkOrder();
-        wo.Status = WorkOrderStatus.IN_PROGRESS;
-        wo.CompletedQty = 30;
-        wo.OrderNo = "WO-002";
+        var wo = CreateValidWorkOrder(
+            status: WorkOrderStatus.IN_PROGRESS,
+            completedQty: 30,
+            orderNo: "WO-002");
 
         _workOrderRepo.Setup(r => r.GetByIdAsync(wo.Id)).ReturnsAsync(wo);
         _workOrderRepo.Setup(r => r.AddAsync(It.IsAny<WorkOrder>()))
-            .ReturnsAsync((WorkOrder w) => { w.Id = 3; return w; });
+            .ReturnsAsync((WorkOrder w) => { TestEntityFactory.SetProperty(w, "Id", 3); return w; });
 
         var child = await _service.ReworkWorkOrderAsync(wo.Id, 10, null);
 
