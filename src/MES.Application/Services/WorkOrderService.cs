@@ -42,6 +42,52 @@ public class WorkOrderService : IWorkOrderService
     }
 
     /// <summary>
+    /// 获取所有工单
+    /// </summary>
+    public async Task<IEnumerable<WorkOrder>> GetAllAsync()
+    {
+        return await _workOrderRepo.GetAllAsync();
+    }
+
+    /// <summary>
+    /// 根据ID获取工单
+    /// </summary>
+    public async Task<WorkOrder?> GetByIdAsync(long id)
+    {
+        return await _workOrderRepo.GetByIdAsync(id);
+    }
+
+    /// <summary>
+    /// 更新工单
+    /// </summary>
+    public async Task UpdateWorkOrderAsync(WorkOrder workOrder)
+    {
+        var existing = await _workOrderRepo.GetByIdAsync(workOrder.Id);
+        if (existing == null)
+            throw new InvalidOperationException("工单不存在");
+
+        // 使用实体方法更新计划时间
+        existing.UpdatePlannedTimes(workOrder.PlanStartTime, workOrder.PlanEndTime);
+
+        // 更新其他可更新字段（通过私有 setter）
+        // 注意：这里只能更新允许外部修改的字段，状态变更必须通过业务方法
+
+        await _workOrderRepo.UpdateAsync(existing);
+    }
+
+    /// <summary>
+    /// 删除工单
+    /// </summary>
+    public async Task DeleteWorkOrderAsync(long id)
+    {
+        var entity = await _workOrderRepo.GetByIdAsync(id);
+        if (entity == null)
+            throw new InvalidOperationException("工单不存在");
+
+        await _workOrderRepo.DeleteAsync(entity);
+    }
+
+    /// <summary>
     /// 创建工单，默认状态 PENDING，校验物料是否存在
     /// </summary>
     public async Task<WorkOrder> CreateWorkOrderAsync(WorkOrder workOrder)
@@ -84,11 +130,25 @@ public class WorkOrderService : IWorkOrderService
                 material.Name, workOrder.MaterialId);
         }
 
-        workOrder.Status = WorkOrderStatus.PENDING;
-        workOrder.CompletedQty = 0;
-        workOrder.ScrapQty = 0;
+        // 使用工厂方法创建工单
+        var created = WorkOrder.Create(
+            orderNo: workOrder.OrderNo,
+            sourceType: workOrder.SourceType,
+            materialId: workOrder.MaterialId,
+            plannedQty: workOrder.PlannedQty,
+            priority: workOrder.Priority,
+            routingId: workOrder.RoutingId,
+            sourceRef: workOrder.SourceRef,
+            planStartTime: workOrder.PlanStartTime,
+            planEndTime: workOrder.PlanEndTime,
+            factoryId: workOrder.FactoryId,
+            workshopId: workOrder.WorkshopId,
+            lineId: workOrder.LineId,
+            assignee: workOrder.Assignee,
+            remark: workOrder.Remark
+        );
 
-        var created = await _workOrderRepo.AddAsync(workOrder);
+        await _workOrderRepo.AddAsync(created);
 
         // 发布工单创建事件（失败不影响主事务）
         try
@@ -128,19 +188,14 @@ public class WorkOrderService : IWorkOrderService
                 // 按 RoutingStep 顺序生成 WorkOrderStep
                 foreach (var step in routing.Steps.OrderBy(s => s.StepNo))
                 {
-                    var woStep = new WorkOrderStep
-                    {
-                        WorkOrderId = created.Id,
-                        StepNo = step.StepNo,
-                        StepName = step.StepName,
-                        WorkstationId = null,  // 由派工决定
-                        PlannedQty = workOrder.PlannedQty,
-                        CompletedQty = 0,
-                        ScrapQty = 0,
-                        Status = WorkOrderStatus.PENDING,
-                        PlanStartTime = workOrder.PlanStartTime,
-                        PlanEndTime = workOrder.PlanEndTime
-                    };
+                    var woStep = WorkOrderStep.Create(
+                        workOrderId: created.Id,
+                        stepNo: step.StepNo,
+                        stepName: step.StepName,
+                        plannedQty: workOrder.PlannedQty,
+                        planStartTime: workOrder.PlanStartTime,
+                        planEndTime: workOrder.PlanEndTime
+                    );
                     await _stepRepo.AddAsync(woStep);
                 }
             }
@@ -158,11 +213,10 @@ public class WorkOrderService : IWorkOrderService
         var wo = await _workOrderRepo.GetByIdAsync(workOrderId);
         if (wo == null) throw new InvalidOperationException("工单不存在");
 
-        if (wo.Status != WorkOrderStatus.PENDING)
-            throw new InvalidOperationException($"工单状态 {wo.Status} 不允许下达，仅 PENDING 可下达");
-
         var oldStatus = wo.Status;
-        wo.Status = WorkOrderStatus.RELEASED;
+
+        // 使用实体方法下达工单
+        wo.Release();
         await _workOrderRepo.UpdateAsync(wo);
 
         // 发布工单状态变更事件（失败不影响主事务）
@@ -205,19 +259,14 @@ public class WorkOrderService : IWorkOrderService
                 {
                     foreach (var step in routing.Steps.OrderBy(s => s.StepNo))
                     {
-                        var woStep = new WorkOrderStep
-                        {
-                            WorkOrderId = workOrderId,
-                            StepNo = step.StepNo,
-                            StepName = step.StepName,
-                            WorkstationId = null,
-                            PlannedQty = wo.PlannedQty,
-                            CompletedQty = 0,
-                            ScrapQty = 0,
-                            Status = WorkOrderStatus.PENDING,
-                            PlanStartTime = wo.PlanStartTime,
-                            PlanEndTime = wo.PlanEndTime
-                        };
+                        var woStep = WorkOrderStep.Create(
+                            workOrderId: workOrderId,
+                            stepNo: step.StepNo,
+                            stepName: step.StepName,
+                            plannedQty: wo.PlannedQty,
+                            planStartTime: wo.PlanStartTime,
+                            planEndTime: wo.PlanEndTime
+                        );
                         await _stepRepo.AddAsync(woStep);
                     }
                 }
@@ -233,10 +282,8 @@ public class WorkOrderService : IWorkOrderService
         var wo = await _workOrderRepo.GetByIdAsync(workOrderId);
         if (wo == null) throw new InvalidOperationException("工单不存在");
 
-        if (wo.Status != WorkOrderStatus.RELEASED && wo.Status != WorkOrderStatus.IN_PROGRESS)
-            throw new InvalidOperationException($"工单状态 {wo.Status} 不允许暂停，仅 RELEASED/IN_PROGRESS 可暂停");
-
-        wo.Status = WorkOrderStatus.ON_HOLD;
+        // 使用实体方法暂停工单
+        wo.Hold();
         await _workOrderRepo.UpdateAsync(wo);
     }
 
@@ -248,10 +295,8 @@ public class WorkOrderService : IWorkOrderService
         var wo = await _workOrderRepo.GetByIdAsync(workOrderId);
         if (wo == null) throw new InvalidOperationException("工单不存在");
 
-        if (wo.Status != WorkOrderStatus.ON_HOLD)
-            throw new InvalidOperationException($"工单状态 {wo.Status} 不允许恢复，仅 ON_HOLD 可恢复");
-
-        wo.Status = WorkOrderStatus.IN_PROGRESS;
+        // 使用实体方法恢复工单
+        wo.Resume();
         await _workOrderRepo.UpdateAsync(wo);
     }
 
@@ -263,12 +308,8 @@ public class WorkOrderService : IWorkOrderService
         var wo = await _workOrderRepo.GetByIdAsync(workOrderId);
         if (wo == null) throw new InvalidOperationException("工单不存在");
 
-        if (wo.Status != WorkOrderStatus.PENDING
-            && wo.Status != WorkOrderStatus.RELEASED
-            && wo.Status != WorkOrderStatus.ON_HOLD)
-            throw new InvalidOperationException($"工单状态 {wo.Status} 不允许取消，仅 PENDING/RELEASED/ON_HOLD 可取消");
-
-        wo.Status = WorkOrderStatus.CANCELLED;
+        // 使用实体方法取消工单
+        wo.Cancel();
         await _workOrderRepo.UpdateAsync(wo);
     }
 
@@ -280,11 +321,8 @@ public class WorkOrderService : IWorkOrderService
         var wo = await _workOrderRepo.GetByIdAsync(workOrderId);
         if (wo == null) throw new InvalidOperationException("工单不存在");
 
-        if (wo.Status != WorkOrderStatus.COMPLETED)
-            throw new InvalidOperationException($"工单状态 {wo.Status} 不允许关闭，仅 COMPLETED 可关闭");
-
-        wo.Status = WorkOrderStatus.CLOSED;
-        wo.ActualEndTime = DateTime.UtcNow;
+        // 使用实体方法关闭工单
+        wo.Close();
         await _workOrderRepo.UpdateAsync(wo);
     }
 
@@ -297,40 +335,9 @@ public class WorkOrderService : IWorkOrderService
         var wo = await _workOrderRepo.GetByIdAsync(workOrderId);
         if (wo == null) throw new InvalidOperationException("工单不存在");
 
-        if (wo.Status != WorkOrderStatus.PENDING && wo.Status != WorkOrderStatus.RELEASED)
-            throw new InvalidOperationException($"工单状态 {wo.Status} 不允许拆分，仅 PENDING/RELEASED 可拆分");
-
-        if (splitQty <= 0)
-            throw new InvalidOperationException("拆分数量必须大于 0");
-
-        if (splitQty >= wo.PlannedQty)
-            throw new InvalidOperationException("拆分数量必须小于原单计划数量");
-
-        // 扣减原单数量
-        wo.PlannedQty -= splitQty;
+        // 使用实体方法拆分工单（内部包含验证和扣减逻辑）
+        var child = wo.Split(splitQty);
         await _workOrderRepo.UpdateAsync(wo);
-
-        // 创建子单
-        var child = new WorkOrder
-        {
-            OrderNo = $"{wo.OrderNo}-SUB",
-            SourceType = wo.SourceType,
-            SourceRef = $"SplitFrom:{workOrderId}",
-            MaterialId = wo.MaterialId,
-            RoutingId = wo.RoutingId,
-            PlannedQty = splitQty,
-            CompletedQty = 0,
-            ScrapQty = 0,
-            Status = WorkOrderStatus.PENDING,
-            PlanStartTime = wo.PlanStartTime,
-            PlanEndTime = wo.PlanEndTime,
-            Priority = wo.Priority,
-            FactoryId = wo.FactoryId,
-            WorkshopId = wo.WorkshopId,
-            LineId = wo.LineId,
-            Assignee = wo.Assignee,
-            Remark = $"工单拆分自 {wo.OrderNo}(ID={workOrderId})"
-        };
 
         var created = await _workOrderRepo.AddAsync(child);
 
@@ -342,19 +349,14 @@ public class WorkOrderService : IWorkOrderService
             {
                 foreach (var step in routing.Steps.OrderBy(s => s.StepNo))
                 {
-                    var woStep = new WorkOrderStep
-                    {
-                        WorkOrderId = created.Id,
-                        StepNo = step.StepNo,
-                        StepName = step.StepName,
-                        WorkstationId = null,
-                        PlannedQty = splitQty,
-                        CompletedQty = 0,
-                        ScrapQty = 0,
-                        Status = WorkOrderStatus.PENDING,
-                        PlanStartTime = wo.PlanStartTime,
-                        PlanEndTime = wo.PlanEndTime
-                    };
+                    var woStep = WorkOrderStep.Create(
+                        workOrderId: created.Id,
+                        stepNo: step.StepNo,
+                        stepName: step.StepName,
+                        plannedQty: splitQty,
+                        planStartTime: wo.PlanStartTime,
+                        planEndTime: wo.PlanEndTime
+                    );
                     await _stepRepo.AddAsync(woStep);
                 }
             }
@@ -371,41 +373,9 @@ public class WorkOrderService : IWorkOrderService
         var wo = await _workOrderRepo.GetByIdAsync(workOrderId);
         if (wo == null) throw new InvalidOperationException("工单不存在");
 
-        if (wo.Status != WorkOrderStatus.COMPLETED && wo.Status != WorkOrderStatus.IN_PROGRESS)
-            throw new InvalidOperationException($"工单状态 {wo.Status} 不允许返工，仅 COMPLETED/IN_PROGRESS 可返工");
-
-        if (reworkQty <= 0)
-            throw new InvalidOperationException("返工数量必须大于 0");
-
-        if (reworkQty > wo.CompletedQty)
-            throw new InvalidOperationException($"返工数量({reworkQty})超过已完成数量({wo.CompletedQty})");
-
-        // 扣减原工单已完成数量
-        wo.CompletedQty -= reworkQty;
+        // 使用实体方法返工（内部包含验证和扣减逻辑）
+        var child = wo.Rework(reworkQty);
         await _workOrderRepo.UpdateAsync(wo);
-
-        // 创建返工子工单
-        var child = new WorkOrder
-        {
-            OrderNo = $"{wo.OrderNo}-RWK",
-            SourceType = wo.SourceType,
-            SourceRef = $"ReworkFrom:{workOrderId}",
-            MaterialId = wo.MaterialId,
-            RoutingId = wo.RoutingId,
-            PlannedQty = reworkQty,
-            CompletedQty = 0,
-            ScrapQty = 0,
-            Status = WorkOrderStatus.PENDING,
-            PlanStartTime = wo.PlanStartTime,
-            PlanEndTime = wo.PlanEndTime,
-            Priority = wo.Priority,
-            FactoryId = wo.FactoryId,
-            WorkshopId = wo.WorkshopId,
-            LineId = wo.LineId,
-            Assignee = wo.Assignee,
-            Remark = remark ?? $"返工自 {wo.OrderNo}(ID={workOrderId})",
-            ReworkFromId = workOrderId
-        };
 
         var created = await _workOrderRepo.AddAsync(child);
 
@@ -417,19 +387,14 @@ public class WorkOrderService : IWorkOrderService
             {
                 foreach (var step in routing.Steps.OrderBy(s => s.StepNo))
                 {
-                    var woStep = new WorkOrderStep
-                    {
-                        WorkOrderId = created.Id,
-                        StepNo = step.StepNo,
-                        StepName = step.StepName,
-                        WorkstationId = null,
-                        PlannedQty = reworkQty,
-                        CompletedQty = 0,
-                        ScrapQty = 0,
-                        Status = WorkOrderStatus.PENDING,
-                        PlanStartTime = wo.PlanStartTime,
-                        PlanEndTime = wo.PlanEndTime
-                    };
+                    var woStep = WorkOrderStep.Create(
+                        workOrderId: created.Id,
+                        stepNo: step.StepNo,
+                        stepName: step.StepName,
+                        plannedQty: reworkQty,
+                        planStartTime: wo.PlanStartTime,
+                        planEndTime: wo.PlanEndTime
+                    );
                     await _stepRepo.AddAsync(woStep);
                 }
             }
@@ -446,23 +411,8 @@ public class WorkOrderService : IWorkOrderService
         var wo = await _workOrderRepo.GetByIdAsync(workOrderId);
         if (wo == null) throw new InvalidOperationException("工单不存在");
 
-        if (wo.Status != WorkOrderStatus.IN_PROGRESS && wo.Status != WorkOrderStatus.RELEASED)
-            throw new InvalidOperationException($"工单状态 {wo.Status} 不允许报废，仅 IN_PROGRESS/RELEASED 可报废");
-
-        if (scrapQty <= 0)
-            throw new InvalidOperationException("报废数量必须大于 0");
-
-        var remaining = wo.PlannedQty - wo.CompletedQty - wo.ScrapQty;
-        if (scrapQty > remaining)
-            throw new InvalidOperationException($"报废数量({scrapQty})超过剩余可操作数量({remaining})");
-
-        wo.ScrapQty += scrapQty;
-        wo.Remark = remark ?? wo.Remark;
-
-        // 如果全部报废，标记取消
-        if (wo.CompletedQty + wo.ScrapQty >= wo.PlannedQty)
-            wo.Status = WorkOrderStatus.CANCELLED;
-
+        // 使用实体方法报废（内部包含验证逻辑）
+        wo.Scrap(scrapQty, remark);
         await _workOrderRepo.UpdateAsync(wo);
     }
 }

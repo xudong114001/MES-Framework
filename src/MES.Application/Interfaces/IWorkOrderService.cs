@@ -5,7 +5,11 @@ namespace MES.Application.Interfaces;
 
 public interface IWorkOrderService
 {
+    Task<IEnumerable<WorkOrder>> GetAllAsync();
+    Task<WorkOrder?> GetByIdAsync(long id);
     Task<WorkOrder> CreateWorkOrderAsync(WorkOrder workOrder);
+    Task UpdateWorkOrderAsync(WorkOrder workOrder);
+    Task DeleteWorkOrderAsync(long id);
     Task ReleaseWorkOrderAsync(long workOrderId);
     Task HoldWorkOrderAsync(long workOrderId);
     Task ResumeWorkOrderAsync(long workOrderId);

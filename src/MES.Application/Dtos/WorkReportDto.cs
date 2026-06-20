@@ -27,3 +27,24 @@ public class WorkReportDto
     public DateTime UpdatedAt { get; set; }
     public long? UpdatedBy { get; set; }
 }
+
+/// <summary>
+/// PDA 扫码报工请求体
+/// </summary>
+public class PdaScanReportRequest
+{
+    /// <summary>扫描工单号</summary>
+    public string ScanCode { get; set; } = string.Empty;
+    /// <summary>工序名称</summary>
+    public string StepName { get; set; } = string.Empty;
+    /// <summary>工位编码</summary>
+    public string WorkstationCode { get; set; } = string.Empty;
+    /// <summary>操作工编码</summary>
+    public string OperatorCode { get; set; } = string.Empty;
+    /// <summary>良品数量</summary>
+    public decimal GoodQty { get; set; }
+    /// <summary>报废数量</summary>
+    public decimal ScrapQty { get; set; }
+    /// <summary>返工数量</summary>
+    public decimal ReworkQty { get; set; }
+}

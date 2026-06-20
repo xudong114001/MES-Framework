@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Logging;
+using MES.Application.Dtos;
 using MES.Application.Interfaces;
 using MES.Application.Integration.Events;
 using MES.Domain.Entities;
@@ -8,7 +9,7 @@ using StackExchange.Redis;
 
 namespace MES.Application.Services;
 
-public class WorkReportService
+public class WorkReportService : IWorkReportService
 {
     private readonly IRepository<WorkReport> _reportRepo;
     private readonly IRepository<WorkOrder> _workOrderRepo;
@@ -46,6 +47,39 @@ public class WorkReportService
         _eventBus = eventBus;
         _eventLog = eventLog;
         _logger = logger;
+    }
+
+    /// <summary>
+    /// 获取所有报工记录
+    /// </summary>
+    public async Task<IEnumerable<WorkReport>> GetAllAsync()
+    {
+        return await _reportRepo.GetAllAsync();
+    }
+
+    /// <summary>
+    /// 根据ID获取报工记录
+    /// </summary>
+    public async Task<WorkReport?> GetByIdAsync(long id)
+    {
+        return await _reportRepo.GetByIdAsync(id);
+    }
+
+    /// <summary>
+    /// 更新报工记录
+    /// </summary>
+    public async Task UpdateWorkReportAsync(WorkReport report)
+    {
+        var existing = await _reportRepo.GetByIdAsync(report.Id);
+        if (existing == null)
+            throw new InvalidOperationException("报工记录不存在");
+
+        // 保留审计字段
+        report.CreatedAt = existing.CreatedAt;
+        report.CreatedBy = existing.CreatedBy;
+        report.UpdatedAt = DateTime.UtcNow;
+
+        await _reportRepo.UpdateAsync(report);
     }
 
     /// <summary>
@@ -89,14 +123,8 @@ public class WorkReportService
         if (totalReported + currentTotal > wo.PlannedQty)
             throw new InvalidOperationException($"报工数量({currentTotal})超过剩余可报工数量({wo.PlannedQty - totalReported})");
 
-        // 更新工单数量
-        wo.CompletedQty += report.GoodQty;
-        wo.ScrapQty += report.ScrapQty;
-        wo.Status = WorkOrderStatus.IN_PROGRESS;
-
-        // 如果全部完工，标记工单完成
-        if (wo.CompletedQty + wo.ScrapQty >= wo.PlannedQty)
-            wo.Status = WorkOrderStatus.COMPLETED;
+        // 使用领域方法更新工单进度
+        wo.ReportProgress(report.GoodQty, report.ScrapQty, report.ReworkQty);
 
         await _workOrderRepo.UpdateAsync(wo);
 
@@ -106,13 +134,7 @@ public class WorkReportService
             var step = (await _stepRepo.FindAsync(s => s.Id == report.StepId.Value)).FirstOrDefault();
             if (step != null)
             {
-                step.CompletedQty += report.GoodQty;
-                step.ScrapQty += report.ScrapQty;
-                step.Status = WorkOrderStatus.IN_PROGRESS;
-
-                if (step.CompletedQty + step.ScrapQty >= step.PlannedQty)
-                    step.Status = WorkOrderStatus.COMPLETED;
-
+                step.UpdateProgress(report.GoodQty, report.ScrapQty);
                 await _stepRepo.UpdateAsync(step);
             }
         }
@@ -230,25 +252,4 @@ public class WorkReportService
 
         return await SubmitReportAsync(report);
     }
-}
-
-/// <summary>
-/// PDA 扫码报工请求体
-/// </summary>
-public class PdaScanReportRequest
-{
-    /// <summary>扫描工单号</summary>
-    public string ScanCode { get; set; } = string.Empty;
-    /// <summary>工序名称</summary>
-    public string StepName { get; set; } = string.Empty;
-    /// <summary>工位编码</summary>
-    public string WorkstationCode { get; set; } = string.Empty;
-    /// <summary>操作工编码</summary>
-    public string OperatorCode { get; set; } = string.Empty;
-    /// <summary>良品数量</summary>
-    public decimal GoodQty { get; set; }
-    /// <summary>报废数量</summary>
-    public decimal ScrapQty { get; set; }
-    /// <summary>返工数量</summary>
-    public decimal ReworkQty { get; set; }
 }

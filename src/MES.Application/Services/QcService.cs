@@ -3,6 +3,7 @@ using MES.Application.Interfaces;
 using MES.Application.Integration.Events;
 using MES.Domain.Entities;
 using MES.Domain.Enums;
+using MES.Domain.Exceptions;
 using MES.Infrastructure.Repositories;
 
 namespace MES.Application.Services;
@@ -38,18 +39,26 @@ public class QcService
     /// <summary>
     /// 创建质检单
     /// </summary>
-    public async Task<QcInspection> CreateInspectionAsync(QcInspection inspection)
+    public async Task<QcInspection> CreateInspectionAsync(string inspectNo, QcInspectionType sourceType, long? workOrderId = null, long? materialId = null, long? inspector = null, string? sourceRef = null, string? remark = null)
     {
-        inspection.InspectResult = QcResult.PENDING;
+        var inspection = QcInspection.Create(inspectNo, sourceType, workOrderId, materialId, inspector, sourceRef, remark);
         return await _inspectionRepo.AddAsync(inspection);
     }
 
     /// <summary>
     /// 添加质检项
     /// </summary>
-    public async Task<QcInspectionItem> AddItemAsync(QcInspectionItem item)
+    public async Task<QcInspectionItem> AddItemAsync(long inspectionId, string itemName, string? specValue = null)
     {
-        return await _itemRepo.AddAsync(item);
+        var inspection = await _inspectionRepo.GetByIdAsync(inspectionId);
+        if (inspection == null)
+            throw new DomainException("质检单不存在");
+
+        var item = new QcInspectionItem(itemName, specValue);
+        inspection.AddItem(item);
+        await _inspectionRepo.UpdateAsync(inspection);
+
+        return item;
     }
 
     /// <summary>
@@ -58,9 +67,11 @@ public class QcService
     public async Task VerifyInspectionAsync(long inspectionId, QcResult result)
     {
         var inspection = await _inspectionRepo.GetByIdAsync(inspectionId);
-        if (inspection == null) throw new InvalidOperationException("质检单不存在");
-        inspection.InspectResult = result;
-        inspection.InspectTime = DateTime.UtcNow;
+        if (inspection == null)
+            throw new DomainException("质检单不存在");
+
+        // 使用领域方法
+        inspection.Verify(result);
         await _inspectionRepo.UpdateAsync(inspection);
 
         // 发布质检完成事件（失败不影响主事务）
@@ -120,7 +131,7 @@ public class QcService
 
                     foreach (var downstream in downstreamSteps)
                     {
-                        downstream.Status = WorkOrderStatus.ON_HOLD;
+                        downstream.Hold();
                     }
 
                     foreach (var downstream in downstreamSteps)
@@ -142,18 +153,10 @@ public class QcService
     {
         var inspection = await _inspectionRepo.GetByIdAsync(inspectionId);
         if (inspection == null)
-            throw new InvalidOperationException("质检单不存在");
+            throw new DomainException("质检单不存在");
 
-        if (inspection.InspectResult != QcResult.FAIL)
-            throw new InvalidOperationException("只有不合格的质检单才能进行不合格品处理");
-
-        var validActions = new[] { "CONCESSION", "REWORK", "SCRAP" };
-        if (!validActions.Contains(action))
-            throw new InvalidOperationException($"无效的处理动作，可选值: {string.Join(", ", validActions)}");
-
-        inspection.HandlingAction = action;
-        inspection.HandlingRemark = remark;
-        inspection.HandledAt = DateTime.UtcNow;
+        // 使用领域方法
+        inspection.HandleNonconforming(action, remark);
 
         // 根据处理动作更新相关数据
         switch (action)
@@ -165,7 +168,7 @@ public class QcService
                 await HandleReworkAsync(inspection);
                 break;
             case "CONCESSION":
-                // 让步接收：仅记录处理信息，无需跟新数量
+                // 让步接收：仅记录处理信息，无需更新数量
                 break;
         }
 
@@ -180,9 +183,8 @@ public class QcService
         var wo = await _workOrderRepo1.GetByIdAsync(inspection.WorkOrderId.Value);
         if (wo == null) return;
 
-        // 估算报废数量：如果质检单关联了具体的检验数量，这里以不合格品项数为参考
-        // 简单实现：将工单未完成的部分标记为报废
-        wo.ScrapQty += 1; // 增加一个单位的报废数量
+        // 使用领域方法增加报废数量
+        wo.AddScrap(1); // 增加一个单位的报废数量
         await _workOrderRepo1.UpdateAsync(wo);
     }
 
@@ -194,11 +196,8 @@ public class QcService
         var wo = await _workOrderRepo1.GetByIdAsync(inspection.WorkOrderId.Value);
         if (wo == null) return;
 
-        // 返工：标记工单状态为 IN_PROGRESS（如果已完成的证则变回进行中）
-        if (wo.Status == WorkOrderStatus.COMPLETED)
-        {
-            wo.Status = WorkOrderStatus.IN_PROGRESS;
-            await _workOrderRepo1.UpdateAsync(wo);
-        }
+        // 使用领域方法将工单状态恢复为 IN_PROGRESS
+        wo.MarkInProgress();
+        await _workOrderRepo1.UpdateAsync(wo);
     }
 }

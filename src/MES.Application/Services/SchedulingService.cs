@@ -43,8 +43,7 @@ public class SchedulingService : ISchedulingService
         var line = await _lineRepo.GetByIdAsync(lineId)
             ?? throw new InvalidOperationException("产线不存在");
 
-        wo.Status = WorkOrderStatus.SCHEDULED;
-        wo.LineId = lineId;
+        wo.Schedule(lineId);
         await _workOrderRepo.UpdateAsync(wo);
 
         // 如果有工序步骤，设置计划时间（工位由派工环节决定）
@@ -54,8 +53,7 @@ public class SchedulingService : ISchedulingService
             var orderedSteps = steps.OrderBy(s => s.StepNo).ToList();
             foreach (var step in orderedSteps)
             {
-                step.PlanStartTime = wo.PlanStartTime;
-                step.PlanEndTime = wo.PlanEndTime;
+                step.UpdatePlannedTimes(wo.PlanStartTime, wo.PlanEndTime);
                 await _stepRepo2.UpdateAsync(step);
             }
         }
@@ -150,8 +148,7 @@ public class SchedulingService : ISchedulingService
         if (wo.Status != WorkOrderStatus.SCHEDULED)
             throw new InvalidOperationException($"工单状态 {wo.Status} 不允许取消排产，仅 SCHEDULED 可操作");
 
-        wo.Status = WorkOrderStatus.RELEASED;
-        wo.LineId = null;
+        wo.Unschedule();
         await _workOrderRepo.UpdateAsync(wo);
     }
 }

@@ -34,3 +34,29 @@ public class WorkOrderDto
     public DateTime UpdatedAt { get; set; }
     public long? UpdatedBy { get; set; }
 }
+
+/// <summary>
+/// 拆单请求
+/// </summary>
+public class SplitRequest
+{
+    public decimal SplitQty { get; set; }
+}
+
+/// <summary>
+/// 返工请求
+/// </summary>
+public class ReworkRequest
+{
+    public decimal ReworkQty { get; set; }
+    public string? Remark { get; set; }
+}
+
+/// <summary>
+/// 报废请求
+/// </summary>
+public class ScrapRequest
+{
+    public decimal ScrapQty { get; set; }
+    public string? Remark { get; set; }
+}

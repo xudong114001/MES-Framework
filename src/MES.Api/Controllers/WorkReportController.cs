@@ -1,28 +1,24 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using MES.Api.Middleware;
 using MES.Api.Services;
-using MES.Application.Services;
+using MES.Application.Dtos;
+using MES.Application.Interfaces;
 using MES.Domain.Entities;
-using MES.Infrastructure.Repositories;
 
 namespace MES.Api.Controllers;
 
 [ApiController]
 [Route("api/v1/work-reports")]
 [Authorize(Roles = "admin,supervisor,operator")]
-public class WorkReportController : ControllerBase
+public class WorkReportController : BaseController
 {
-    private readonly IRepository<WorkReport> _reportRepo;
-    private readonly WorkReportService _reportService;
+    private readonly IWorkReportService _reportService;
     private readonly HubNotificationService _hubNotification;
 
     public WorkReportController(
-        IRepository<WorkReport> reportRepo,
-        WorkReportService reportService,
+        IWorkReportService reportService,
         HubNotificationService hubNotification)
     {
-        _reportRepo = reportRepo;
         _reportService = reportService;
         _hubNotification = hubNotification;
     }
@@ -33,8 +29,8 @@ public class WorkReportController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetAll()
     {
-        var list = await _reportRepo.GetAllAsync();
-        return Ok(ApiResponse.Ok(list));
+        var list = await _reportService.GetAllAsync();
+        return Success(list);
     }
 
     /// <summary>
@@ -43,10 +39,10 @@ public class WorkReportController : ControllerBase
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(long id)
     {
-        var entity = await _reportRepo.GetByIdAsync(id);
+        var entity = await _reportService.GetByIdAsync(id);
         if (entity == null)
-            return NotFound(ApiResponse.Fail("报工记录不存在"));
-        return Ok(ApiResponse.Ok(entity));
+            return Fail("报工记录不存在", 404);
+        return Success(entity);
     }
 
     /// <summary>
@@ -55,39 +51,32 @@ public class WorkReportController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Submit([FromBody] WorkReport report)
     {
-        try
-        {
-            var created = await _reportService.SubmitReportAsync(report);
+        var created = await _reportService.SubmitReportAsync(report);
 
-            // 报工完成后推送实时更新
-            _ = Task.Run(async () =>
+        // 报工完成后推送实时更新
+        _ = Task.Run(async () =>
+        {
+            try
             {
-                try
+                await _hubNotification.NotifyOutputUpdate(new
                 {
-                    await _hubNotification.NotifyOutputUpdate(new
-                    {
-                        workOrderId = created.WorkOrderId,
-                        goodQty = created.GoodQty,
-                        scrapQty = created.ScrapQty,
-                        batchNo = created.BatchNo,
-                        timestamp = DateTime.UtcNow
-                    });
-                    await _hubNotification.NotifyOrderUpdate(new
-                    {
-                        workOrderId = created.WorkOrderId,
-                        action = "report_submitted",
-                        timestamp = DateTime.UtcNow
-                    });
-                }
-                catch { /* SignalR push failure is non-critical */ }
-            });
+                    workOrderId = created.WorkOrderId,
+                    goodQty = created.GoodQty,
+                    scrapQty = created.ScrapQty,
+                    batchNo = created.BatchNo,
+                    timestamp = DateTime.UtcNow
+                });
+                await _hubNotification.NotifyOrderUpdate(new
+                {
+                    workOrderId = created.WorkOrderId,
+                    action = "report_submitted",
+                    timestamp = DateTime.UtcNow
+                });
+            }
+            catch { /* SignalR push failure is non-critical */ }
+        });
 
-            return Ok(ApiResponse.Ok(created));
-        }
-        catch (InvalidOperationException ex)
-        {
-            return BadRequest(ApiResponse.Fail(ex.Message));
-        }
+        return Success(created);
     }
 
     /// <summary>
@@ -96,13 +85,9 @@ public class WorkReportController : ControllerBase
     [HttpPut("{id}")]
     public async Task<IActionResult> Update(long id, [FromBody] WorkReport entity)
     {
-        var existing = await _reportRepo.GetByIdAsync(id);
-        if (existing == null)
-            return NotFound(ApiResponse.Fail("报工记录不存在"));
-
         entity.Id = id;
-        await _reportRepo.UpdateAsync(entity);
-        return Ok(ApiResponse.Ok("更新成功"));
+        await _reportService.UpdateWorkReportAsync(entity);
+        return Success("更新成功");
     }
 
     /// <summary>
@@ -112,32 +97,25 @@ public class WorkReportController : ControllerBase
     [AllowAnonymous]
     public async Task<IActionResult> PdaScan([FromBody] PdaScanReportRequest request)
     {
-        try
-        {
-            var report = await _reportService.PdaScanReportAsync(request);
+        var report = await _reportService.PdaScanReportAsync(request);
 
-            // PDA 报工完成后推送实时更新
-            _ = Task.Run(async () =>
+        // PDA 报工完成后推送实时更新
+        _ = Task.Run(async () =>
+        {
+            try
             {
-                try
+                await _hubNotification.NotifyOutputUpdate(new
                 {
-                    await _hubNotification.NotifyOutputUpdate(new
-                    {
-                        workOrderId = report.WorkOrderId,
-                        goodQty = report.GoodQty,
-                        scrapQty = report.ScrapQty,
-                        batchNo = report.BatchNo,
-                        timestamp = DateTime.UtcNow
-                    });
-                }
-                catch { }
-            });
+                    workOrderId = report.WorkOrderId,
+                    goodQty = report.GoodQty,
+                    scrapQty = report.ScrapQty,
+                    batchNo = report.BatchNo,
+                    timestamp = DateTime.UtcNow
+                });
+            }
+            catch { }
+        });
 
-            return Ok(ApiResponse.Ok(report));
-        }
-        catch (InvalidOperationException ex)
-        {
-            return BadRequest(ApiResponse.Fail(ex.Message));
-        }
+        return Success(report);
     }
 }
