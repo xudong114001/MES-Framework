@@ -2,7 +2,7 @@ namespace MES.Domain.Entities;
 
 public class User : BaseEntity
 {
-    protected internal User() { }
+    internal User() { }
 
     public static User Create(string username, string displayName, string? passwordHash = null, string? email = null, string? phone = null, bool status = true)
     {

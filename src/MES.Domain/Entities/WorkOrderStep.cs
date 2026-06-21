@@ -23,7 +23,7 @@ public class WorkOrderStep : BaseEntity
     /// EF Core 需要的无参构造函数
     /// </summary>
     [System.Text.Json.Serialization.JsonConstructor]
-    protected internal WorkOrderStep() { }
+    internal WorkOrderStep() { }
 
     /// <summary>
     /// 创建工序步骤

@@ -36,7 +36,7 @@ public class WorkOrder : BaseEntity, IAggregateRoot
     /// EF Core 需要的无参构造函数
     /// </summary>
     [System.Text.Json.Serialization.JsonConstructor]
-    protected internal WorkOrder() { }
+    internal WorkOrder() { }
 
     #region 工厂方法
 

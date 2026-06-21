@@ -2,7 +2,7 @@ namespace MES.Domain.Entities;
 
 public class Workstation : BaseEntity
 {
-    protected internal Workstation() { }
+    internal Workstation() { }
 
     public static Workstation Create(long lineId, string code, string name, int seqNo = 0, bool status = true)
     {

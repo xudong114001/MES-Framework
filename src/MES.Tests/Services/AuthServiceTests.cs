@@ -45,13 +45,11 @@ public class AuthServiceTests : IDisposable
         // Arrange
         var passwordHash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes("Admin@2026!")));
 
-        var user = new User
-        {
-            Username = "admin",
-            PasswordHash = passwordHash,
-            DisplayName = "Admin User",
-            Status = true
-        };
+        var user = TestEntityFactory.CreateUserDirect(
+            username: "admin",
+            displayName: "Admin User",
+            passwordHash: passwordHash
+        );
         _db.Users.Add(user);
         _db.SaveChanges();
 
@@ -83,13 +81,11 @@ public class AuthServiceTests : IDisposable
         // Arrange
         var passwordHash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes("Admin@2026!")));
 
-        var user = new User
-        {
-            Username = "admin",
-            PasswordHash = passwordHash,
-            DisplayName = "Admin User",
-            Status = true
-        };
+        var user = TestEntityFactory.CreateUserDirect(
+            username: "admin",
+            displayName: "Admin User",
+            passwordHash: passwordHash
+        );
         _db.Users.Add(user);
         _db.SaveChanges();
 

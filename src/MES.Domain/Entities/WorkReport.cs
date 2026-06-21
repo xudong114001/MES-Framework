@@ -4,7 +4,7 @@ namespace MES.Domain.Entities;
 
 public class WorkReport : BaseEntity
 {
-    protected internal WorkReport() { }
+    internal WorkReport() { }
 
     public static WorkReport Create(
         long workOrderId,
