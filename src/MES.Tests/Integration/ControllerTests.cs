@@ -1,6 +1,7 @@
 using System.Net;
 using System.Net.Http.Json;
 using MES.Api.Dtos;
+using MES.Application.Dtos;
 using MES.Domain.Entities;
 using MES.Domain.Enums;
 using MES.Tests;
@@ -245,7 +246,7 @@ public class ControllerTests : IAsyncLifetime
         Assert.True(response.IsSuccessStatusCode, $"创建工单失败: {await response.Content.ReadAsStringAsync()}");
 
         var json = await response.Content.ReadAsStringAsync();
-        var result = System.Text.Json.JsonSerializer.Deserialize<ApiResponseWrapper<WorkOrder>>(json,
+        var result = System.Text.Json.JsonSerializer.Deserialize<ApiResponseWrapper<WorkOrderDto>>(json,
             new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
         Assert.NotNull(result);
@@ -297,7 +298,7 @@ public class ControllerTests : IAsyncLifetime
         Assert.True(response.IsSuccessStatusCode, $"获取工单详情失败: {await response.Content.ReadAsStringAsync()}");
 
         var json = await response.Content.ReadAsStringAsync();
-        var result = System.Text.Json.JsonSerializer.Deserialize<ApiResponseWrapper<WorkOrder>>(json,
+        var result = System.Text.Json.JsonSerializer.Deserialize<ApiResponseWrapper<WorkOrderDto>>(json,
             new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
         Assert.NotNull(result);
@@ -393,7 +394,7 @@ public class ControllerTests : IAsyncLifetime
     /// <summary>
     /// 测试：物料 CRUD - 更新物料
     /// </summary>
-    [Fact(Skip = "已知问题：MaterialController Update 返回 500，后续修复")]
+    [Fact]
     public async Task MaterialController_Update_ReturnsSuccess()
     {
         // Arrange: 获取认证并创建物料

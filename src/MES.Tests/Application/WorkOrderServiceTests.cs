@@ -1,6 +1,7 @@
 using MES.Application.Services;
 using MES.Domain.Entities;
 using MES.Domain.Enums;
+using MES.Domain.Exceptions;
 using MES.Infrastructure.Repositories;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -185,8 +186,8 @@ public class WorkOrderServiceTests
 
         _workOrderRepo.Setup(r => r.GetByIdAsync(wo.Id)).ReturnsAsync(wo);
 
-        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => _service.ReleaseWorkOrderAsync(wo.Id));
-        Assert.Contains("不允许下达", ex.Message);
+        var ex = await Assert.ThrowsAsync<DomainException>(() => _service.ReleaseWorkOrderAsync(wo.Id));
+        Assert.Contains("只有 PENDING", ex.Message);
     }
 
     [Fact]
@@ -220,7 +221,7 @@ public class WorkOrderServiceTests
 
         _workOrderRepo.Setup(r => r.GetByIdAsync(wo.Id)).ReturnsAsync(wo);
 
-        await Assert.ThrowsAsync<InvalidOperationException>(() => _service.HoldWorkOrderAsync(wo.Id));
+        await Assert.ThrowsAsync<DomainException>(() => _service.HoldWorkOrderAsync(wo.Id));
     }
 
     [Fact]
@@ -242,7 +243,7 @@ public class WorkOrderServiceTests
 
         _workOrderRepo.Setup(r => r.GetByIdAsync(wo.Id)).ReturnsAsync(wo);
 
-        await Assert.ThrowsAsync<InvalidOperationException>(() => _service.ResumeWorkOrderAsync(wo.Id));
+        await Assert.ThrowsAsync<DomainException>(() => _service.ResumeWorkOrderAsync(wo.Id));
     }
 
     [Fact]
@@ -288,7 +289,7 @@ public class WorkOrderServiceTests
 
         _workOrderRepo.Setup(r => r.GetByIdAsync(wo.Id)).ReturnsAsync(wo);
 
-        await Assert.ThrowsAsync<InvalidOperationException>(() => _service.CancelWorkOrderAsync(wo.Id));
+        await Assert.ThrowsAsync<DomainException>(() => _service.CancelWorkOrderAsync(wo.Id));
     }
 
     [Fact]
@@ -298,7 +299,7 @@ public class WorkOrderServiceTests
 
         _workOrderRepo.Setup(r => r.GetByIdAsync(wo.Id)).ReturnsAsync(wo);
 
-        await Assert.ThrowsAsync<InvalidOperationException>(() => _service.CancelWorkOrderAsync(wo.Id));
+        await Assert.ThrowsAsync<DomainException>(() => _service.CancelWorkOrderAsync(wo.Id));
     }
 
     [Fact]
@@ -321,7 +322,7 @@ public class WorkOrderServiceTests
 
         _workOrderRepo.Setup(r => r.GetByIdAsync(wo.Id)).ReturnsAsync(wo);
 
-        await Assert.ThrowsAsync<InvalidOperationException>(() => _service.CloseWorkOrderAsync(wo.Id));
+        await Assert.ThrowsAsync<DomainException>(() => _service.CloseWorkOrderAsync(wo.Id));
     }
 
     [Fact]
@@ -350,7 +351,7 @@ public class WorkOrderServiceTests
 
         _workOrderRepo.Setup(r => r.GetByIdAsync(wo.Id)).ReturnsAsync(wo);
 
-        await Assert.ThrowsAsync<InvalidOperationException>(() => _service.SplitWorkOrderAsync(wo.Id, 0));
+        await Assert.ThrowsAsync<DomainException>(() => _service.SplitWorkOrderAsync(wo.Id, 0));
     }
 
     [Fact]
@@ -360,7 +361,7 @@ public class WorkOrderServiceTests
 
         _workOrderRepo.Setup(r => r.GetByIdAsync(wo.Id)).ReturnsAsync(wo);
 
-        await Assert.ThrowsAsync<InvalidOperationException>(() => _service.SplitWorkOrderAsync(wo.Id, 100));
+        await Assert.ThrowsAsync<DomainException>(() => _service.SplitWorkOrderAsync(wo.Id, 100));
     }
 
     [Fact]
@@ -370,7 +371,7 @@ public class WorkOrderServiceTests
 
         _workOrderRepo.Setup(r => r.GetByIdAsync(wo.Id)).ReturnsAsync(wo);
 
-        await Assert.ThrowsAsync<InvalidOperationException>(() => _service.SplitWorkOrderAsync(wo.Id, 30));
+        await Assert.ThrowsAsync<DomainException>(() => _service.SplitWorkOrderAsync(wo.Id, 30));
     }
 
     [Fact]
@@ -398,7 +399,7 @@ public class WorkOrderServiceTests
 
         _workOrderRepo.Setup(r => r.GetByIdAsync(wo.Id)).ReturnsAsync(wo);
 
-        await Assert.ThrowsAsync<InvalidOperationException>(() => _service.ReworkWorkOrderAsync(wo.Id, 20, null));
+        await Assert.ThrowsAsync<DomainException>(() => _service.ReworkWorkOrderAsync(wo.Id, 20, null));
     }
 
     [Fact]
@@ -408,7 +409,7 @@ public class WorkOrderServiceTests
 
         _workOrderRepo.Setup(r => r.GetByIdAsync(wo.Id)).ReturnsAsync(wo);
 
-        await Assert.ThrowsAsync<InvalidOperationException>(() => _service.ReworkWorkOrderAsync(wo.Id, 10, null));
+        await Assert.ThrowsAsync<DomainException>(() => _service.ReworkWorkOrderAsync(wo.Id, 10, null));
     }
 
     [Fact]
@@ -455,7 +456,7 @@ public class WorkOrderServiceTests
 
         _workOrderRepo.Setup(r => r.GetByIdAsync(wo.Id)).ReturnsAsync(wo);
 
-        var ex = await Assert.ThrowsAsync<InvalidOperationException>(
+        var ex = await Assert.ThrowsAsync<DomainException>(
             () => _service.ScrapWorkOrderAsync(wo.Id, 20, null));
         Assert.Contains("超过剩余可操作数量", ex.Message);
     }
@@ -467,7 +468,7 @@ public class WorkOrderServiceTests
 
         _workOrderRepo.Setup(r => r.GetByIdAsync(wo.Id)).ReturnsAsync(wo);
 
-        await Assert.ThrowsAsync<InvalidOperationException>(() => _service.ScrapWorkOrderAsync(wo.Id, 10, null));
+        await Assert.ThrowsAsync<DomainException>(() => _service.ScrapWorkOrderAsync(wo.Id, 10, null));
     }
 
     [Fact]

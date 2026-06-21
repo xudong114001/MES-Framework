@@ -227,7 +227,7 @@ public class WorkReportServiceTests
             status: WorkOrderStatus.RELEASED
         );
         var report = CreateValidReport(goodQty: 50);
-        TestEntityFactory.SetProperty(report, "StepId", 10);
+        TestEntityFactory.SetProperty(report, "StepId", 10L);
         var wo = CreateReleasedWorkOrder();
 
         _workOrderRepo.Setup(r => r.GetByIdAsync(report.WorkOrderId)).ReturnsAsync(wo);
@@ -263,7 +263,7 @@ public class WorkReportServiceTests
             status: WorkOrderStatus.RELEASED
         );
         var report = CreateValidReport(goodQty: 100);
-        TestEntityFactory.SetProperty(report, "StepId", 10);
+        TestEntityFactory.SetProperty(report, "StepId", 10L);
         var wo = CreateReleasedWorkOrder(plannedQty: 100);
 
         _workOrderRepo.Setup(r => r.GetByIdAsync(report.WorkOrderId)).ReturnsAsync(wo);
@@ -287,7 +287,7 @@ public class WorkReportServiceTests
     {
         SetupRedisLockSuccess();
         var report = CreateValidReport(goodQty: 10);
-        TestEntityFactory.SetProperty(report, "StepId", 10);
+        TestEntityFactory.SetProperty(report, "StepId", 10L);
         var wo = CreateReleasedWorkOrder();
 
         var checkpoint = TestEntityFactory.CreateQcCheckpointDirect(stepId: 10, checkType: QcInspectionType.FIRST, isMandatory: true);
@@ -312,7 +312,7 @@ public class WorkReportServiceTests
     {
         SetupRedisLockSuccess();
         var report = CreateValidReport(goodQty: 10);
-        TestEntityFactory.SetProperty(report, "StepId", 10);
+        TestEntityFactory.SetProperty(report, "StepId", 10L);
         var wo = CreateReleasedWorkOrder();
 
         var checkpoint = TestEntityFactory.CreateQcCheckpointDirect(stepId: 10, checkType: QcInspectionType.FIRST, isMandatory: true);
