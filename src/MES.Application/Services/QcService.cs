@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Logging;
+using MES.Application.Dtos;
 using MES.Application.Interfaces;
 using MES.Application.Integration.Events;
 using MES.Domain.Entities;
@@ -34,6 +35,51 @@ public class QcService
         _eventBus = eventBus;
         _eventLog = eventLog;
         _logger = logger;
+    }
+
+    /// <summary>
+    /// 将 QcInspection 实体映射为 DTO
+    /// </summary>
+    private static QcInspectionDto MapToDto(QcInspection entity)
+    {
+        return new QcInspectionDto
+        {
+            Id = entity.Id,
+            InspectNo = entity.InspectNo,
+            SourceType = entity.SourceType,
+            SourceRef = entity.SourceRef,
+            WorkOrderId = entity.WorkOrderId,
+            MaterialId = entity.MaterialId,
+            Inspector = entity.Inspector,
+            InspectResult = entity.InspectResult,
+            InspectTime = entity.InspectTime,
+            Remark = entity.Remark,
+            HandlingAction = entity.HandlingAction,
+            HandlingRemark = entity.HandlingRemark,
+            HandledAt = entity.HandledAt,
+            CreatedAt = entity.CreatedAt,
+            CreatedBy = entity.CreatedBy,
+            UpdatedAt = entity.UpdatedAt,
+            UpdatedBy = entity.UpdatedBy
+        };
+    }
+
+    /// <summary>
+    /// 获取所有质检单
+    /// </summary>
+    public async Task<IEnumerable<QcInspectionDto>> GetAllInspectionsAsync()
+    {
+        var entities = await _inspectionRepo.GetAllAsync();
+        return entities.Select(MapToDto);
+    }
+
+    /// <summary>
+    /// 根据ID获取质检单
+    /// </summary>
+    public async Task<QcInspectionDto?> GetInspectionByIdAsync(long id)
+    {
+        var entity = await _inspectionRepo.GetByIdAsync(id);
+        return entity == null ? null : MapToDto(entity);
     }
 
     /// <summary>
@@ -199,5 +245,33 @@ public class QcService
         // 使用领域方法将工单状态恢复为 IN_PROGRESS
         wo.MarkInProgress();
         await _workOrderRepo1.UpdateAsync(wo);
+    }
+
+    /// <summary>
+    /// 获取待检列表（返回 DTO）
+    /// </summary>
+    public async Task<IEnumerable<QcInspectionDto>> GetPendingInspectionsAsync()
+    {
+        var allInspections = await _inspectionRepo.GetAllAsync();
+        var pendingList = allInspections
+            .Where(i => i.InspectResult == QcResult.PENDING)
+            .OrderByDescending(i => i.CreatedAt)
+            .Take(50)
+            .ToList();
+        return pendingList.Select(MapToDto);
+    }
+
+    /// <summary>
+    /// 获取近期不合格品列表（返回 DTO）
+    /// </summary>
+    public async Task<IEnumerable<QcInspectionDto>> GetRecentFailedInspectionsAsync()
+    {
+        var allInspections = await _inspectionRepo.GetAllAsync();
+        var failedList = allInspections
+            .Where(i => i.InspectResult == QcResult.FAIL)
+            .OrderByDescending(i => i.CreatedAt)
+            .Take(20)
+            .ToList();
+        return failedList.Select(MapToDto);
     }
 }

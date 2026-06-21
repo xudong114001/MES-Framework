@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Logging;
+using MES.Application.Dtos;
 using MES.Application.Interfaces;
 using MES.Application.Integration.Events;
 using MES.Domain.Entities;
@@ -42,19 +43,56 @@ public class WorkOrderService : IWorkOrderService
     }
 
     /// <summary>
+    /// 将 WorkOrder 实体映射为 DTO
+    /// </summary>
+    private static WorkOrderDto MapToDto(WorkOrder entity)
+    {
+        return new WorkOrderDto
+        {
+            Id = entity.Id,
+            OrderNo = entity.OrderNo,
+            SourceType = entity.SourceType,
+            SourceRef = entity.SourceRef,
+            MaterialId = entity.MaterialId,
+            RoutingId = entity.RoutingId,
+            PlannedQty = entity.PlannedQty,
+            CompletedQty = entity.CompletedQty,
+            ScrapQty = entity.ScrapQty,
+            Status = entity.Status,
+            PlanStartTime = entity.PlanStartTime,
+            PlanEndTime = entity.PlanEndTime,
+            ActualStartTime = entity.ActualStartTime,
+            ActualEndTime = entity.ActualEndTime,
+            Priority = entity.Priority,
+            FactoryId = entity.FactoryId,
+            WorkshopId = entity.WorkshopId,
+            LineId = entity.LineId,
+            Assignee = entity.Assignee,
+            Remark = entity.Remark,
+            ReworkFromId = entity.ReworkFromId,
+            CreatedAt = entity.CreatedAt,
+            CreatedBy = entity.CreatedBy,
+            UpdatedAt = entity.UpdatedAt,
+            UpdatedBy = entity.UpdatedBy
+        };
+    }
+
+    /// <summary>
     /// 获取所有工单
     /// </summary>
-    public async Task<IEnumerable<WorkOrder>> GetAllAsync()
+    public async Task<IEnumerable<WorkOrderDto>> GetAllAsync()
     {
-        return await _workOrderRepo.GetAllAsync();
+        var entities = await _workOrderRepo.GetAllAsync();
+        return entities.Select(MapToDto);
     }
 
     /// <summary>
     /// 根据ID获取工单
     /// </summary>
-    public async Task<WorkOrder?> GetByIdAsync(long id)
+    public async Task<WorkOrderDto?> GetByIdAsync(long id)
     {
-        return await _workOrderRepo.GetByIdAsync(id);
+        var entity = await _workOrderRepo.GetByIdAsync(id);
+        return entity == null ? null : MapToDto(entity);
     }
 
     /// <summary>

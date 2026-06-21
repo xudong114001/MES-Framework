@@ -50,19 +50,49 @@ public class WorkReportService : IWorkReportService
     }
 
     /// <summary>
+    /// 将 WorkReport 实体映射为 DTO
+    /// </summary>
+    private static WorkReportDto MapToDto(WorkReport entity)
+    {
+        return new WorkReportDto
+        {
+            Id = entity.Id,
+            ReportNo = entity.ReportNo,
+            WorkOrderId = entity.WorkOrderId,
+            StepId = entity.StepId,
+            WorkstationId = entity.WorkstationId,
+            OperatorId = entity.OperatorId,
+            ReportType = entity.ReportType,
+            GoodQty = entity.GoodQty,
+            ScrapQty = entity.ScrapQty,
+            ReworkQty = entity.ReworkQty,
+            DurationMin = entity.DurationMin,
+            ReportTime = entity.ReportTime,
+            Remark = entity.Remark,
+            BatchNo = entity.BatchNo,
+            CreatedAt = entity.CreatedAt,
+            CreatedBy = entity.CreatedBy,
+            UpdatedAt = entity.UpdatedAt,
+            UpdatedBy = entity.UpdatedBy
+        };
+    }
+
+    /// <summary>
     /// 获取所有报工记录
     /// </summary>
-    public async Task<IEnumerable<WorkReport>> GetAllAsync()
+    public async Task<IEnumerable<WorkReportDto>> GetAllAsync()
     {
-        return await _reportRepo.GetAllAsync();
+        var entities = await _reportRepo.GetAllAsync();
+        return entities.Select(MapToDto);
     }
 
     /// <summary>
     /// 根据ID获取报工记录
     /// </summary>
-    public async Task<WorkReport?> GetByIdAsync(long id)
+    public async Task<WorkReportDto?> GetByIdAsync(long id)
     {
-        return await _reportRepo.GetByIdAsync(id);
+        var entity = await _reportRepo.GetByIdAsync(id);
+        return entity == null ? null : MapToDto(entity);
     }
 
     /// <summary>
@@ -235,20 +265,17 @@ public class WorkReportService : IWorkReportService
         matchedStep = steps.FirstOrDefault();
 
         // 5. 构建 WorkReport 并提交
-        var report = new WorkReport
-        {
-            WorkOrderId = wo.Id,
-            StepId = matchedStep?.Id,
-            WorkstationId = workstation.Id,
-            OperatorId = operatorUser.Id,
-            ReportType = ReportType.COMPLETE,
-            GoodQty = request.GoodQty,
-            ScrapQty = request.ScrapQty,
-            ReworkQty = request.ReworkQty,
-            ReportTime = DateTime.UtcNow,
-            ReportNo = $"RP{DateTime.Now:yyyyMMddHHmmss}{Random.Shared.Next(100, 999)}",
-            Remark = $"PDA扫码报工 - {request.WorkstationCode}"
-        };
+        var report = WorkReport.Create(
+            workOrderId: wo.Id,
+            reportType: ReportType.COMPLETE,
+            goodQty: request.GoodQty,
+            scrapQty: request.ScrapQty,
+            reworkQty: request.ReworkQty,
+            stepId: matchedStep?.Id,
+            workstationId: workstation.Id,
+            operatorId: operatorUser.Id,
+            remark: $"PDA扫码报工 - {request.WorkstationCode}"
+        );
 
         return await SubmitReportAsync(report);
     }
