@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MES.Api.Middleware;
+using MES.Application.Dtos;
 using MES.Domain.Entities;
 using MES.Infrastructure.Data;
 using MES.Infrastructure.Repositories;
@@ -34,19 +35,19 @@ public class UserController : ControllerBase
     {
         var list = await _db.Users
             .Where(u => !u.IsDeleted)
-            .Select(u => new
+            .Select(u => new UserDto
             {
-                u.Id,
-                u.Username,
-                u.DisplayName,
-                u.Email,
-                u.Phone,
-                u.Status,
-                u.LastLoginTime,
-                Roles = _db.UserRoles
-                    .Where(ur => ur.UserId == u.Id)
-                    .Select(ur => ur.Role!.Name)
-                    .ToList()
+                Id = u.Id,
+                Username = u.Username,
+                DisplayName = u.DisplayName,
+                Email = u.Email,
+                Phone = u.Phone,
+                Status = u.Status,
+                LastLoginTime = u.LastLoginTime,
+                CreatedAt = u.CreatedAt,
+                CreatedBy = u.CreatedBy,
+                UpdatedAt = u.UpdatedAt,
+                UpdatedBy = u.UpdatedBy
             })
             .ToListAsync();
         return Ok(ApiResponse.Ok(list));
@@ -60,19 +61,19 @@ public class UserController : ControllerBase
     {
         var user = await _db.Users
             .Where(u => u.Id == id && !u.IsDeleted)
-            .Select(u => new
+            .Select(u => new UserDto
             {
-                u.Id,
-                u.Username,
-                u.DisplayName,
-                u.Email,
-                u.Phone,
-                u.Status,
-                u.LastLoginTime,
-                Roles = _db.UserRoles
-                    .Where(ur => ur.UserId == u.Id)
-                    .Select(ur => ur.Role!.Name)
-                    .ToList()
+                Id = u.Id,
+                Username = u.Username,
+                DisplayName = u.DisplayName,
+                Email = u.Email,
+                Phone = u.Phone,
+                Status = u.Status,
+                LastLoginTime = u.LastLoginTime,
+                CreatedAt = u.CreatedAt,
+                CreatedBy = u.CreatedBy,
+                UpdatedAt = u.UpdatedAt,
+                UpdatedBy = u.UpdatedBy
             })
             .FirstOrDefaultAsync();
         if (user == null)
@@ -91,18 +92,30 @@ public class UserController : ControllerBase
 
         var passwordHash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(request.Password)));
 
-        var user = new User
-        {
-            Username = request.Username,
-            PasswordHash = passwordHash,
-            DisplayName = request.DisplayName,
-            Email = request.Email,
-            Phone = request.Phone,
-            Status = request.Status
-        };
+        var user = Domain.Entities.User.Create(
+            username: request.Username,
+            displayName: request.DisplayName,
+            passwordHash: passwordHash,
+            email: request.Email,
+            phone: request.Phone,
+            status: request.Status
+        );
 
         await _repo.AddAsync(user);
-        return Ok(ApiResponse.Ok(user));
+        var dto = new UserDto
+        {
+            Id = user.Id,
+            Username = user.Username,
+            DisplayName = user.DisplayName,
+            Email = user.Email,
+            Phone = user.Phone,
+            Status = user.Status,
+            CreatedAt = user.CreatedAt,
+            CreatedBy = user.CreatedBy,
+            UpdatedAt = user.UpdatedAt,
+            UpdatedBy = user.UpdatedBy
+        };
+        return Ok(ApiResponse.Ok(dto));
     }
 
     /// <summary>

@@ -308,14 +308,12 @@ public class SeedController : ControllerBase
             if (existingUser == null)
             {
                 var pwHash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes("123456")));
-                _db.Users.Add(new User
-                {
-                    Username = "operator",
-                    PasswordHash = pwHash,
-                    DisplayName = "操作员",
-                    Email = "operator@demo.com",
-                    Status = true
-                });
+                _db.Users.Add(Domain.Entities.User.Create(
+                    username: "operator",
+                    displayName: "操作员",
+                    passwordHash: pwHash,
+                    email: "operator@demo.com"
+                ));
                 await _db.SaveChangesAsync();
                 stats.Users = 1;
             }
@@ -339,7 +337,7 @@ public class SeedController : ControllerBase
     {
         var exists = await _db.Workstations.AnyAsync(w => w.Code == code);
         if (exists) return 0;
-        _db.Workstations.Add(new Workstation { LineId = lineId, Code = code, Name = name, SeqNo = seqNo, Status = true });
+        _db.Workstations.Add(Workstation.Create(lineId, code, name, seqNo));
         await _db.SaveChangesAsync();
         return 1;
     }

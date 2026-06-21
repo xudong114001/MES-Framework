@@ -197,12 +197,12 @@ using (var scope = app.Services.CreateScope())
         var adminPassword = Convert.ToHexString(
             System.Security.Cryptography.SHA256.HashData(
                 Encoding.UTF8.GetBytes("Admin@2026!")));
-        db.Users.Add(new MES.Domain.Entities.User
-        {
-            Username = "admin",
-            PasswordHash = adminPassword,
-            DisplayName = "系统管理员"
-        });
+        db.Users.Add(MES.Domain.Entities.User.Create(
+            username: "admin",
+            displayName: "系统管理员",
+            passwordHash: adminPassword,
+            email: "admin@mes.local"
+        ));
         db.SaveChanges();
         Log.Information("Seed data: admin user created");
     }
