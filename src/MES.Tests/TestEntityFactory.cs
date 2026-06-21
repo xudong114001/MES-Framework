@@ -549,6 +549,110 @@ public static class TestEntityFactory
 
     #endregion
 
+    #region User
+
+    /// <summary>
+    /// 创建 User
+    /// </summary>
+    public static User CreateUser(
+        string username = "testuser",
+        string displayName = "Test User",
+        string? passwordHash = null,
+        string? email = null,
+        bool status = true)
+    {
+        return User.Create(
+            username: username,
+            displayName: displayName,
+            passwordHash: passwordHash,
+            email: email,
+            status: status
+        );
+    }
+
+    /// <summary>
+    /// 使用反射直接创建 User
+    /// </summary>
+    public static User CreateUserDirect(
+        long id = 1,
+        string username = "testuser",
+        string displayName = "Test User",
+        string? passwordHash = null,
+        string? email = null,
+        bool status = true)
+    {
+        var ctor = typeof(User).GetConstructor(
+            BindingFlags.Instance | BindingFlags.NonPublic,
+            null,
+            Type.EmptyTypes,
+            null)!;
+
+        var user = (User)ctor.Invoke(null);
+
+        SetProperty(user, "Id", id);
+        SetProperty(user, "Username", username);
+        SetProperty(user, "DisplayName", displayName);
+        SetProperty(user, "PasswordHash", passwordHash ?? string.Empty);
+        SetProperty(user, "Email", email);
+        SetProperty(user, "Phone", null);
+        SetProperty(user, "Status", status);
+        SetProperty(user, "LastLoginTime", null);
+        SetProperty(user, "IsDeleted", false);
+        SetProperty(user, "CreatedAt", DateTime.UtcNow);
+        SetProperty(user, "UpdatedAt", DateTime.UtcNow);
+
+        return user;
+    }
+
+    #endregion
+
+    #region Workstation
+
+    /// <summary>
+    /// 创建 Workstation
+    /// </summary>
+    public static Workstation CreateWorkstation(
+        long lineId = 1,
+        string code = "WS-001",
+        string name = "Test Workstation",
+        int seqNo = 1)
+    {
+        return Workstation.Create(lineId, code, name, seqNo);
+    }
+
+    /// <summary>
+    /// 使用反射直接创建 Workstation
+    /// </summary>
+    public static Workstation CreateWorkstationDirect(
+        long id = 1,
+        long lineId = 1,
+        string code = "WS-001",
+        string name = "Test Workstation",
+        int seqNo = 1,
+        bool status = true)
+    {
+        var ctor = typeof(Workstation).GetConstructor(
+            BindingFlags.Instance | BindingFlags.NonPublic,
+            null,
+            Type.EmptyTypes,
+            null)!;
+
+        var workstation = (Workstation)ctor.Invoke(null);
+
+        SetProperty(workstation, "Id", id);
+        SetProperty(workstation, "LineId", lineId);
+        SetProperty(workstation, "Code", code);
+        SetProperty(workstation, "Name", name);
+        SetProperty(workstation, "SeqNo", seqNo);
+        SetProperty(workstation, "Status", status);
+        SetProperty(workstation, "CreatedAt", DateTime.UtcNow);
+        SetProperty(workstation, "UpdatedAt", DateTime.UtcNow);
+
+        return workstation;
+    }
+
+    #endregion
+
     #region Helper Methods
 
     /// <summary>
