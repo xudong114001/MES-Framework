@@ -35,7 +35,8 @@ public class WorkOrder : BaseEntity, IAggregateRoot
     /// <summary>
     /// EF Core 需要的无参构造函数
     /// </summary>
-    protected WorkOrder() { }
+    [System.Text.Json.Serialization.JsonConstructor]
+    protected internal WorkOrder() { }
 
     #region 工厂方法
 
@@ -268,10 +269,17 @@ public class WorkOrder : BaseEntity, IAggregateRoot
     /// </summary>
     public void ReportProgress(decimal goodQty, decimal scrapQty, decimal reworkQty)
     {
-        EnsureStatusOneOf([WorkOrderStatus.IN_PROGRESS, WorkOrderStatus.SCHEDULED], "工单状态不允许报工");
+        EnsureStatusOneOf([WorkOrderStatus.RELEASED, WorkOrderStatus.IN_PROGRESS, WorkOrderStatus.SCHEDULED], "工单状态不允许报工");
 
         if (goodQty < 0 || scrapQty < 0 || reworkQty < 0)
             throw new DomainException("报工数量不能为负数");
+
+        // RELEASED 状态首次报工时自动转为 IN_PROGRESS
+        if (Status == WorkOrderStatus.RELEASED)
+        {
+            Status = WorkOrderStatus.IN_PROGRESS;
+            ActualStartTime ??= DateTime.UtcNow;
+        }
 
         CompletedQty += goodQty + reworkQty;
         ScrapQty += scrapQty;

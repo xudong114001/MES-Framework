@@ -22,7 +22,8 @@ public class WorkOrderStep : BaseEntity
     /// <summary>
     /// EF Core 需要的无参构造函数
     /// </summary>
-    protected WorkOrderStep() { }
+    [System.Text.Json.Serialization.JsonConstructor]
+    protected internal WorkOrderStep() { }
 
     /// <summary>
     /// 创建工序步骤
@@ -116,10 +117,16 @@ public class WorkOrderStep : BaseEntity
     /// </summary>
     public void UpdateProgress(decimal goodQty, decimal scrapQty)
     {
-        EnsureStatusOneOf([WorkOrderStatus.IN_PROGRESS, WorkOrderStatus.SCHEDULED], "工单状态不允许更新进度");
+        EnsureStatusOneOf([WorkOrderStatus.RELEASED, WorkOrderStatus.IN_PROGRESS, WorkOrderStatus.SCHEDULED], "工单状态不允许更新进度");
 
         if (goodQty < 0 || scrapQty < 0)
             throw new DomainException("数量不能为负数");
+
+        // RELEASED 状态首次更新时自动转为 IN_PROGRESS
+        if (Status == WorkOrderStatus.RELEASED)
+        {
+            Status = WorkOrderStatus.IN_PROGRESS;
+        }
 
         CompletedQty += goodQty;
         ScrapQty += scrapQty;

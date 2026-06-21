@@ -7,6 +7,8 @@ namespace MES.Domain.Entities;
 /// </summary>
 public class QcCheckpoint : BaseEntity
 {
+    protected internal QcCheckpoint() { }
+
     /// <summary>工序ID（对应 RoutingStep.Id 或 WorkOrderStep.Id）</summary>
     public long StepId { get; set; }
 

@@ -2,6 +2,20 @@ namespace MES.Domain.Entities;
 
 public class Workstation : BaseEntity
 {
+    protected internal Workstation() { }
+
+    public static Workstation Create(long lineId, string code, string name, int seqNo = 0, bool status = true)
+    {
+        return new Workstation
+        {
+            LineId = lineId,
+            Code = code,
+            Name = name,
+            SeqNo = seqNo,
+            Status = status
+        };
+    }
+
     public long LineId { get; set; }
     public string Code { get; set; } = string.Empty;
     public string Name { get; set; } = string.Empty;
