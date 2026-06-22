@@ -1,10 +1,11 @@
+using MES.Application.Interfaces;
 using MES.Domain.Entities;
 using MES.Domain.Enums;
-using MES.Infrastructure.Repositories;
+using MES.Domain.Repositories;
 
 namespace MES.Application.Services;
 
-public class DashboardService
+public class DashboardService : IDashboardService
 {
     private readonly IRepository<WorkOrder> _workOrderRepo;
     private readonly IRepository<Equipment> _equipmentRepo;

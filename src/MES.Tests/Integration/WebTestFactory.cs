@@ -13,7 +13,7 @@ using Microsoft.IdentityModel.Tokens;
 using MES.Api.Services;
 using MES.Domain.Entities;
 using MES.Infrastructure.Data;
-using MES.Infrastructure.Repositories;
+using MES.Domain.Repositories;
 using StackExchange.Redis;
 using Testcontainers.PostgreSql;
 using Testcontainers.Redis;

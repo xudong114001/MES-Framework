@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using MES.Domain.Repositories;
 using MES.Infrastructure.Data;
 using MES.Infrastructure.Repositories;
 

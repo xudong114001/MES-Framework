@@ -1,8 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MES.Api.Middleware;
-using MES.Domain.Entities;
-using MES.Infrastructure.Repositories;
+using MES.Application.Interfaces;
 
 namespace MES.Api.Controllers;
 
@@ -11,77 +10,49 @@ namespace MES.Api.Controllers;
 [Authorize(Roles = "admin,supervisor")]
 public class BomController : ControllerBase
 {
-    private readonly IRepository<Bom> _repo;
+    private readonly IBomService _service;
+    public BomController(IBomService service) => _service = service;
 
-    public BomController(IRepository<Bom> repo) => _repo = repo;
-
-    /// <summary>
-    /// 获取所有 BOM 明细
-    /// </summary>
     [HttpGet]
     public async Task<IActionResult> GetAll()
     {
-        var list = await _repo.GetAllAsync();
+        var list = await _service.GetAllAsync();
         return Ok(ApiResponse.Ok(list));
     }
 
-    /// <summary>
-    /// 根据 ID 获取 BOM 明细
-    /// </summary>
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(long id)
     {
-        var entity = await _repo.GetByIdAsync(id);
-        if (entity == null)
-            return NotFound(ApiResponse.Fail("BOM明细不存在"));
-        return Ok(ApiResponse.Ok(entity));
+        var dto = await _service.GetByIdAsync(id);
+        if (dto == null) return NotFound(ApiResponse.Fail("BOM明细不存在"));
+        return Ok(ApiResponse.Ok(dto));
     }
 
-    /// <summary>
-    /// 根据产品 ID 获取 BOM 列表
-    /// </summary>
     [HttpGet("by-product/{productId}")]
-    public async Task<IActionResult> GetByProductId(long productId)
+    public async Task<IActionResult> GetByProduct(long productId)
     {
-        var list = await _repo.FindAsync(b => b.ProductId == productId);
+        var list = await _service.GetByProductIdAsync(productId);
         return Ok(ApiResponse.Ok(list));
     }
 
-    /// <summary>
-    /// 创建 BOM 明细
-    /// </summary>
     [HttpPost]
-    public async Task<IActionResult> Create([FromBody] Bom entity)
+    public async Task<IActionResult> Create([FromBody] MES.Domain.Entities.Bom entity)
     {
-        var created = await _repo.AddAsync(entity);
+        var created = await _service.CreateAsync(entity);
         return Ok(ApiResponse.Ok(created));
     }
 
-    /// <summary>
-    /// 更新 BOM 明细
-    /// </summary>
     [HttpPut("{id}")]
-    public async Task<IActionResult> Update(long id, [FromBody] Bom entity)
+    public async Task<IActionResult> Update(long id, [FromBody] MES.Domain.Entities.Bom entity)
     {
-        var existing = await _repo.GetByIdAsync(id);
-        if (existing == null)
-            return NotFound(ApiResponse.Fail("BOM明细不存在"));
-
-        entity.Id = id;
-        await _repo.UpdateAsync(entity);
+        await _service.UpdateAsync(id, entity);
         return Ok(ApiResponse.Ok("更新成功"));
     }
 
-    /// <summary>
-    /// 删除 BOM 明细
-    /// </summary>
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(long id)
     {
-        var entity = await _repo.GetByIdAsync(id);
-        if (entity == null)
-            return NotFound(ApiResponse.Fail("BOM明细不存在"));
-        await _repo.DeleteAsync(entity);
+        await _service.DeleteAsync(id);
         return Ok(ApiResponse.Ok("删除成功"));
     }
 }

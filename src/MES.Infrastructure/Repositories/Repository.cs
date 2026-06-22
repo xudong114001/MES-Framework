@@ -1,5 +1,6 @@
 using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
+using MES.Domain.Repositories;
 using MES.Infrastructure.Data;
 
 namespace MES.Infrastructure.Repositories;

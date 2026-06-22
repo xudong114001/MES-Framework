@@ -18,6 +18,35 @@ public class WorkOrderController : BaseController
         _service = service;
     }
 
+    private static WorkOrderDto MapToDto(WorkOrder entity) => new()
+    {
+        Id = entity.Id,
+        OrderNo = entity.OrderNo,
+        SourceType = entity.SourceType,
+        SourceRef = entity.SourceRef,
+        MaterialId = entity.MaterialId,
+        RoutingId = entity.RoutingId,
+        PlannedQty = entity.PlannedQty,
+        CompletedQty = entity.CompletedQty,
+        ScrapQty = entity.ScrapQty,
+        Status = entity.Status,
+        PlanStartTime = entity.PlanStartTime,
+        PlanEndTime = entity.PlanEndTime,
+        ActualStartTime = entity.ActualStartTime,
+        ActualEndTime = entity.ActualEndTime,
+        Priority = entity.Priority,
+        FactoryId = entity.FactoryId,
+        WorkshopId = entity.WorkshopId,
+        LineId = entity.LineId,
+        Assignee = entity.Assignee,
+        Remark = entity.Remark,
+        ReworkFromId = entity.ReworkFromId,
+        CreatedAt = entity.CreatedAt,
+        CreatedBy = entity.CreatedBy,
+        UpdatedAt = entity.UpdatedAt,
+        UpdatedBy = entity.UpdatedBy
+    };
+
     /// <summary>
     /// 获取所有工单列表
     /// </summary>
@@ -46,7 +75,7 @@ public class WorkOrderController : BaseController
     public async Task<IActionResult> Create([FromBody] WorkOrder entity)
     {
         var created = await _service.CreateWorkOrderAsync(entity);
-        return Success(created);
+        return Success(MapToDto(created));
     }
 
     /// <summary>
@@ -127,7 +156,7 @@ public class WorkOrderController : BaseController
     public async Task<IActionResult> Split(long id, [FromBody] SplitRequest request)
     {
         var child = await _service.SplitWorkOrderAsync(id, request.SplitQty);
-        return Success(child);
+        return Success(MapToDto(child));
     }
 
     /// <summary>
@@ -137,7 +166,7 @@ public class WorkOrderController : BaseController
     public async Task<IActionResult> Rework(long id, [FromBody] ReworkRequest request)
     {
         var child = await _service.ReworkWorkOrderAsync(id, request.ReworkQty, request.Remark);
-        return Success(child);
+        return Success(MapToDto(child));
     }
 
     /// <summary>

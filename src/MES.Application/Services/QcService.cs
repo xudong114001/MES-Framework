@@ -5,11 +5,11 @@ using MES.Application.Integration.Events;
 using MES.Domain.Entities;
 using MES.Domain.Enums;
 using MES.Domain.Exceptions;
-using MES.Infrastructure.Repositories;
+using MES.Domain.Repositories;
 
 namespace MES.Application.Services;
 
-public class QcService
+public class QcService : IQcService
 {
     private readonly IRepository<QcInspection> _inspectionRepo;
     private readonly IRepository<QcInspectionItem> _itemRepo;

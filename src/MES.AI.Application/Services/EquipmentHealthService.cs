@@ -2,7 +2,7 @@ using MES.AI.Application.Dtos;
 using MES.AI.Application.Interfaces;
 using MES.Application.Services;
 using MES.Domain.Entities;
-using MES.Infrastructure.Repositories;
+using MES.Domain.Repositories;
 using Microsoft.EntityFrameworkCore;
 
 namespace MES.AI.Application.Services;

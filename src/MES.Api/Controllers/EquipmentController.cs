@@ -1,9 +1,10 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MES.Api.Middleware;
-using MES.Application.Services;
+using MES.Application.Dtos;
+using MES.Application.Interfaces;
 using MES.Domain.Entities;
-using MES.Infrastructure.Repositories;
+using MES.Domain.Repositories;
 
 namespace MES.Api.Controllers;
 
@@ -13,13 +14,35 @@ namespace MES.Api.Controllers;
 public class EquipmentController : ControllerBase
 {
     private readonly IRepository<Equipment> _repo;
-    private readonly EquipmentService _equipmentService;
+    private readonly IEquipmentService _equipmentService;
 
-    public EquipmentController(IRepository<Equipment> repo, EquipmentService equipmentService)
+    public EquipmentController(IRepository<Equipment> repo, IEquipmentService equipmentService)
     {
         _repo = repo;
         _equipmentService = equipmentService;
     }
+
+    private static EquipmentDto MapToDto(Equipment entity) => new()
+    {
+        Id = entity.Id,
+        Code = entity.Code,
+        Name = entity.Name,
+        Model = entity.Model,
+        FactoryId = entity.FactoryId,
+        WorkshopId = entity.WorkshopId,
+        LineId = entity.LineId,
+        InstallDate = entity.InstallDate,
+        Status = entity.Status,
+        LastMaintainDate = entity.LastMaintainDate,
+        NextMaintainDate = entity.NextMaintainDate,
+        MaintainCycle = entity.MaintainCycle,
+        TheoreticalCycleTime = entity.TheoreticalCycleTime,
+        PlannedRunTime = entity.PlannedRunTime,
+        CreatedAt = entity.CreatedAt,
+        CreatedBy = entity.CreatedBy,
+        UpdatedAt = entity.UpdatedAt,
+        UpdatedBy = entity.UpdatedBy
+    };
 
     /// <summary>
     /// 获取所有设备
@@ -28,7 +51,7 @@ public class EquipmentController : ControllerBase
     public async Task<IActionResult> GetAll()
     {
         var list = await _repo.GetAllAsync();
-        return Ok(ApiResponse.Ok(list));
+        return Ok(ApiResponse.Ok(list.Select(MapToDto)));
     }
 
     /// <summary>
@@ -38,7 +61,7 @@ public class EquipmentController : ControllerBase
     public async Task<IActionResult> GetEquipmentList()
     {
         var list = await _equipmentService.GetAllEquipmentAsync();
-        return Ok(ApiResponse.Ok(list));
+        return Ok(ApiResponse.Ok(list.Select(MapToDto)));
     }
 
     /// <summary>
@@ -50,7 +73,7 @@ public class EquipmentController : ControllerBase
         var entity = await _repo.GetByIdAsync(id);
         if (entity == null)
             return NotFound(ApiResponse.Fail("设备不存在"));
-        return Ok(ApiResponse.Ok(entity));
+        return Ok(ApiResponse.Ok(MapToDto(entity)));
     }
 
     /// <summary>
@@ -60,7 +83,7 @@ public class EquipmentController : ControllerBase
     public async Task<IActionResult> Create([FromBody] Equipment entity)
     {
         var created = await _repo.AddAsync(entity);
-        return Ok(ApiResponse.Ok(created));
+        return Ok(ApiResponse.Ok(MapToDto(created)));
     }
 
     /// <summary>

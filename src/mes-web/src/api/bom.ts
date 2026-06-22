@@ -18,5 +18,5 @@ export const bomApi = {
   create(data: Bom) { return http.post('/boms', data) },
   update(id: number, data: Bom) { return http.put(`/boms/${id}`, data) },
   delete(id: number) { return http.delete(`/boms/${id}`) },
-  listByProduct(productId: number) { return http.get(`/boms/byProduct/${productId}`) }
+  listByProduct(productId: number) { return http.get(`/boms/by-product/${productId}`) }
 }

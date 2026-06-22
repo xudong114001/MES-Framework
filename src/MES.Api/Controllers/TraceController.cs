@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MES.Api.Middleware;
-using MES.Application.Services;
+using MES.Application.Interfaces;
 
 namespace MES.Api.Controllers;
 
@@ -10,8 +10,8 @@ namespace MES.Api.Controllers;
 [Authorize(Roles = "admin,supervisor,inspector,viewer")]
 public class TraceController : ControllerBase
 {
-    private readonly TraceService _service;
-    public TraceController(TraceService service) => _service = service;
+    private readonly ITraceService _service;
+    public TraceController(ITraceService service) => _service = service;
 
     /// <summary>
     /// 根据批次号追溯

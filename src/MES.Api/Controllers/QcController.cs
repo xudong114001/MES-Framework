@@ -1,11 +1,12 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MES.Api.Middleware;
-using MES.Application.Services;
+using MES.Application.Dtos;
+using MES.Application.Interfaces;
 using MES.Domain.Entities;
 using MES.Domain.Enums;
 using MES.Domain.Exceptions;
-using MES.Infrastructure.Repositories;
+using MES.Domain.Repositories;
 
 namespace MES.Api.Controllers;
 
@@ -16,12 +17,12 @@ public class QcController : ControllerBase
 {
     private readonly IRepository<QcInspection> _inspectionRepo;
     private readonly IRepository<QcInspectionItem> _itemRepo;
-    private readonly QcService _qcService;
+    private readonly IQcService _qcService;
 
     public QcController(
         IRepository<QcInspection> inspectionRepo,
         IRepository<QcInspectionItem> itemRepo,
-        QcService qcService)
+        IQcService qcService)
     {
         _inspectionRepo = inspectionRepo;
         _itemRepo = itemRepo;
@@ -34,7 +35,7 @@ public class QcController : ControllerBase
     [HttpGet("inspections")]
     public async Task<IActionResult> GetInspections()
     {
-        var list = await _inspectionRepo.GetAllAsync();
+        var list = await _qcService.GetAllInspectionsAsync();
         return Ok(ApiResponse.Ok(list));
     }
 
@@ -44,7 +45,7 @@ public class QcController : ControllerBase
     [HttpGet("inspections/{id}")]
     public async Task<IActionResult> GetInspectionById(long id)
     {
-        var inspection = await _inspectionRepo.GetByIdAsync(id);
+        var inspection = await _qcService.GetInspectionByIdAsync(id);
         if (inspection == null)
             return NotFound(ApiResponse.Fail("质检单不存在"));
 
@@ -162,13 +163,7 @@ public class QcController : ControllerBase
     [HttpGet("dashboard/pending")]
     public async Task<IActionResult> GetPendingInspections()
     {
-        var allInspections = await _inspectionRepo.GetAllAsync();
-        var pendingList = allInspections
-            .Where(i => i.InspectResult == QcResult.PENDING)
-            .OrderByDescending(i => i.CreatedAt)
-            .Take(50)
-            .ToList();
-
+        var pendingList = await _qcService.GetPendingInspectionsAsync();
         return Ok(ApiResponse.Ok(pendingList));
     }
 
@@ -178,13 +173,7 @@ public class QcController : ControllerBase
     [HttpGet("dashboard/recent-failed")]
     public async Task<IActionResult> GetRecentFailedInspections()
     {
-        var allInspections = await _inspectionRepo.GetAllAsync();
-        var failedList = allInspections
-            .Where(i => i.InspectResult == QcResult.FAIL)
-            .OrderByDescending(i => i.CreatedAt)
-            .Take(20)
-            .ToList();
-
+        var failedList = await _qcService.GetRecentFailedInspectionsAsync();
         return Ok(ApiResponse.Ok(failedList));
     }
 }

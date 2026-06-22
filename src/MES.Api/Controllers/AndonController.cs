@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MES.Api.Middleware;
 using MES.Api.Services;
-using MES.Application.Services;
+using MES.Application.Interfaces;
 using MES.Domain.Entities;
 
 namespace MES.Api.Controllers;
@@ -13,10 +13,10 @@ namespace MES.Api.Controllers;
 [Authorize(Roles = "admin,supervisor,viewer")]
 public class AndonController : ControllerBase
 {
-    private readonly AndonService _service;
+    private readonly IAndonService _service;
     private readonly HubNotificationService _hubNotification;
 
-    public AndonController(AndonService service, HubNotificationService hubNotification)
+    public AndonController(IAndonService service, HubNotificationService hubNotification)
     {
         _service = service;
         _hubNotification = hubNotification;

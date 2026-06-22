@@ -1,9 +1,10 @@
+using MES.Application.Interfaces;
 using MES.Domain.Entities;
-using MES.Infrastructure.Repositories;
+using MES.Domain.Repositories;
 
 namespace MES.Application.Services;
 
-public class TraceService
+public class TraceService : ITraceService
 {
     private readonly IRepository<MaterialTrace> _traceRepo;
     private readonly IRepository<Material> _materialRepo;

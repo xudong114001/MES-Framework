@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MES.Api.Middleware;
-using MES.Application.Services;
+using MES.Application.Interfaces;
 
 namespace MES.Api.Controllers;
 
@@ -10,9 +10,9 @@ namespace MES.Api.Controllers;
 [Authorize]
 public class DashboardController : ControllerBase
 {
-    private readonly DashboardService _service;
+    private readonly IDashboardService _service;
 
-    public DashboardController(DashboardService service) => _service = service;
+    public DashboardController(IDashboardService service) => _service = service;
 
     /// <summary>今日工单统计</summary>
     [HttpGet("orders/today")]

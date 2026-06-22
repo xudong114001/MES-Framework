@@ -1,7 +1,7 @@
 using MES.Application.Services;
 using MES.Domain.Entities;
 using MES.Domain.Enums;
-using MES.Infrastructure.Repositories;
+using MES.Domain.Repositories;
 using Moq;
 using Xunit;
 
