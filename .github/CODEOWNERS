@@ -1,0 +1,31 @@
+# CODEOWNERS - 代码审查路由
+
+# 后端核心（Domain + Application + Infrastructure）
+/src/MES.Domain/       @mes-backend
+/src/MES.Application/  @mes-backend
+/src/MES.Infrastructure/ @mes-backend
+
+# API 层
+/src/MES.Api/          @mes-backend
+
+# AI 模块
+/src/MES.AI.Application/ @mes-ai
+/src/MES.AI.Domain/      @mes-ai
+
+# 集成层
+/src/MES.Integration/  @mes-integration
+
+# 前端
+/src/mes-web/          @mes-frontend
+
+# 基础设施与部署
+/docker-compose.yml        @mes-devops
+/docker-compose.prod.yml   @mes-devops
+/nginx/                    @mes-devops
+/.github/workflows/        @mes-devops
+
+# 数据库
+/database/              @mes-backend
+
+# 文档
+/docs/                  @mes-all

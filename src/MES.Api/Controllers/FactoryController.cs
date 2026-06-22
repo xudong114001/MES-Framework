@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MES.Api.Middleware;
+using MES.Application.Dtos;
 using MES.Domain.Entities;
 using MES.Infrastructure.Repositories;
 
@@ -14,6 +15,19 @@ public class FactoryController : ControllerBase
     private readonly IRepository<Factory> _repo;
     public FactoryController(IRepository<Factory> repo) => _repo = repo;
 
+    private static FactoryDto MapToDto(Factory entity) => new()
+    {
+        Id = entity.Id,
+        Code = entity.Code,
+        Name = entity.Name,
+        Address = entity.Address,
+        Status = entity.Status,
+        CreatedAt = entity.CreatedAt,
+        CreatedBy = entity.CreatedBy,
+        UpdatedAt = entity.UpdatedAt,
+        UpdatedBy = entity.UpdatedBy
+    };
+
     /// <summary>
     /// 获取所有工厂
     /// </summary>
@@ -21,7 +35,7 @@ public class FactoryController : ControllerBase
     public async Task<IActionResult> GetAll()
     {
         var list = await _repo.GetAllAsync();
-        return Ok(ApiResponse.Ok(list));
+        return Ok(ApiResponse.Ok(list.Select(MapToDto)));
     }
 
     /// <summary>
@@ -32,7 +46,7 @@ public class FactoryController : ControllerBase
     {
         var entity = await _repo.GetByIdAsync(id);
         if (entity == null) return NotFound(ApiResponse.Fail("工厂不存在"));
-        return Ok(ApiResponse.Ok(entity));
+        return Ok(ApiResponse.Ok(MapToDto(entity)));
     }
 
     /// <summary>
@@ -42,7 +56,7 @@ public class FactoryController : ControllerBase
     public async Task<IActionResult> Create([FromBody] Factory entity)
     {
         var created = await _repo.AddAsync(entity);
-        return Ok(ApiResponse.Ok(created));
+        return Ok(ApiResponse.Ok(MapToDto(created)));
     }
 
     /// <summary>

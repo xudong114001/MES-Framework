@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MES.Api.Middleware;
+using MES.Application.Dtos;
 using MES.Domain.Entities;
 using MES.Infrastructure.Data;
 using MES.Infrastructure.Repositories;
@@ -30,14 +31,15 @@ public class RoleController : ControllerBase
     {
         var list = await _db.Roles
             .Where(r => !r.IsDeleted)
-            .Select(r => new
+            .Select(r => new RoleDto
             {
-                r.Id,
-                r.Name,
-                r.Description,
-                PermissionCount = _db.RolePermissions
-                    .Where(rp => rp.RoleId == r.Id && !rp.IsDeleted)
-                    .Count()
+                Id = r.Id,
+                Name = r.Name,
+                Description = r.Description,
+                CreatedAt = r.CreatedAt,
+                CreatedBy = r.CreatedBy,
+                UpdatedAt = r.UpdatedAt,
+                UpdatedBy = r.UpdatedBy
             })
             .ToListAsync();
         return Ok(ApiResponse.Ok(list));
@@ -53,9 +55,16 @@ public class RoleController : ControllerBase
             .Where(r => r.Id == id && !r.IsDeleted)
             .Select(r => new
             {
-                r.Id,
-                r.Name,
-                r.Description,
+                Role = new RoleDto
+                {
+                    Id = r.Id,
+                    Name = r.Name,
+                    Description = r.Description,
+                    CreatedAt = r.CreatedAt,
+                    CreatedBy = r.CreatedBy,
+                    UpdatedAt = r.UpdatedAt,
+                    UpdatedBy = r.UpdatedBy
+                },
                 Permissions = _db.RolePermissions
                     .Where(rp => rp.RoleId == r.Id && !rp.IsDeleted)
                     .Select(rp => rp.Permission)
@@ -83,7 +92,17 @@ public class RoleController : ControllerBase
         };
 
         await _roleRepo.AddAsync(role);
-        return Ok(ApiResponse.Ok(role));
+        var dto = new RoleDto
+        {
+            Id = role.Id,
+            Name = role.Name,
+            Description = role.Description,
+            CreatedAt = role.CreatedAt,
+            CreatedBy = role.CreatedBy,
+            UpdatedAt = role.UpdatedAt,
+            UpdatedBy = role.UpdatedBy
+        };
+        return Ok(ApiResponse.Ok(dto));
     }
 
     /// <summary>
@@ -117,7 +136,6 @@ public class RoleController : ControllerBase
         if (role == null || role.IsDeleted)
             return NotFound(ApiResponse.Fail("角色不存在"));
 
-        // 检查是否有关联用户
         var hasUsers = await _db.UserRoles.AnyAsync(ur => ur.RoleId == id && !ur.IsDeleted);
         if (hasUsers)
             return BadRequest(ApiResponse.Fail("该角色已分配给用户，无法删除"));
@@ -154,13 +172,11 @@ public class RoleController : ControllerBase
         if (role == null)
             return NotFound(ApiResponse.Fail("角色不存在"));
 
-        // 删除现有权限
         var existingPerms = await _db.RolePermissions
             .Where(rp => rp.RoleId == id && !rp.IsDeleted)
             .ToListAsync();
         _db.RolePermissions.RemoveRange(existingPerms);
 
-        // 添加新权限
         foreach (var perm in request.Permissions.Distinct())
         {
             _db.RolePermissions.Add(new RolePermission

@@ -1,4 +1,4 @@
-# MES Framework - Agent Instructions
+# MES Framework - Claude Code Instructions
 
 ## Agent Preferences
 

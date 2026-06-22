@@ -91,7 +91,7 @@ public class DatabaseIntegrationTests : IntegrationTestBase
                             var wo = await db.WorkOrders.FirstAsync(w => w.Id == workOrderId);
                             // 使用原始 SQL 更新，因为 CompletedQty 是 private set
                             await db.Database.ExecuteSqlRawAsync(
-                                "UPDATE work_orders SET completed_qty = completed_qty + 1, updated_at = {0} WHERE id = {1}",
+                                "UPDATE mes_work_order SET completed_qty = completed_qty + 1, updated_at = {0} WHERE id = {1}",
                                 DateTime.UtcNow, workOrderId);
 
                             var report = new WorkReport
@@ -308,7 +308,7 @@ public class DatabaseIntegrationTests : IntegrationTestBase
 
         // 使用原始 SQL 更新，因为 CompletedQty 和 Status 是 private set
         await txDb.Database.ExecuteSqlRawAsync(
-            "UPDATE work_orders SET completed_qty = 999, status = {0}, updated_at = {1} WHERE id = {2}",
+            "UPDATE mes_work_order SET completed_qty = 999, status = {0}, updated_at = {1} WHERE id = {2}",
             (int)WorkOrderStatus.COMPLETED, DateTime.UtcNow, workOrder.Id);
 
         var report = new WorkReport

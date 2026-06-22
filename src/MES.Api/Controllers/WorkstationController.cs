@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MES.Api.Middleware;
+using MES.Application.Dtos;
 using MES.Domain.Entities;
 using MES.Infrastructure.Repositories;
 
@@ -14,6 +15,20 @@ public class WorkstationController : ControllerBase
     private readonly IRepository<Workstation> _repo;
     public WorkstationController(IRepository<Workstation> repo) => _repo = repo;
 
+    private static WorkstationDto MapToDto(Workstation entity) => new()
+    {
+        Id = entity.Id,
+        LineId = entity.LineId,
+        Code = entity.Code,
+        Name = entity.Name,
+        SeqNo = entity.SeqNo,
+        Status = entity.Status,
+        CreatedAt = entity.CreatedAt,
+        CreatedBy = entity.CreatedBy,
+        UpdatedAt = entity.UpdatedAt,
+        UpdatedBy = entity.UpdatedBy
+    };
+
     /// <summary>
     /// 获取所有工位
     /// </summary>
@@ -21,7 +36,7 @@ public class WorkstationController : ControllerBase
     public async Task<IActionResult> GetAll()
     {
         var list = await _repo.GetAllAsync();
-        return Ok(ApiResponse.Ok(list));
+        return Ok(ApiResponse.Ok(list.Select(MapToDto)));
     }
 
     /// <summary>
@@ -32,7 +47,7 @@ public class WorkstationController : ControllerBase
     {
         var entity = await _repo.GetByIdAsync(id);
         if (entity == null) return NotFound(ApiResponse.Fail("工位不存在"));
-        return Ok(ApiResponse.Ok(entity));
+        return Ok(ApiResponse.Ok(MapToDto(entity)));
     }
 
     /// <summary>
@@ -42,7 +57,7 @@ public class WorkstationController : ControllerBase
     public async Task<IActionResult> GetByLine(long lineId)
     {
         var list = await _repo.FindAsync(ws => ws.LineId == lineId);
-        return Ok(ApiResponse.Ok(list));
+        return Ok(ApiResponse.Ok(list.Select(MapToDto)));
     }
 
     /// <summary>
@@ -52,7 +67,7 @@ public class WorkstationController : ControllerBase
     public async Task<IActionResult> Create([FromBody] Workstation entity)
     {
         var created = await _repo.AddAsync(entity);
-        return Ok(ApiResponse.Ok(created));
+        return Ok(ApiResponse.Ok(MapToDto(created)));
     }
 
     /// <summary>

@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MES.Api.Middleware;
+using MES.Application.Dtos;
 using MES.Domain.Entities;
 using MES.Infrastructure.Repositories;
 
@@ -16,6 +17,36 @@ public class RoutingController : ControllerBase
 
     public RoutingController(IRepository<Routing> repo) => _repo = repo;
 
+    private static RoutingDto MapToDto(Routing entity) => new()
+    {
+        Id = entity.Id,
+        MaterialId = entity.MaterialId,
+        RoutingCode = entity.RoutingCode,
+        RoutingName = entity.RoutingName,
+        Version = entity.Version,
+        Status = entity.Status,
+        CreatedAt = entity.CreatedAt,
+        CreatedBy = entity.CreatedBy,
+        UpdatedAt = entity.UpdatedAt,
+        UpdatedBy = entity.UpdatedBy
+    };
+
+    private static RoutingStepDto MapStepToDto(RoutingStep entity) => new()
+    {
+        Id = entity.Id,
+        RoutingId = entity.RoutingId,
+        StepNo = entity.StepNo,
+        StepName = entity.StepName,
+        WorkstationType = entity.WorkstationType,
+        StandardTime = entity.StandardTime,
+        IsQcPoint = entity.IsQcPoint,
+        IsScrapPoint = entity.IsScrapPoint,
+        CreatedAt = entity.CreatedAt,
+        CreatedBy = entity.CreatedBy,
+        UpdatedAt = entity.UpdatedAt,
+        UpdatedBy = entity.UpdatedBy
+    };
+
     /// <summary>
     /// 获取所有工艺路线（包含工序明细）
     /// </summary>
@@ -23,7 +54,12 @@ public class RoutingController : ControllerBase
     public async Task<IActionResult> GetAll()
     {
         var list = await _repo.Query().Include(r => r.Steps).ToListAsync();
-        return Ok(ApiResponse.Ok(list));
+        var result = list.Select(r => new
+        {
+            Dto = MapToDto(r),
+            Steps = r.Steps.Select(MapStepToDto).ToList()
+        });
+        return Ok(ApiResponse.Ok(result));
     }
 
     /// <summary>
@@ -35,7 +71,12 @@ public class RoutingController : ControllerBase
         var entity = await _repo.Query().Include(r => r.Steps).FirstOrDefaultAsync(r => r.Id == id);
         if (entity == null)
             return NotFound(ApiResponse.Fail("工艺路线不存在"));
-        return Ok(ApiResponse.Ok(entity));
+        var result = new
+        {
+            Dto = MapToDto(entity),
+            Steps = entity.Steps.Select(MapStepToDto).ToList()
+        };
+        return Ok(ApiResponse.Ok(result));
     }
 
     /// <summary>
@@ -48,7 +89,12 @@ public class RoutingController : ControllerBase
             .Include(r => r.Steps)
             .Where(r => r.MaterialId == materialId)
             .ToListAsync();
-        return Ok(ApiResponse.Ok(list));
+        var result = list.Select(r => new
+        {
+            Dto = MapToDto(r),
+            Steps = r.Steps.Select(MapStepToDto).ToList()
+        });
+        return Ok(ApiResponse.Ok(result));
     }
 
     /// <summary>
@@ -58,7 +104,7 @@ public class RoutingController : ControllerBase
     public async Task<IActionResult> Create([FromBody] Routing entity)
     {
         var created = await _repo.AddAsync(entity);
-        return Ok(ApiResponse.Ok(created));
+        return Ok(ApiResponse.Ok(MapToDto(created)));
     }
 
     /// <summary>
