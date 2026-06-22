@@ -64,28 +64,26 @@ public class WorkReportServiceTests
 
     private WorkOrder CreateReleasedWorkOrder(decimal plannedQty = 100, decimal completedQty = 0, decimal scrapQty = 0)
     {
-        return new WorkOrder
-        {
-            Id = 1,
-            OrderNo = "WO-001",
-            Status = WorkOrderStatus.RELEASED,
-            PlannedQty = plannedQty,
-            CompletedQty = completedQty,
-            ScrapQty = scrapQty
-        };
+        return TestEntityFactory.CreateWorkOrderDirect(
+            id: 1,
+            orderNo: "WO-001",
+            materialId: 1,
+            plannedQty: plannedQty,
+            completedQty: completedQty,
+            scrapQty: scrapQty,
+            status: WorkOrderStatus.RELEASED
+        );
     }
 
     private WorkReport CreateValidReport(long workOrderId = 1, decimal goodQty = 10, decimal scrapQty = 0, decimal reworkQty = 0)
     {
-        return new WorkReport
-        {
-            WorkOrderId = workOrderId,
-            GoodQty = goodQty,
-            ScrapQty = scrapQty,
-            ReworkQty = reworkQty,
-            ReportType = ReportType.COMPLETE,
-            OperatorId = 1
-        };
+        return TestEntityFactory.CreateWorkReportDirect(
+            workOrderId: workOrderId,
+            goodQty: goodQty,
+            scrapQty: scrapQty,
+            reworkQty: reworkQty,
+            reportType: ReportType.COMPLETE
+        );
     }
 
     private void SetupRedisLockSuccess()
@@ -139,8 +137,15 @@ public class WorkReportServiceTests
     {
         SetupRedisLockSuccess();
         var report = CreateValidReport();
-        var wo = CreateReleasedWorkOrder();
-        wo.Status = WorkOrderStatus.PENDING;
+        var wo = TestEntityFactory.CreateWorkOrderDirect(
+            id: 1,
+            orderNo: "WO-001",
+            materialId: 1,
+            plannedQty: 100,
+            completedQty: 0,
+            scrapQty: 0,
+            status: WorkOrderStatus.PENDING
+        );
 
         _workOrderRepo.Setup(r => r.GetByIdAsync(report.WorkOrderId)).ReturnsAsync(wo);
 
@@ -211,17 +216,18 @@ public class WorkReportServiceTests
     public async Task SubmitReportAsync_UpdatesStepProgress_WhenStepIdProvided()
     {
         SetupRedisLockSuccess();
-        var step = new WorkOrderStep
-        {
-            Id = 10,
-            WorkOrderId = 1,
-            PlannedQty = 100,
-            CompletedQty = 0,
-            ScrapQty = 0,
-            Status = WorkOrderStatus.RELEASED
-        };
+        var step = TestEntityFactory.CreateWorkOrderStepDirect(
+            id: 10,
+            workOrderId: 1,
+            stepNo: 1,
+            stepName: "Step 1",
+            plannedQty: 100,
+            completedQty: 0,
+            scrapQty: 0,
+            status: WorkOrderStatus.RELEASED
+        );
         var report = CreateValidReport(goodQty: 50);
-        report.StepId = 10;
+        TestEntityFactory.SetProperty(report, "StepId", 10L);
         var wo = CreateReleasedWorkOrder();
 
         _workOrderRepo.Setup(r => r.GetByIdAsync(report.WorkOrderId)).ReturnsAsync(wo);
@@ -246,17 +252,18 @@ public class WorkReportServiceTests
     public async Task SubmitReportAsync_MarksStepCompletedWhenFullyReported()
     {
         SetupRedisLockSuccess();
-        var step = new WorkOrderStep
-        {
-            Id = 10,
-            WorkOrderId = 1,
-            PlannedQty = 100,
-            CompletedQty = 0,
-            ScrapQty = 0,
-            Status = WorkOrderStatus.RELEASED
-        };
+        var step = TestEntityFactory.CreateWorkOrderStepDirect(
+            id: 10,
+            workOrderId: 1,
+            stepNo: 1,
+            stepName: "Step 1",
+            plannedQty: 100,
+            completedQty: 0,
+            scrapQty: 0,
+            status: WorkOrderStatus.RELEASED
+        );
         var report = CreateValidReport(goodQty: 100);
-        report.StepId = 10;
+        TestEntityFactory.SetProperty(report, "StepId", 10L);
         var wo = CreateReleasedWorkOrder(plannedQty: 100);
 
         _workOrderRepo.Setup(r => r.GetByIdAsync(report.WorkOrderId)).ReturnsAsync(wo);
@@ -280,16 +287,14 @@ public class WorkReportServiceTests
     {
         SetupRedisLockSuccess();
         var report = CreateValidReport(goodQty: 10);
-        report.StepId = 10;
+        TestEntityFactory.SetProperty(report, "StepId", 10L);
         var wo = CreateReleasedWorkOrder();
 
-        var checkpoint = new QcCheckpoint { StepId = 10, IsMandatory = true, CheckType = QcInspectionType.FIRST };
-        var pendingInspection = new QcInspection
-        {
-            WorkOrderId = 1,
-            SourceType = QcInspectionType.FIRST,
-            InspectResult = QcResult.PENDING
-        };
+        var checkpoint = TestEntityFactory.CreateQcCheckpointDirect(stepId: 10, checkType: QcInspectionType.FIRST, isMandatory: true);
+        var pendingInspection = TestEntityFactory.CreateQcInspectionDirect(
+            workOrderId: 1,
+            sourceType: QcInspectionType.FIRST,
+            inspectResult: QcResult.PENDING);
 
         _checkpointData.Clear();
         _checkpointData.Add(checkpoint);
@@ -307,16 +312,14 @@ public class WorkReportServiceTests
     {
         SetupRedisLockSuccess();
         var report = CreateValidReport(goodQty: 10);
-        report.StepId = 10;
+        TestEntityFactory.SetProperty(report, "StepId", 10L);
         var wo = CreateReleasedWorkOrder();
 
-        var checkpoint = new QcCheckpoint { StepId = 10, IsMandatory = true, CheckType = QcInspectionType.FIRST };
-        var passedInspection = new QcInspection
-        {
-            WorkOrderId = 1,
-            SourceType = QcInspectionType.FIRST,
-            InspectResult = QcResult.PASS
-        };
+        var checkpoint = TestEntityFactory.CreateQcCheckpointDirect(stepId: 10, checkType: QcInspectionType.FIRST, isMandatory: true);
+        var passedInspection = TestEntityFactory.CreateQcInspectionDirect(
+            workOrderId: 1,
+            sourceType: QcInspectionType.FIRST,
+            inspectResult: QcResult.PASS);
 
         _checkpointData.Clear();
         _checkpointData.Add(checkpoint);
@@ -384,8 +387,15 @@ public class WorkReportServiceTests
     {
         SetupRedisLockSuccess();
         var report = CreateValidReport(goodQty: 10);
-        var wo = CreateReleasedWorkOrder();
-        wo.Status = WorkOrderStatus.IN_PROGRESS;
+        var wo = TestEntityFactory.CreateWorkOrderDirect(
+            id: 1,
+            orderNo: "WO-001",
+            materialId: 1,
+            plannedQty: 100,
+            completedQty: 0,
+            scrapQty: 0,
+            status: WorkOrderStatus.IN_PROGRESS
+        );
 
         _workOrderRepo.Setup(r => r.GetByIdAsync(report.WorkOrderId)).ReturnsAsync(wo);
         _checkpointRepo.Setup(r => r.FindAsync(It.IsAny<System.Linq.Expressions.Expression<Func<QcCheckpoint, bool>>>()))

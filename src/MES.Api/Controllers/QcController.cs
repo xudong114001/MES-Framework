@@ -4,6 +4,7 @@ using MES.Api.Middleware;
 using MES.Application.Services;
 using MES.Domain.Entities;
 using MES.Domain.Enums;
+using MES.Domain.Exceptions;
 using MES.Infrastructure.Repositories;
 
 namespace MES.Api.Controllers;
@@ -55,14 +56,21 @@ public class QcController : ControllerBase
     /// 创建质检单
     /// </summary>
     [HttpPost("inspections")]
-    public async Task<IActionResult> CreateInspection([FromBody] QcInspection inspection)
+    public async Task<IActionResult> CreateInspection([FromBody] CreateInspectionRequest request)
     {
         try
         {
-            var created = await _qcService.CreateInspectionAsync(inspection);
+            var created = await _qcService.CreateInspectionAsync(
+                request.InspectNo,
+                request.SourceType,
+                request.WorkOrderId,
+                request.MaterialId,
+                request.Inspector,
+                request.SourceRef,
+                request.Remark);
             return Ok(ApiResponse.Ok(created));
         }
-        catch (InvalidOperationException ex)
+        catch (DomainException ex)
         {
             return BadRequest(ApiResponse.Fail(ex.Message));
         }
@@ -72,15 +80,17 @@ public class QcController : ControllerBase
     /// 添加质检项
     /// </summary>
     [HttpPost("inspections/{id}/items")]
-    public async Task<IActionResult> AddItem(long id, [FromBody] QcInspectionItem item)
+    public async Task<IActionResult> AddItem(long id, [FromBody] AddItemRequest request)
     {
-        var inspection = await _inspectionRepo.GetByIdAsync(id);
-        if (inspection == null)
-            return NotFound(ApiResponse.Fail("质检单不存在"));
-
-        item.InspectionId = id;
-        var created = await _qcService.AddItemAsync(item);
-        return Ok(ApiResponse.Ok(created));
+        try
+        {
+            var created = await _qcService.AddItemAsync(id, request.ItemName, request.SpecValue);
+            return Ok(ApiResponse.Ok(created));
+        }
+        catch (DomainException ex)
+        {
+            return BadRequest(ApiResponse.Fail(ex.Message));
+        }
     }
 
     /// <summary>
@@ -97,7 +107,7 @@ public class QcController : ControllerBase
             await _qcService.VerifyInspectionAsync(id, result);
             return Ok(ApiResponse.Ok("判定成功"));
         }
-        catch (InvalidOperationException ex)
+        catch (DomainException ex)
         {
             return BadRequest(ApiResponse.Fail(ex.Message));
         }
@@ -114,7 +124,7 @@ public class QcController : ControllerBase
             await _qcService.HandleNonconformingAsync(id, request.Action, request.Remark);
             return Ok(ApiResponse.Ok("处理成功"));
         }
-        catch (InvalidOperationException ex)
+        catch (DomainException ex)
         {
             return BadRequest(ApiResponse.Fail(ex.Message));
         }
@@ -190,4 +200,21 @@ public class HandleNonconformingRequest
     public string Action { get; set; } = string.Empty;
     /// <summary>处理备注</summary>
     public string? Remark { get; set; }
+}
+
+public class CreateInspectionRequest
+{
+    public string InspectNo { get; set; } = string.Empty;
+    public QcInspectionType SourceType { get; set; }
+    public long? WorkOrderId { get; set; }
+    public long? MaterialId { get; set; }
+    public long? Inspector { get; set; }
+    public string? SourceRef { get; set; }
+    public string? Remark { get; set; }
+}
+
+public class AddItemRequest
+{
+    public string ItemName { get; set; } = string.Empty;
+    public string? SpecValue { get; set; }
 }

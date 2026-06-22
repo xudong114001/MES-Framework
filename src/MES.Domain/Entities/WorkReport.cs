@@ -4,6 +4,35 @@ namespace MES.Domain.Entities;
 
 public class WorkReport : BaseEntity
 {
+    internal WorkReport() { }
+
+    public static WorkReport Create(
+        long workOrderId,
+        ReportType reportType,
+        decimal goodQty,
+        decimal scrapQty = 0,
+        decimal reworkQty = 0,
+        long? stepId = null,
+        long? workstationId = null,
+        long? operatorId = null,
+        string? remark = null)
+    {
+        return new WorkReport
+        {
+            WorkOrderId = workOrderId,
+            StepId = stepId,
+            WorkstationId = workstationId,
+            OperatorId = operatorId,
+            ReportType = reportType,
+            GoodQty = goodQty,
+            ScrapQty = scrapQty,
+            ReworkQty = reworkQty,
+            ReportTime = DateTime.UtcNow,
+            ReportNo = $"RP{DateTime.Now:yyyyMMddHHmmss}{Random.Shared.Next(100, 999)}",
+            Remark = remark
+        };
+    }
+
     public string ReportNo { get; set; } = string.Empty;
     public long WorkOrderId { get; set; }
     public long? StepId { get; set; }

@@ -33,5 +33,12 @@ public class BaseController : ControllerBase
     /// <summary>
     /// 失败响应
     /// </summary>
-    protected IActionResult Fail(string message) => Ok(ApiResponse.Fail(message));
+    protected IActionResult Fail(string message, int statusCode = 400) =>
+        statusCode switch
+        {
+            400 => BadRequest(ApiResponse.Fail(message)),
+            404 => NotFound(ApiResponse.Fail(message)),
+            403 => Forbid(),
+            _ => StatusCode(statusCode, ApiResponse.Fail(message))
+        };
 }

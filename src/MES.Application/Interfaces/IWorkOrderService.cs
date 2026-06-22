@@ -1,3 +1,4 @@
+using MES.Application.Dtos;
 using MES.Domain.Entities;
 using MES.Domain.Enums;
 
@@ -5,7 +6,11 @@ namespace MES.Application.Interfaces;
 
 public interface IWorkOrderService
 {
+    Task<IEnumerable<WorkOrderDto>> GetAllAsync();
+    Task<WorkOrderDto?> GetByIdAsync(long id);
     Task<WorkOrder> CreateWorkOrderAsync(WorkOrder workOrder);
+    Task UpdateWorkOrderAsync(WorkOrder workOrder);
+    Task DeleteWorkOrderAsync(long id);
     Task ReleaseWorkOrderAsync(long workOrderId);
     Task HoldWorkOrderAsync(long workOrderId);
     Task ResumeWorkOrderAsync(long workOrderId);

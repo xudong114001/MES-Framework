@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Logging;
+using MES.Application.Dtos;
 using MES.Application.Interfaces;
 using MES.Application.Integration.Events;
 using MES.Domain.Entities;
@@ -8,7 +9,7 @@ using StackExchange.Redis;
 
 namespace MES.Application.Services;
 
-public class WorkReportService
+public class WorkReportService : IWorkReportService
 {
     private readonly IRepository<WorkReport> _reportRepo;
     private readonly IRepository<WorkOrder> _workOrderRepo;
@@ -46,6 +47,69 @@ public class WorkReportService
         _eventBus = eventBus;
         _eventLog = eventLog;
         _logger = logger;
+    }
+
+    /// <summary>
+    /// 将 WorkReport 实体映射为 DTO
+    /// </summary>
+    private static WorkReportDto MapToDto(WorkReport entity)
+    {
+        return new WorkReportDto
+        {
+            Id = entity.Id,
+            ReportNo = entity.ReportNo,
+            WorkOrderId = entity.WorkOrderId,
+            StepId = entity.StepId,
+            WorkstationId = entity.WorkstationId,
+            OperatorId = entity.OperatorId,
+            ReportType = entity.ReportType,
+            GoodQty = entity.GoodQty,
+            ScrapQty = entity.ScrapQty,
+            ReworkQty = entity.ReworkQty,
+            DurationMin = entity.DurationMin,
+            ReportTime = entity.ReportTime,
+            Remark = entity.Remark,
+            BatchNo = entity.BatchNo,
+            CreatedAt = entity.CreatedAt,
+            CreatedBy = entity.CreatedBy,
+            UpdatedAt = entity.UpdatedAt,
+            UpdatedBy = entity.UpdatedBy
+        };
+    }
+
+    /// <summary>
+    /// 获取所有报工记录
+    /// </summary>
+    public async Task<IEnumerable<WorkReportDto>> GetAllAsync()
+    {
+        var entities = await _reportRepo.GetAllAsync();
+        return entities.Select(MapToDto);
+    }
+
+    /// <summary>
+    /// 根据ID获取报工记录
+    /// </summary>
+    public async Task<WorkReportDto?> GetByIdAsync(long id)
+    {
+        var entity = await _reportRepo.GetByIdAsync(id);
+        return entity == null ? null : MapToDto(entity);
+    }
+
+    /// <summary>
+    /// 更新报工记录
+    /// </summary>
+    public async Task UpdateWorkReportAsync(WorkReport report)
+    {
+        var existing = await _reportRepo.GetByIdAsync(report.Id);
+        if (existing == null)
+            throw new InvalidOperationException("报工记录不存在");
+
+        // 保留审计字段
+        report.CreatedAt = existing.CreatedAt;
+        report.CreatedBy = existing.CreatedBy;
+        report.UpdatedAt = DateTime.UtcNow;
+
+        await _reportRepo.UpdateAsync(report);
     }
 
     /// <summary>
@@ -89,14 +153,8 @@ public class WorkReportService
         if (totalReported + currentTotal > wo.PlannedQty)
             throw new InvalidOperationException($"报工数量({currentTotal})超过剩余可报工数量({wo.PlannedQty - totalReported})");
 
-        // 更新工单数量
-        wo.CompletedQty += report.GoodQty;
-        wo.ScrapQty += report.ScrapQty;
-        wo.Status = WorkOrderStatus.IN_PROGRESS;
-
-        // 如果全部完工，标记工单完成
-        if (wo.CompletedQty + wo.ScrapQty >= wo.PlannedQty)
-            wo.Status = WorkOrderStatus.COMPLETED;
+        // 使用领域方法更新工单进度
+        wo.ReportProgress(report.GoodQty, report.ScrapQty, report.ReworkQty);
 
         await _workOrderRepo.UpdateAsync(wo);
 
@@ -106,13 +164,7 @@ public class WorkReportService
             var step = (await _stepRepo.FindAsync(s => s.Id == report.StepId.Value)).FirstOrDefault();
             if (step != null)
             {
-                step.CompletedQty += report.GoodQty;
-                step.ScrapQty += report.ScrapQty;
-                step.Status = WorkOrderStatus.IN_PROGRESS;
-
-                if (step.CompletedQty + step.ScrapQty >= step.PlannedQty)
-                    step.Status = WorkOrderStatus.COMPLETED;
-
+                step.UpdateProgress(report.GoodQty, report.ScrapQty);
                 await _stepRepo.UpdateAsync(step);
             }
         }
@@ -213,42 +265,18 @@ public class WorkReportService
         matchedStep = steps.FirstOrDefault();
 
         // 5. 构建 WorkReport 并提交
-        var report = new WorkReport
-        {
-            WorkOrderId = wo.Id,
-            StepId = matchedStep?.Id,
-            WorkstationId = workstation.Id,
-            OperatorId = operatorUser.Id,
-            ReportType = ReportType.COMPLETE,
-            GoodQty = request.GoodQty,
-            ScrapQty = request.ScrapQty,
-            ReworkQty = request.ReworkQty,
-            ReportTime = DateTime.UtcNow,
-            ReportNo = $"RP{DateTime.Now:yyyyMMddHHmmss}{Random.Shared.Next(100, 999)}",
-            Remark = $"PDA扫码报工 - {request.WorkstationCode}"
-        };
+        var report = WorkReport.Create(
+            workOrderId: wo.Id,
+            reportType: ReportType.COMPLETE,
+            goodQty: request.GoodQty,
+            scrapQty: request.ScrapQty,
+            reworkQty: request.ReworkQty,
+            stepId: matchedStep?.Id,
+            workstationId: workstation.Id,
+            operatorId: operatorUser.Id,
+            remark: $"PDA扫码报工 - {request.WorkstationCode}"
+        );
 
         return await SubmitReportAsync(report);
     }
-}
-
-/// <summary>
-/// PDA 扫码报工请求体
-/// </summary>
-public class PdaScanReportRequest
-{
-    /// <summary>扫描工单号</summary>
-    public string ScanCode { get; set; } = string.Empty;
-    /// <summary>工序名称</summary>
-    public string StepName { get; set; } = string.Empty;
-    /// <summary>工位编码</summary>
-    public string WorkstationCode { get; set; } = string.Empty;
-    /// <summary>操作工编码</summary>
-    public string OperatorCode { get; set; } = string.Empty;
-    /// <summary>良品数量</summary>
-    public decimal GoodQty { get; set; }
-    /// <summary>报废数量</summary>
-    public decimal ScrapQty { get; set; }
-    /// <summary>返工数量</summary>
-    public decimal ReworkQty { get; set; }
 }

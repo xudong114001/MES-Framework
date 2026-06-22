@@ -3,6 +3,7 @@ using MES.AI.Application.Services;
 using MES.Domain.Entities;
 using MES.Domain.Enums;
 using MES.Infrastructure.Repositories;
+using MES.Tests;
 using Moq;
 using Xunit;
 
@@ -36,7 +37,7 @@ public class SchedulingRecommendationServiceTests
     [Fact]
     public async Task GetRecommendationsAsync_ReturnsEmpty_WhenNoActiveLines()
     {
-        var workOrder = new WorkOrder { Id = 1, MaterialId = 1 };
+        var workOrder = TestEntityFactory.CreateWorkOrderDirect(id: 1, orderNo: "WO-001", materialId: 1);
         _workOrderRepo.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(workOrder);
         _lineRepo.Setup(r => r.FindAsync(It.IsAny<System.Linq.Expressions.Expression<Func<ProductionLine, bool>>>()))
             .ReturnsAsync(new List<ProductionLine>().AsEnumerable());
@@ -57,15 +58,16 @@ public class SchedulingRecommendationServiceTests
     [Fact]
     public async Task GetRecommendationsAsync_ReturnsResults_WhenValidInput()
     {
-        var workOrder = new WorkOrder
-        {
-            Id = 1,
-            MaterialId = 1,
-            RoutingId = 1,
-            PlannedQty = 100,
-            PlanStartTime = DateTime.UtcNow,
-            PlanEndTime = DateTime.UtcNow.AddDays(5)
-        };
+        var workOrder = TestEntityFactory.CreateWorkOrderDirect(
+            id: 1,
+            orderNo: "WO-001",
+            materialId: 1,
+            routingId: 1,
+            plannedQty: 100,
+            status: WorkOrderStatus.PENDING
+        );
+        TestEntityFactory.SetProperty(workOrder, "PlanStartTime", DateTime.UtcNow);
+        TestEntityFactory.SetProperty(workOrder, "PlanEndTime", DateTime.UtcNow.AddDays(5));
 
         var lines = new List<ProductionLine>
         {

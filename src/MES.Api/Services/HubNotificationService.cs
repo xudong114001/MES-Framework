@@ -5,7 +5,7 @@ namespace MES.Api.Services;
 
 /// <summary>
 /// SignalR 消息推送服务
-/// 通过 IHubContext<MesHub> 向客户端推送实时消息
+/// 通过 IHubContext to MesHub 向客户端推送实时消息
 /// </summary>
 public class HubNotificationService
 {

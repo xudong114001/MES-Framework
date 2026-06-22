@@ -1,5 +1,6 @@
 using MES.Domain.Entities;
 using MES.Domain.Enums;
+using MES.Domain.Exceptions;
 using MES.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
 
@@ -28,11 +29,11 @@ public class EquipmentService
     public async Task RecordMaintenanceAsync(long equipmentId)
     {
         var eq = await _equipmentRepo.GetByIdAsync(equipmentId);
-        if (eq == null) throw new InvalidOperationException("设备不存在");
-        eq.LastMaintainDate = DateTime.UtcNow;
-        if (eq.MaintainCycle > 0)
-            eq.NextMaintainDate = DateTime.UtcNow.AddDays((double)eq.MaintainCycle);
-        eq.Status = EquipmentStatus.RUNNING;
+        if (eq == null)
+            throw new DomainException("设备不存在");
+
+        // 使用领域方法记录保养
+        eq.RecordMaintenance();
         await _equipmentRepo.UpdateAsync(eq);
     }
 
@@ -40,8 +41,11 @@ public class EquipmentService
     public async Task ReportFaultAsync(long equipmentId)
     {
         var eq = await _equipmentRepo.GetByIdAsync(equipmentId);
-        if (eq == null) throw new InvalidOperationException("设备不存在");
-        eq.Status = EquipmentStatus.BROKEN;
+        if (eq == null)
+            throw new DomainException("设备不存在");
+
+        // 使用领域方法报修
+        eq.ReportFault();
         await _equipmentRepo.UpdateAsync(eq);
     }
 
@@ -52,7 +56,8 @@ public class EquipmentService
     public async Task<OeeResult> CalculateOeeAsync(long equipmentId)
     {
         var eq = await _equipmentRepo.GetByIdAsync(equipmentId);
-        if (eq == null) throw new InvalidOperationException("设备不存在");
+        if (eq == null)
+            throw new DomainException("设备不存在");
 
         // 从 WorkReport 统计今日报工数据（最近30天有效数据）
         var thirtyDaysAgo = DateTime.UtcNow.AddDays(-30);
@@ -171,17 +176,12 @@ public class EquipmentService
         long equipmentId, string planName, int cycleDays, string? description)
     {
         var eq = await _equipmentRepo.GetByIdAsync(equipmentId);
-        if (eq == null) throw new InvalidOperationException("设备不存在");
+        if (eq == null)
+            throw new DomainException("设备不存在");
 
-        var plan = new MaintenancePlan
-        {
-            EquipmentId = equipmentId,
-            PlanName = planName,
-            CycleDays = cycleDays,
-            NextDueDate = DateTime.UtcNow.AddDays(cycleDays),
-            Description = description,
-            Status = MaintenancePlanStatus.PENDING
-        };
+        // 使用设备领域方法添加保养计划
+        var plan = eq.AddMaintenancePlan(planName, cycleDays, description);
+        await _equipmentRepo.UpdateAsync(eq);
 
         return await _maintenancePlanRepo.AddAsync(plan);
     }
@@ -197,20 +197,18 @@ public class EquipmentService
     public async Task CompleteMaintenanceAsync(long planId)
     {
         var plan = await _maintenancePlanRepo.GetByIdAsync(planId);
-        if (plan == null) throw new InvalidOperationException("保养计划不存在");
+        if (plan == null)
+            throw new DomainException("保养计划不存在");
 
-        plan.LastCompletedDate = DateTime.UtcNow;
-        plan.NextDueDate = DateTime.UtcNow.AddDays(plan.CycleDays);
-        plan.Status = MaintenancePlanStatus.COMPLETED;
+        // 使用领域方法完成保养
+        plan.Complete();
         await _maintenancePlanRepo.UpdateAsync(plan);
 
         // 同时更新设备的保养记录
         var eq = await _equipmentRepo.GetByIdAsync(plan.EquipmentId);
         if (eq != null)
         {
-            eq.LastMaintainDate = DateTime.UtcNow;
-            eq.NextMaintainDate = plan.NextDueDate;
-            eq.Status = EquipmentStatus.RUNNING;
+            eq.RecordMaintenance();
             await _equipmentRepo.UpdateAsync(eq);
         }
     }
@@ -231,25 +229,17 @@ public class EquipmentService
 
         var plans = await query.ToListAsync();
 
-        // 加载设备信息
+        // 加载设备信息用于筛选和显示
         var equipmentIds = plans.Select(p => p.EquipmentId).Distinct().ToList();
         var equipmentDict = (await _equipmentRepo.FindAsync(e => equipmentIds.Contains(e.Id)))
             .ToDictionary(e => e.Id, e => e.Name);
 
-        // 添加设备名称到计划对象
-        foreach (var plan in plans)
-        {
-            if (plan.Equipment == null && equipmentDict.ContainsKey(plan.EquipmentId))
-            {
-                plan.Equipment = new Equipment { Id = plan.EquipmentId, Name = equipmentDict[plan.EquipmentId] };
-            }
-        }
-
-        // 按设备名称筛选
+        // 按设备名称筛选（使用设备名称字典）
         if (!string.IsNullOrEmpty(equipmentName))
         {
             plans = plans
-                .Where(p => p.Equipment != null && p.Equipment.Name.Contains(equipmentName, StringComparison.OrdinalIgnoreCase))
+                .Where(p => equipmentDict.ContainsKey(p.EquipmentId) &&
+                           equipmentDict[p.EquipmentId].Contains(equipmentName, StringComparison.OrdinalIgnoreCase))
                 .ToList();
         }
 
@@ -271,11 +261,18 @@ public class EquipmentService
         long planId, string planName, int cycleDays, string? description)
     {
         var plan = await _maintenancePlanRepo.GetByIdAsync(planId);
-        if (plan == null) throw new InvalidOperationException("保养计划不存在");
+        if (plan == null)
+            throw new DomainException("保养计划不存在");
 
-        plan.PlanName = planName;
-        plan.CycleDays = cycleDays;
-        plan.Description = description;
+        // 使用领域方法更新
+        if (!string.IsNullOrWhiteSpace(planName))
+            plan.UpdatePlanName(planName);
+
+        plan.UpdateCycleDays(cycleDays);
+
+        if (description != null)
+            plan.UpdateDescription(description);
+
         await _maintenancePlanRepo.UpdateAsync(plan);
         return plan;
     }
@@ -286,7 +283,9 @@ public class EquipmentService
     public async Task DeleteMaintenancePlanAsync(long planId)
     {
         var plan = await _maintenancePlanRepo.GetByIdAsync(planId);
-        if (plan == null) throw new InvalidOperationException("保养计划不存在");
+        if (plan == null)
+            throw new DomainException("保养计划不存在");
+
         await _maintenancePlanRepo.DeleteAsync(plan);
     }
 }

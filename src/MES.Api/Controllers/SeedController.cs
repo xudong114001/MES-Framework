@@ -177,14 +177,7 @@ public class SeedController : ControllerBase
             var routing = await _db.Routings.FirstOrDefaultAsync(r => r.RoutingCode == "R-SMT-FGA001");
             if (routing == null)
             {
-                routing = new Routing
-                {
-                    MaterialId = fgA001.Id,
-                    RoutingCode = "R-SMT-FGA001",
-                    RoutingName = "PCBA SMT贴片工艺",
-                    Version = "V1.0",
-                    Status = true
-                };
+                routing = Routing.Create(fgA001.Id, "R-SMT-FGA001", "PCBA SMT贴片工艺");
                 _db.Routings.Add(routing);
                 await _db.SaveChangesAsync();
                 stats.Routings = 1;
@@ -192,11 +185,11 @@ public class SeedController : ControllerBase
                 // 步骤：上板→涂锡→贴片→回流焊→AOI检测
                 var steps = new List<RoutingStep>
                 {
-                    new() { RoutingId = routing.Id, StepNo = 10, StepName = "上板", StandardTime = 0.5m, IsQcPoint = false, IsScrapPoint = false },
-                    new() { RoutingId = routing.Id, StepNo = 20, StepName = "涂锡", StandardTime = 1.0m, IsQcPoint = false, IsScrapPoint = false },
-                    new() { RoutingId = routing.Id, StepNo = 30, StepName = "贴片", StandardTime = 3.0m, IsQcPoint = false, IsScrapPoint = false },
-                    new() { RoutingId = routing.Id, StepNo = 40, StepName = "回流焊", StandardTime = 2.0m, IsQcPoint = false, IsScrapPoint = false },
-                    new() { RoutingId = routing.Id, StepNo = 50, StepName = "AOI检测", StandardTime = 1.0m, IsQcPoint = true, IsScrapPoint = false },
+                    RoutingStep.Create(routing.Id, "上板", 10, 0.5m),
+                    RoutingStep.Create(routing.Id, "涂锡", 20, 1.0m),
+                    RoutingStep.Create(routing.Id, "贴片", 30, 3.0m),
+                    RoutingStep.Create(routing.Id, "回流焊", 40, 2.0m),
+                    RoutingStep.Create(routing.Id, "AOI检测", 50, 1.0m, isQcPoint: true),
                 };
                 _db.RoutingSteps.AddRange(steps);
                 await _db.SaveChangesAsync();
@@ -211,23 +204,16 @@ public class SeedController : ControllerBase
             var routingAssy = await _db.Routings.FirstOrDefaultAsync(r => r.RoutingCode == "R-ASSY-FGA002");
             if (routingAssy == null)
             {
-                routingAssy = new Routing
-                {
-                    MaterialId = fgA002.Id,
-                    RoutingCode = "R-ASSY-FGA002",
-                    RoutingName = "成品模组组装工艺",
-                    Version = "V1.0",
-                    Status = true
-                };
+                routingAssy = Routing.Create(fgA002.Id, "R-ASSY-FGA002", "成品模组组装工艺");
                 _db.Routings.Add(routingAssy);
                 await _db.SaveChangesAsync();
                 stats.Routings++;
 
                 var stepsAssy = new List<RoutingStep>
                 {
-                    new() { RoutingId = routingAssy.Id, StepNo = 10, StepName = "手工插件", StandardTime = 2.0m, IsQcPoint = false, IsScrapPoint = false },
-                    new() { RoutingId = routingAssy.Id, StepNo = 20, StepName = "波峰焊", StandardTime = 1.5m, IsQcPoint = false, IsScrapPoint = false },
-                    new() { RoutingId = routingAssy.Id, StepNo = 30, StepName = "功能测试", StandardTime = 1.0m, IsQcPoint = true, IsScrapPoint = false },
+                    RoutingStep.Create(routingAssy.Id, "手工插件", 10, 2.0m),
+                    RoutingStep.Create(routingAssy.Id, "波峰焊", 20, 1.5m),
+                    RoutingStep.Create(routingAssy.Id, "功能测试", 30, 1.0m, isQcPoint: true),
                 };
                 _db.RoutingSteps.AddRange(stepsAssy);
                 await _db.SaveChangesAsync();
@@ -242,23 +228,16 @@ public class SeedController : ControllerBase
             var routingFinal = await _db.Routings.FirstOrDefaultAsync(r => r.RoutingCode == "R-FINAL-FGA003");
             if (routingFinal == null)
             {
-                routingFinal = new Routing
-                {
-                    MaterialId = fgA003.Id,
-                    RoutingCode = "R-FINAL-FGA003",
-                    RoutingName = "整机总装工艺",
-                    Version = "V1.0",
-                    Status = true
-                };
+                routingFinal = Routing.Create(fgA003.Id, "R-FINAL-FGA003", "整机总装工艺");
                 _db.Routings.Add(routingFinal);
                 await _db.SaveChangesAsync();
                 stats.Routings++;
 
                 var stepsFinal = new List<RoutingStep>
                 {
-                    new() { RoutingId = routingFinal.Id, StepNo = 10, StepName = "整机组装", StandardTime = 3.0m, IsQcPoint = false, IsScrapPoint = false },
-                    new() { RoutingId = routingFinal.Id, StepNo = 20, StepName = "老化测试", StandardTime = 4.0m, IsQcPoint = true, IsScrapPoint = false },
-                    new() { RoutingId = routingFinal.Id, StepNo = 30, StepName = "包装", StandardTime = 1.0m, IsQcPoint = false, IsScrapPoint = false },
+                    RoutingStep.Create(routingFinal.Id, "整机组装", 10, 3.0m),
+                    RoutingStep.Create(routingFinal.Id, "老化测试", 20, 4.0m, isQcPoint: true),
+                    RoutingStep.Create(routingFinal.Id, "包装", 30, 1.0m),
                 };
                 _db.RoutingSteps.AddRange(stepsFinal);
                 await _db.SaveChangesAsync();
@@ -274,78 +253,67 @@ public class SeedController : ControllerBase
             var now = DateTime.UtcNow;
 
             stats.WorkOrders += await CreateWorkOrderIfNotExist("WO-20260511-001",
-                () => new WorkOrder
-                {
-                    OrderNo = "WO-20260511-001",
-                    SourceType = SourceType.MANUAL,
-                    MaterialId = fgA001.Id,
-                    RoutingId = routing.Id,
-                    PlannedQty = 100,
-                    CompletedQty = 0,
-                    ScrapQty = 0,
-                    Status = WorkOrderStatus.PENDING,
-                    PlanStartTime = now.AddDays(1),
-                    PlanEndTime = now.AddDays(3),
-                    Priority = Priority.NORMAL,
-                    FactoryId = factory.Id,
-                    WorkshopId = wsSmt.Id,
-                    LineId = smt01.Id,
-                    Remark = "PCBA板试产工单"
-                });
+                () => WorkOrder.Create(
+                    "WO-20260511-001",
+                    SourceType.MANUAL,
+                    fgA001.Id,
+                    100,
+                    Priority.NORMAL,
+                    routing.Id,
+                    null,
+                    now.AddDays(1),
+                    now.AddDays(3),
+                    factory.Id,
+                    wsSmt.Id,
+                    smt01.Id,
+                    null,
+                    "PCBA板试产工单"));
 
             stats.WorkOrders += await CreateWorkOrderIfNotExist("WO-20260511-002",
-                () => new WorkOrder
-                {
-                    OrderNo = "WO-20260511-002",
-                    SourceType = SourceType.MANUAL,
-                    MaterialId = fgA002.Id,
-                    RoutingId = routingAssy.Id,
-                    PlannedQty = 50,
-                    CompletedQty = 0,
-                    ScrapQty = 0,
-                    Status = WorkOrderStatus.PENDING,
-                    PlanStartTime = now.AddDays(2),
-                    PlanEndTime = now.AddDays(5),
-                    Priority = Priority.NORMAL,
-                    FactoryId = factory.Id,
-                    WorkshopId = wsAssembly.Id,
-                    LineId = assy01.Id,
-                    Remark = "成品模组试产工单"
-                });
+                () => WorkOrder.Create(
+                    "WO-20260511-002",
+                    SourceType.MANUAL,
+                    fgA002.Id,
+                    50,
+                    Priority.NORMAL,
+                    routingAssy.Id,
+                    null,
+                    now.AddDays(2),
+                    now.AddDays(5),
+                    factory.Id,
+                    wsAssembly.Id,
+                    assy01.Id,
+                    null,
+                    "成品模组试产工单"));
 
             stats.WorkOrders += await CreateWorkOrderIfNotExist("WO-20260511-003",
-                () => new WorkOrder
-                {
-                    OrderNo = "WO-20260511-003",
-                    SourceType = SourceType.MANUAL,
-                    MaterialId = fgA003.Id,
-                    RoutingId = routingFinal.Id,
-                    PlannedQty = 200,
-                    CompletedQty = 0,
-                    ScrapQty = 0,
-                    Status = WorkOrderStatus.PENDING,
-                    PlanStartTime = now.AddDays(3),
-                    PlanEndTime = now.AddDays(7),
-                    Priority = Priority.NORMAL,
-                    FactoryId = factory.Id,
-                    WorkshopId = wsAssembly.Id,
-                    LineId = assy02.Id,
-                    Remark = "整机试产工单"
-                });
+                () => WorkOrder.Create(
+                    "WO-20260511-003",
+                    SourceType.MANUAL,
+                    fgA003.Id,
+                    200,
+                    Priority.NORMAL,
+                    routingFinal.Id,
+                    null,
+                    now.AddDays(3),
+                    now.AddDays(7),
+                    factory.Id,
+                    wsAssembly.Id,
+                    assy02.Id,
+                    null,
+                    "整机试产工单"));
 
             // ── 9. 操作员用户 ──────────────────────────────────────
             var existingUser = await _db.Users.FirstOrDefaultAsync(u => u.Username == "operator");
             if (existingUser == null)
             {
                 var pwHash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes("123456")));
-                _db.Users.Add(new User
-                {
-                    Username = "operator",
-                    PasswordHash = pwHash,
-                    DisplayName = "操作员",
-                    Email = "operator@demo.com",
-                    Status = true
-                });
+                _db.Users.Add(Domain.Entities.User.Create(
+                    username: "operator",
+                    displayName: "操作员",
+                    passwordHash: pwHash,
+                    email: "operator@demo.com"
+                ));
                 await _db.SaveChangesAsync();
                 stats.Users = 1;
             }
@@ -369,7 +337,7 @@ public class SeedController : ControllerBase
     {
         var exists = await _db.Workstations.AnyAsync(w => w.Code == code);
         if (exists) return 0;
-        _db.Workstations.Add(new Workstation { LineId = lineId, Code = code, Name = name, SeqNo = seqNo, Status = true });
+        _db.Workstations.Add(Workstation.Create(lineId, code, name, seqNo));
         await _db.SaveChangesAsync();
         return 1;
     }

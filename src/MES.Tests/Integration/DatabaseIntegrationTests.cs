@@ -9,6 +9,7 @@ using MES.Infrastructure.Data;
 using Xunit;
 using Xunit.Abstractions;
 using Assert = Xunit.Assert;
+using MES.Tests;
 
 namespace MES.Tests.Integration;
 
@@ -39,17 +40,16 @@ public class DatabaseIntegrationTests : IntegrationTestBase
         db.Materials.Add(material);
         await db.SaveChangesAsync();
 
-        var workOrder = new WorkOrder
-        {
-            OrderNo = $"WO-{Guid.NewGuid():N}",
-            SourceType = SourceType.MANUAL,
-            MaterialId = material.Id,
-            PlannedQty = 100,
-            CompletedQty = 0,
-            ScrapQty = 0,
-            Status = WorkOrderStatus.IN_PROGRESS,
-            Priority = Priority.NORMAL
-        };
+        var workOrder = TestEntityFactory.CreateWorkOrderDirect(
+            id: 0,
+            orderNo: $"WO-{Guid.NewGuid():N}",
+            materialId: material.Id,
+            plannedQty: 100,
+            completedQty: 0,
+            scrapQty: 0,
+            status: WorkOrderStatus.IN_PROGRESS,
+            priority: Priority.NORMAL
+        );
         db.WorkOrders.Add(workOrder);
         await db.SaveChangesAsync();
 
@@ -89,8 +89,10 @@ public class DatabaseIntegrationTests : IntegrationTestBase
                         try
                         {
                             var wo = await db.WorkOrders.FirstAsync(w => w.Id == workOrderId);
-                            wo.CompletedQty += 1;
-                            wo.UpdatedAt = DateTime.UtcNow;
+                            // 使用原始 SQL 更新，因为 CompletedQty 是 private set
+                            await db.Database.ExecuteSqlRawAsync(
+                                "UPDATE work_orders SET completed_qty = completed_qty + 1, updated_at = {0} WHERE id = {1}",
+                                DateTime.UtcNow, workOrderId);
 
                             var report = new WorkReport
                             {
@@ -157,14 +159,15 @@ public class DatabaseIntegrationTests : IntegrationTestBase
         DbContext.Materials.Add(material);
         await DbContext.SaveChangesAsync();
 
-        var workOrder = new WorkOrder
-        {
-            OrderNo = $"WO-DEL-{Guid.NewGuid():N}",
-            SourceType = SourceType.MANUAL,
-            MaterialId = material.Id,
-            PlannedQty = 50,
-            Status = WorkOrderStatus.PENDING
-        };
+        var workOrder = TestEntityFactory.CreateWorkOrderDirect(
+            id: 0,
+            orderNo: $"WO-DEL-{Guid.NewGuid():N}",
+            materialId: material.Id,
+            plannedQty: 50,
+            completedQty: 0,
+            scrapQty: 0,
+            status: WorkOrderStatus.PENDING
+        );
         DbContext.WorkOrders.Add(workOrder);
         await DbContext.SaveChangesAsync();
 
@@ -202,14 +205,15 @@ public class DatabaseIntegrationTests : IntegrationTestBase
         DbContext.Materials.Add(material);
         await DbContext.SaveChangesAsync();
 
-        var workOrder = new WorkOrder
-        {
-            OrderNo = "WO-PERF",
-            SourceType = SourceType.MANUAL,
-            MaterialId = material.Id,
-            PlannedQty = 100000,
-            Status = WorkOrderStatus.IN_PROGRESS
-        };
+        var workOrder = TestEntityFactory.CreateWorkOrderDirect(
+            id: 0,
+            orderNo: "WO-PERF",
+            materialId: material.Id,
+            plannedQty: 100000,
+            completedQty: 0,
+            scrapQty: 0,
+            status: WorkOrderStatus.IN_PROGRESS
+        );
         DbContext.WorkOrders.Add(workOrder);
         await DbContext.SaveChangesAsync();
 
@@ -284,16 +288,15 @@ public class DatabaseIntegrationTests : IntegrationTestBase
         DbContext.Materials.Add(material);
         await DbContext.SaveChangesAsync();
 
-        var workOrder = new WorkOrder
-        {
-            OrderNo = $"WO-RB-{Guid.NewGuid():N}",
-            SourceType = SourceType.MANUAL,
-            MaterialId = material.Id,
-            PlannedQty = 100,
-            CompletedQty = 10,
-            ScrapQty = 0,
-            Status = WorkOrderStatus.IN_PROGRESS
-        };
+        var workOrder = TestEntityFactory.CreateWorkOrderDirect(
+            id: 0,
+            orderNo: $"WO-RB-{Guid.NewGuid():N}",
+            materialId: material.Id,
+            plannedQty: 100,
+            completedQty: 10,
+            scrapQty: 0,
+            status: WorkOrderStatus.IN_PROGRESS
+        );
         DbContext.WorkOrders.Add(workOrder);
         await DbContext.SaveChangesAsync();
 
@@ -303,9 +306,10 @@ public class DatabaseIntegrationTests : IntegrationTestBase
         using var txDb = CreateNewDbContext();
         await using var transaction = await txDb.Database.BeginTransactionAsync();
 
-        var wo = await txDb.WorkOrders.FirstAsync(w => w.Id == workOrder.Id);
-        wo.CompletedQty = 999; // 修改
-        wo.Status = WorkOrderStatus.COMPLETED;
+        // 使用原始 SQL 更新，因为 CompletedQty 和 Status 是 private set
+        await txDb.Database.ExecuteSqlRawAsync(
+            "UPDATE work_orders SET completed_qty = 999, status = {0}, updated_at = {1} WHERE id = {2}",
+            (int)WorkOrderStatus.COMPLETED, DateTime.UtcNow, workOrder.Id);
 
         var report = new WorkReport
         {

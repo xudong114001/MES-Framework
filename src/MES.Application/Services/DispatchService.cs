@@ -36,7 +36,7 @@ public class DispatchService : IDispatchService
         var ws = await _workstationRepo.GetByIdAsync(workstationId)
             ?? throw new InvalidOperationException("工位不存在");
 
-        step.WorkstationId = workstationId;
+        step.AssignWorkstation(workstationId);
         step.UpdatedAt = DateTime.UtcNow;
         await _stepRepo.UpdateAsync(step);
     }
@@ -47,7 +47,7 @@ public class DispatchService : IDispatchService
         var step = await _stepRepo.GetByIdAsync(workOrderStepId)
             ?? throw new InvalidOperationException("工序不存在");
 
-        step.WorkstationId = null;
+        step.UnassignWorkstation();
         step.UpdatedAt = DateTime.UtcNow;
         await _stepRepo.UpdateAsync(step);
     }

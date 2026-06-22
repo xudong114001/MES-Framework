@@ -4,6 +4,7 @@ using MES.AI.Domain.Enums;
 using MES.Domain.Entities;
 using MES.Domain.Enums;
 using MES.Infrastructure.Repositories;
+using MES.Tests;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
@@ -40,16 +41,20 @@ public class QualityAlertServiceTests
     {
         var orders = new List<WorkOrder>
         {
-            new() { Id = 1, LineId = 1, Status = WorkOrderStatus.COMPLETED, CreatedAt = DateTime.UtcNow.AddDays(-3), PlannedQty = 100 },
-            new() { Id = 2, LineId = 1, Status = WorkOrderStatus.COMPLETED, CreatedAt = DateTime.UtcNow.AddDays(-2), PlannedQty = 100 },
-            new() { Id = 3, LineId = 1, Status = WorkOrderStatus.COMPLETED, CreatedAt = DateTime.UtcNow.AddDays(-1), PlannedQty = 100 }
+            TestEntityFactory.CreateWorkOrderDirect(id: 1, orderNo: "WO-001", materialId: 1, plannedQty: 100, completedQty: 100, scrapQty: 0, status: WorkOrderStatus.COMPLETED, lineId: 1),
+            TestEntityFactory.CreateWorkOrderDirect(id: 2, orderNo: "WO-002", materialId: 1, plannedQty: 100, completedQty: 100, scrapQty: 0, status: WorkOrderStatus.COMPLETED, lineId: 1),
+            TestEntityFactory.CreateWorkOrderDirect(id: 3, orderNo: "WO-003", materialId: 1, plannedQty: 100, completedQty: 100, scrapQty: 0, status: WorkOrderStatus.COMPLETED, lineId: 1)
         };
+        // 设置 CreatedAt 需要使用反射
+        TestEntityFactory.SetProperty(orders[0], "CreatedAt", DateTime.UtcNow.AddDays(-3));
+        TestEntityFactory.SetProperty(orders[1], "CreatedAt", DateTime.UtcNow.AddDays(-2));
+        TestEntityFactory.SetProperty(orders[2], "CreatedAt", DateTime.UtcNow.AddDays(-1));
 
         var reports = new List<WorkReport>
         {
-            new() { Id = 1, WorkOrderId = 1, GoodQty = 94, ScrapQty = 6, ReworkQty = 0 },
-            new() { Id = 2, WorkOrderId = 2, GoodQty = 93, ScrapQty = 7, ReworkQty = 0 },
-            new() { Id = 3, WorkOrderId = 3, GoodQty = 92, ScrapQty = 8, ReworkQty = 0 }
+            TestEntityFactory.CreateWorkReportDirect(id: 1, workOrderId: 1, goodQty: 94, scrapQty: 6, reworkQty: 0),
+            TestEntityFactory.CreateWorkReportDirect(id: 2, workOrderId: 2, goodQty: 93, scrapQty: 7, reworkQty: 0),
+            TestEntityFactory.CreateWorkReportDirect(id: 3, workOrderId: 3, goodQty: 92, scrapQty: 8, reworkQty: 0)
         };
 
         _workOrderRepo.Setup(r => r.GetAllAsync()).ReturnsAsync(orders);
@@ -66,16 +71,19 @@ public class QualityAlertServiceTests
     {
         var orders = new List<WorkOrder>
         {
-            new() { Id = 1, LineId = 1, Status = WorkOrderStatus.COMPLETED, CreatedAt = DateTime.UtcNow.AddDays(-3) },
-            new() { Id = 2, LineId = 1, Status = WorkOrderStatus.COMPLETED, CreatedAt = DateTime.UtcNow.AddDays(-2) },
-            new() { Id = 3, LineId = 1, Status = WorkOrderStatus.COMPLETED, CreatedAt = DateTime.UtcNow.AddDays(-1) }
+            TestEntityFactory.CreateWorkOrderDirect(id: 1, orderNo: "WO-001", materialId: 1, plannedQty: 100, completedQty: 100, scrapQty: 0, status: WorkOrderStatus.COMPLETED, lineId: 1),
+            TestEntityFactory.CreateWorkOrderDirect(id: 2, orderNo: "WO-002", materialId: 1, plannedQty: 100, completedQty: 100, scrapQty: 0, status: WorkOrderStatus.COMPLETED, lineId: 1),
+            TestEntityFactory.CreateWorkOrderDirect(id: 3, orderNo: "WO-003", materialId: 1, plannedQty: 100, completedQty: 100, scrapQty: 0, status: WorkOrderStatus.COMPLETED, lineId: 1)
         };
+        TestEntityFactory.SetProperty(orders[0], "CreatedAt", DateTime.UtcNow.AddDays(-3));
+        TestEntityFactory.SetProperty(orders[1], "CreatedAt", DateTime.UtcNow.AddDays(-2));
+        TestEntityFactory.SetProperty(orders[2], "CreatedAt", DateTime.UtcNow.AddDays(-1));
 
         var reports = new List<WorkReport>
         {
-            new() { Id = 1, WorkOrderId = 1, GoodQty = 99, ScrapQty = 1, ReworkQty = 0 },
-            new() { Id = 2, WorkOrderId = 2, GoodQty = 99, ScrapQty = 1, ReworkQty = 0 },
-            new() { Id = 3, WorkOrderId = 3, GoodQty = 98, ScrapQty = 2, ReworkQty = 0 }
+            TestEntityFactory.CreateWorkReportDirect(id: 1, workOrderId: 1, goodQty: 99, scrapQty: 1, reworkQty: 0),
+            TestEntityFactory.CreateWorkReportDirect(id: 2, workOrderId: 2, goodQty: 99, scrapQty: 1, reworkQty: 0),
+            TestEntityFactory.CreateWorkReportDirect(id: 3, workOrderId: 3, goodQty: 98, scrapQty: 2, reworkQty: 0)
         };
 
         _workOrderRepo.Setup(r => r.GetAllAsync()).ReturnsAsync(orders);
@@ -92,12 +100,13 @@ public class QualityAlertServiceTests
     {
         var orders = new List<WorkOrder>
         {
-            new() { Id = 1, LineId = 1, Status = WorkOrderStatus.COMPLETED, CreatedAt = DateTime.UtcNow.AddDays(-1) }
+            TestEntityFactory.CreateWorkOrderDirect(id: 1, orderNo: "WO-001", materialId: 1, plannedQty: 100, completedQty: 100, scrapQty: 0, status: WorkOrderStatus.COMPLETED, lineId: 1)
         };
+        TestEntityFactory.SetProperty(orders[0], "CreatedAt", DateTime.UtcNow.AddDays(-1));
 
         var reports = new List<WorkReport>
         {
-            new() { Id = 1, WorkOrderId = 1, GoodQty = 90, ScrapQty = 10, ReworkQty = 0 }
+            TestEntityFactory.CreateWorkReportDirect(id: 1, workOrderId: 1, goodQty: 90, scrapQty: 10, reworkQty: 0)
         };
 
         _workOrderRepo.Setup(r => r.GetAllAsync()).ReturnsAsync(orders);
