@@ -1,13 +1,14 @@
 using Microsoft.EntityFrameworkCore;
+using MES.Application.Interfaces;
 using MES.Domain.Entities;
-using MES.Infrastructure.Repositories;
+using MES.Domain.Repositories;
 
 namespace MES.Application.Services;
 
 /// <summary>
 /// Andon 异常管理服务（数据库持久化）
 /// </summary>
-public class AndonService
+public class AndonService : IAndonService
 {
     private readonly IRepository<AndonEvent> _repository;
 

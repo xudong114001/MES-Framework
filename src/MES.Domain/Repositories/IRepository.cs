@@ -1,6 +1,6 @@
 using System.Linq.Expressions;
 
-namespace MES.Infrastructure.Repositories;
+namespace MES.Domain.Repositories;
 
 public interface IRepository<T> where T : class
 {

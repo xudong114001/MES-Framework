@@ -1,6 +1,6 @@
-using MES.Application.Interfaces;
+using MES.Domain.Interfaces;
 using MES.Domain.Entities;
-using MES.Infrastructure.Repositories;
+using MES.Domain.Repositories;
 using Microsoft.EntityFrameworkCore;
 
 namespace MES.Application.Services;
@@ -19,11 +19,12 @@ public class CachedMaterialService
 
     public async Task<IEnumerable<Material>> GetAllAsync()
     {
-        return await _cache.GetOrSetAsync("materials:all", async () =>
+        var result = await _cache.GetOrSetAsync("materials:all", async () =>
         {
             var list = await _repo.GetAllAsync();
             return list.ToList();
         }, CacheExpiry);
+        return result ?? [];
     }
 
     public async Task<Material?> GetByIdAsync(long id)

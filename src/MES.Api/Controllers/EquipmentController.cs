@@ -2,9 +2,9 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MES.Api.Middleware;
 using MES.Application.Dtos;
-using MES.Application.Services;
+using MES.Application.Interfaces;
 using MES.Domain.Entities;
-using MES.Infrastructure.Repositories;
+using MES.Domain.Repositories;
 
 namespace MES.Api.Controllers;
 
@@ -14,9 +14,9 @@ namespace MES.Api.Controllers;
 public class EquipmentController : ControllerBase
 {
     private readonly IRepository<Equipment> _repo;
-    private readonly EquipmentService _equipmentService;
+    private readonly IEquipmentService _equipmentService;
 
-    public EquipmentController(IRepository<Equipment> repo, EquipmentService equipmentService)
+    public EquipmentController(IRepository<Equipment> repo, IEquipmentService equipmentService)
     {
         _repo = repo;
         _equipmentService = equipmentService;

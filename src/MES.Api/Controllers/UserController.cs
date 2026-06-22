@@ -7,7 +7,7 @@ using MES.Api.Middleware;
 using MES.Application.Dtos;
 using MES.Domain.Entities;
 using MES.Infrastructure.Data;
-using MES.Infrastructure.Repositories;
+using MES.Domain.Repositories;
 
 namespace MES.Api.Controllers;
 

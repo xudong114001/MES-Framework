@@ -16,5 +16,5 @@ export const workstationApi = {
   create(data: Workstation) { return http.post('/workstations', data) },
   update(id: number, data: Workstation) { return http.put(`/workstations/${id}`, data) },
   delete(id: number) { return http.delete(`/workstations/${id}`) },
-  listByLine(lineId: number) { return http.get(`/workstations/byLine/${lineId}`) }
+  listByLine(lineId: number) { return http.get(`/workstations/by-line/${lineId}`) }
 }

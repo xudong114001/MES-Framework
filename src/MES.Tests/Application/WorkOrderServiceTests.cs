@@ -2,7 +2,7 @@ using MES.Application.Services;
 using MES.Domain.Entities;
 using MES.Domain.Enums;
 using MES.Domain.Exceptions;
-using MES.Infrastructure.Repositories;
+using MES.Domain.Repositories;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;

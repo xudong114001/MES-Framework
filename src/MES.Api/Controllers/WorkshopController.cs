@@ -1,9 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MES.Api.Middleware;
-using MES.Application.Dtos;
-using MES.Domain.Entities;
-using MES.Infrastructure.Repositories;
+using MES.Application.Interfaces;
 
 namespace MES.Api.Controllers;
 
@@ -12,83 +10,49 @@ namespace MES.Api.Controllers;
 [Authorize(Roles = "admin,supervisor")]
 public class WorkshopController : ControllerBase
 {
-    private readonly IRepository<Workshop> _repo;
-    public WorkshopController(IRepository<Workshop> repo) => _repo = repo;
+    private readonly IWorkshopService _service;
+    public WorkshopController(IWorkshopService service) => _service = service;
 
-    private static WorkshopDto MapToDto(Workshop entity) => new()
-    {
-        Id = entity.Id,
-        FactoryId = entity.FactoryId,
-        Code = entity.Code,
-        Name = entity.Name,
-        Status = entity.Status,
-        CreatedAt = entity.CreatedAt,
-        CreatedBy = entity.CreatedBy,
-        UpdatedAt = entity.UpdatedAt,
-        UpdatedBy = entity.UpdatedBy
-    };
-
-    /// <summary>
-    /// 获取所有车间
-    /// </summary>
     [HttpGet]
     public async Task<IActionResult> GetAll()
     {
-        var list = await _repo.GetAllAsync();
-        return Ok(ApiResponse.Ok(list.Select(MapToDto)));
+        var list = await _service.GetAllAsync();
+        return Ok(ApiResponse.Ok(list));
     }
 
-    /// <summary>
-    /// 根据ID获取车间
-    /// </summary>
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(long id)
     {
-        var entity = await _repo.GetByIdAsync(id);
-        if (entity == null) return NotFound(ApiResponse.Fail("车间不存在"));
-        return Ok(ApiResponse.Ok(MapToDto(entity)));
+        var dto = await _service.GetByIdAsync(id);
+        if (dto == null) return NotFound(ApiResponse.Fail("车间不存在"));
+        return Ok(ApiResponse.Ok(dto));
     }
 
-    /// <summary>
-    /// 根据工厂ID获取车间列表
-    /// </summary>
     [HttpGet("by-factory/{factoryId}")]
     public async Task<IActionResult> GetByFactory(long factoryId)
     {
-        var list = await _repo.FindAsync(w => w.FactoryId == factoryId);
-        return Ok(ApiResponse.Ok(list.Select(MapToDto)));
+        var list = await _service.GetByFactoryIdAsync(factoryId);
+        return Ok(ApiResponse.Ok(list));
     }
 
-    /// <summary>
-    /// 创建车间
-    /// </summary>
     [HttpPost]
-    public async Task<IActionResult> Create([FromBody] Workshop entity)
+    public async Task<IActionResult> Create([FromBody] MES.Domain.Entities.Workshop entity)
     {
-        var created = await _repo.AddAsync(entity);
-        return Ok(ApiResponse.Ok(MapToDto(created)));
+        var created = await _service.CreateAsync(entity);
+        return Ok(ApiResponse.Ok(created));
     }
 
-    /// <summary>
-    /// 更新车间
-    /// </summary>
     [HttpPut("{id}")]
-    public async Task<IActionResult> Update(long id, [FromBody] Workshop entity)
+    public async Task<IActionResult> Update(long id, [FromBody] MES.Domain.Entities.Workshop entity)
     {
-        entity.Id = id;
-        await _repo.UpdateAsync(entity);
+        await _service.UpdateAsync(id, entity);
         return Ok(ApiResponse.Ok("更新成功"));
     }
 
-    /// <summary>
-    /// 删除车间
-    /// </summary>
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(long id)
     {
-        var entity = await _repo.GetByIdAsync(id);
-        if (entity == null) return NotFound(ApiResponse.Fail("车间不存在"));
-        await _repo.DeleteAsync(entity);
+        await _service.DeleteAsync(id);
         return Ok(ApiResponse.Ok("删除成功"));
     }
 }

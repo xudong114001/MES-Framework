@@ -16,5 +16,5 @@ export const workshopApi = {
   create(data: Workshop) { return http.post('/workshops', data) },
   update(id: number, data: Workshop) { return http.put(`/workshops/${id}`, data) },
   delete(id: number) { return http.delete(`/workshops/${id}`) },
-  listByFactory(factoryId: number) { return http.get(`/workshops/byFactory/${factoryId}`) }
+  listByFactory(factoryId: number) { return http.get(`/workshops/by-factory/${factoryId}`) }
 }

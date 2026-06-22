@@ -72,9 +72,10 @@ public static class AdapterExtensions
                 services.AddSingleton<IPlcCollector>(sp =>
                 {
                     var config = configuration?.GetSection("Integration:Plc:Modbus") ?? configuration?.GetSection("Integration:Plc");
-                    var deviceName = config["DeviceName"] ?? "ModbusDevice";
-                    var ipAddress = config["IpAddress"] ?? "127.0.0.1";
-                    var port = int.Parse(config["Port"] ?? "502");
+                    var deviceName = config?["DeviceName"] ?? "ModbusDevice";
+                    var ipAddress = config?["IpAddress"] ?? "127.0.0.1";
+                    var portStr = config?["Port"] ?? "502";
+                    var port = int.TryParse(portStr, out var parsedPort) ? parsedPort : 502;
                     var logger = sp.GetRequiredService<ILogger<ModbusTcpCollector>>();
                     return new ModbusTcpCollector(deviceName, ipAddress, port, logger);
                 });

@@ -3,7 +3,7 @@ using MES.AI.Domain.Entities;
 using MES.AI.Domain.Enums;
 using MES.Domain.Entities;
 using MES.Domain.Enums;
-using MES.Infrastructure.Repositories;
+using MES.Domain.Repositories;
 using MES.Tests;
 using Microsoft.Extensions.Logging;
 using Moq;

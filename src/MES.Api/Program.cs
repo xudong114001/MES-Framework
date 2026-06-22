@@ -117,9 +117,8 @@ builder.Services.AddMesInfrastructure(builder.Configuration);
 builder.Services.AddScoped<IAuthService, AuthService>();
 
 // Application Services
-builder.Services.AddScoped<WorkReportService>();
-builder.Services.AddScoped<QcService>();
-builder.Services.AddScoped<MES.Application.Services.WorkOrderService>();
+builder.Services.AddScoped<IWorkReportService, WorkReportService>();
+builder.Services.AddScoped<IQcService, QcService>();
 builder.Services.AddScoped<IWorkOrderService, MES.Application.Services.WorkOrderService>();
 builder.Services.AddScoped<IQcCheckpointService, QcCheckpointService>();
 
@@ -127,9 +126,19 @@ builder.Services.AddScoped<IQcCheckpointService, QcCheckpointService>();
 builder.Services.AddScoped<ISchedulingService, MES.Application.Services.SchedulingService>();
 builder.Services.AddScoped<IDispatchService, MES.Application.Services.DispatchService>();
 
-// P3 Trace Services
-builder.Services.AddScoped<TraceService>();
-builder.Services.AddScoped<EquipmentService>();
+// Equipment & Trace & Dashboard & Andon & Organization & Material Services
+builder.Services.AddScoped<IEquipmentService, EquipmentService>();
+builder.Services.AddScoped<ITraceService, TraceService>();
+builder.Services.AddScoped<IDashboardService, DashboardService>();
+builder.Services.AddScoped<IAndonService, AndonService>();
+builder.Services.AddScoped<IFactoryService, FactoryService>();
+builder.Services.AddScoped<IWorkshopService, WorkshopService>();
+builder.Services.AddScoped<IProductionLineService, ProductionLineService>();
+builder.Services.AddScoped<IWorkstationService, WorkstationService>();
+builder.Services.AddScoped<IMaterialService, MaterialService>();
+builder.Services.AddScoped<IBomService, BomService>();
+builder.Services.AddScoped<IRoutingService, RoutingService>();
+builder.Services.AddScoped<IRoleService, RoleService>();
 
 // Redis 连接（防重复提交 + 批次号生成 + 缓存）
 builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
@@ -138,16 +147,12 @@ builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
     var redisConnStr = config.GetConnectionString("Redis") ?? "localhost:6379";
     return ConnectionMultiplexer.Connect(redisConnStr);
 });
-builder.Services.AddScoped<ICacheService, CacheService>();
+builder.Services.AddScoped<MES.Domain.Interfaces.ICacheService, MES.Infrastructure.Services.CacheService>();
 builder.Services.AddScoped<CachedMaterialService>();
 builder.Services.AddScoped<CachedRoutingService>();
 
 // SignalR
 builder.Services.AddSignalR();
-
-// P4 Dashboard & Andon Services
-builder.Services.AddScoped<DashboardService>();
-builder.Services.AddScoped<AndonService>();
 
 // SignalR Notification Service
 builder.Services.AddScoped<HubNotificationService>();

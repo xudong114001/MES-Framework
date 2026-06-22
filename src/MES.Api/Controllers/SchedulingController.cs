@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using MES.Api.Middleware;
 using MES.Application.Interfaces;
 using MES.Domain.Entities;
-using MES.Infrastructure.Repositories;
+using MES.Domain.Repositories;
 
 namespace MES.Api.Controllers;
 

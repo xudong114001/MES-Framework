@@ -1,6 +1,7 @@
 using MES.Domain.Entities;
 using MES.Domain.Enums;
 using MES.Infrastructure.Data;
+using MES.Domain.Repositories;
 using MES.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Xunit;

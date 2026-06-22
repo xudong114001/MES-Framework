@@ -15,5 +15,5 @@ export const productionLineApi = {
   create(data: ProductionLine) { return http.post('/production-lines', data) },
   update(id: number, data: ProductionLine) { return http.put(`/production-lines/${id}`, data) },
   delete(id: number) { return http.delete(`/production-lines/${id}`) },
-  listByWorkshop(workshopId: number) { return http.get(`/production-lines/byWorkshop/${workshopId}`) }
+  listByWorkshop(workshopId: number) { return http.get(`/production-lines/by-workshop/${workshopId}`) }
 }

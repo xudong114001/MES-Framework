@@ -3,6 +3,7 @@ using MES.AI.Application.Dtos;
 using MES.AI.Application.Services;
 using MES.AI.Domain.Entities;
 using MES.Infrastructure.Data;
+using MES.Domain.Repositories;
 using MES.Infrastructure.Repositories;
 using Microsoft.Extensions.Logging;
 using Moq;

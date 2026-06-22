@@ -3,7 +3,7 @@ using MES.Application.Interfaces;
 using MES.Domain.Entities;
 using MES.Domain.Enums;
 using MES.Domain.Exceptions;
-using MES.Infrastructure.Repositories;
+using MES.Domain.Repositories;
 using MES.Application.Integration.Events;
 using Microsoft.Extensions.Logging;
 using Moq;

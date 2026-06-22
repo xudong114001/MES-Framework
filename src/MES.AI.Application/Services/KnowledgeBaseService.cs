@@ -2,7 +2,7 @@ using MES.AI.Application.Dtos;
 using MES.AI.Application.Interfaces;
 using MES.AI.Domain.Entities;
 using MES.AI.Domain.Enums;
-using MES.Infrastructure.Repositories;
+using MES.Domain.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 

@@ -1,6 +1,6 @@
-using MES.Application.Interfaces;
+using MES.Domain.Interfaces;
 using MES.Domain.Entities;
-using MES.Infrastructure.Repositories;
+using MES.Domain.Repositories;
 using Microsoft.EntityFrameworkCore;
 
 namespace MES.Application.Services;
@@ -19,11 +19,12 @@ public class CachedRoutingService
 
     public async Task<IEnumerable<Routing>> GetAllAsync()
     {
-        return await _cache.GetOrSetAsync("routings:all", async () =>
+        var result = await _cache.GetOrSetAsync("routings:all", async () =>
         {
             var list = await _repo.Query().Include(r => r.Steps).ToListAsync();
             return list;
         }, CacheExpiry);
+        return result ?? [];
     }
 
     public async Task<Routing?> GetByIdAsync(long id)
@@ -39,7 +40,7 @@ public class CachedRoutingService
 
     public async Task<IEnumerable<Routing>> GetByMaterialIdAsync(long materialId)
     {
-        return await _cache.GetOrSetAsync($"routings:material:{materialId}", async () =>
+        var result = await _cache.GetOrSetAsync($"routings:material:{materialId}", async () =>
         {
             var list = await _repo.Query()
                 .Include(r => r.Steps)
@@ -47,6 +48,7 @@ public class CachedRoutingService
                 .ToListAsync();
             return list;
         }, CacheExpiry);
+        return result ?? [];
     }
 
     public async Task<Routing> CreateAsync(Routing entity)

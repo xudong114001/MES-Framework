@@ -31,6 +31,7 @@ public class MesDbContext : DbContext
     public DbSet<RolePermission> RolePermissions => Set<RolePermission>();
     public DbSet<KnowledgeEntry> KnowledgeEntries => Set<KnowledgeEntry>();
     public DbSet<AndonEvent> AndonEvents => Set<AndonEvent>();
+    public DbSet<QcCheckpoint> QcCheckpoints => Set<QcCheckpoint>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

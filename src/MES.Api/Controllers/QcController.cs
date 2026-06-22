@@ -2,11 +2,11 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MES.Api.Middleware;
 using MES.Application.Dtos;
-using MES.Application.Services;
+using MES.Application.Interfaces;
 using MES.Domain.Entities;
 using MES.Domain.Enums;
 using MES.Domain.Exceptions;
-using MES.Infrastructure.Repositories;
+using MES.Domain.Repositories;
 
 namespace MES.Api.Controllers;
 
@@ -17,12 +17,12 @@ public class QcController : ControllerBase
 {
     private readonly IRepository<QcInspection> _inspectionRepo;
     private readonly IRepository<QcInspectionItem> _itemRepo;
-    private readonly QcService _qcService;
+    private readonly IQcService _qcService;
 
     public QcController(
         IRepository<QcInspection> inspectionRepo,
         IRepository<QcInspectionItem> itemRepo,
-        QcService qcService)
+        IQcService qcService)
     {
         _inspectionRepo = inspectionRepo;
         _itemRepo = itemRepo;
