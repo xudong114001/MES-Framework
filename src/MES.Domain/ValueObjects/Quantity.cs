@@ -10,7 +10,7 @@ public record Quantity
     public decimal Value { get; }
     public string Unit { get; }
 
-    public Quantity(decimal value, string unit = "个")
+    public Quantity(decimal value, string unit = "PCS")
     {
         if (value < 0)
             throw new DomainException("数量不能为负数");
@@ -19,6 +19,20 @@ public record Quantity
 
         Value = value;
         Unit = unit;
+    }
+
+    public Quantity Add(Quantity other)
+    {
+        if (other.Unit != Unit)
+            throw new DomainException("单位不同不能相加");
+        return new Quantity(Value + other.Value, Unit);
+    }
+
+    public Quantity Subtract(Quantity other)
+    {
+        if (other.Unit != Unit)
+            throw new DomainException("单位不同不能相减");
+        return new Quantity(Value - other.Value, Unit);
     }
 
     public static Quantity operator +(Quantity a, Quantity b)
@@ -42,7 +56,7 @@ public record Quantity
     /// <summary>
     /// 创建零数量值对象
     /// </summary>
-    public static Quantity Zero(string unit = "个") => new(0, unit);
+    public static Quantity Zero(string unit = "PCS") => new(0, unit);
 
     /// <summary>
     /// 隐式转换为 decimal，便于与现有代码兼容
