@@ -1,6 +1,8 @@
 using MES.Domain.AggregateRoots;
 using MES.Domain.Enums;
+using MES.Domain.Events;
 using MES.Domain.Exceptions;
+using MES.Domain.ValueObjects;
 
 namespace MES.Domain.Entities;
 
@@ -11,9 +13,9 @@ public class WorkOrder : BaseEntity, IAggregateRoot
     public string? SourceRef { get; private set; }
     public long MaterialId { get; private set; }
     public long? RoutingId { get; private set; }
-    public decimal PlannedQty { get; private set; }
-    public decimal CompletedQty { get; private set; }
-    public decimal ScrapQty { get; private set; }
+    public Quantity PlannedQty { get; private set; } = Quantity.Zero();
+    public Quantity CompletedQty { get; private set; } = Quantity.Zero();
+    public Quantity ScrapQty { get; private set; } = Quantity.Zero();
     public WorkOrderStatus Status { get; private set; }
     public DateTime? PlanStartTime { get; private set; }
     public DateTime? PlanEndTime { get; private set; }
@@ -47,7 +49,7 @@ public class WorkOrder : BaseEntity, IAggregateRoot
         string orderNo,
         SourceType sourceType,
         long materialId,
-        decimal plannedQty,
+        Quantity plannedQty,
         Priority priority = Priority.NORMAL,
         long? routingId = null,
         string? sourceRef = null,
@@ -66,7 +68,7 @@ public class WorkOrder : BaseEntity, IAggregateRoot
         if (materialId <= 0)
             throw new DomainException("物料ID无效");
 
-        if (plannedQty <= 0)
+        if (plannedQty.Value <= 0)
             throw new DomainException("计划数量必须大于0");
 
         return new WorkOrder
@@ -77,8 +79,8 @@ public class WorkOrder : BaseEntity, IAggregateRoot
             MaterialId = materialId,
             RoutingId = routingId,
             PlannedQty = plannedQty,
-            CompletedQty = 0,
-            ScrapQty = 0,
+            CompletedQty = Quantity.Zero(plannedQty.Unit),
+            ScrapQty = Quantity.Zero(plannedQty.Unit),
             Status = WorkOrderStatus.PENDING,
             Priority = priority,
             PlanStartTime = planStartTime,
@@ -95,17 +97,17 @@ public class WorkOrder : BaseEntity, IAggregateRoot
     /// <summary>
     /// 创建拆分子工单
     /// </summary>
-    public WorkOrder CreateSplitChild(decimal splitQty)
+    public WorkOrder CreateSplitChild(Quantity splitQty)
     {
         EnsureStatusOneOf([WorkOrderStatus.PENDING, WorkOrderStatus.RELEASED], "仅 PENDING/RELEASED 状态的工单允许拆分");
 
-        if (splitQty <= 0)
+        if (splitQty.Value <= 0)
             throw new DomainException("拆分数量必须大于0");
 
-        if (splitQty >= PlannedQty)
+        if (splitQty.Value >= PlannedQty.Value)
             throw new DomainException("拆分数量必须小于原单计划数量");
 
-        PlannedQty -= splitQty;
+        PlannedQty = PlannedQty - splitQty;
 
         return new WorkOrder
         {
@@ -115,8 +117,8 @@ public class WorkOrder : BaseEntity, IAggregateRoot
             MaterialId = MaterialId,
             RoutingId = RoutingId,
             PlannedQty = splitQty,
-            CompletedQty = 0,
-            ScrapQty = 0,
+            CompletedQty = Quantity.Zero(splitQty.Unit),
+            ScrapQty = Quantity.Zero(splitQty.Unit),
             Status = WorkOrderStatus.PENDING,
             Priority = Priority,
             PlanStartTime = PlanStartTime,
@@ -132,17 +134,17 @@ public class WorkOrder : BaseEntity, IAggregateRoot
     /// <summary>
     /// 创建返工子工单
     /// </summary>
-    public WorkOrder CreateReworkChild(decimal reworkQty, string? remark = null)
+    public WorkOrder CreateReworkChild(Quantity reworkQty, string? remark = null)
     {
         EnsureStatusOneOf([WorkOrderStatus.COMPLETED, WorkOrderStatus.IN_PROGRESS], "仅 COMPLETED/IN_PROGRESS 状态的工单允许返工");
 
-        if (reworkQty <= 0)
+        if (reworkQty.Value <= 0)
             throw new DomainException("返工数量必须大于0");
 
-        if (reworkQty > CompletedQty)
-            throw new DomainException($"返工数量({reworkQty})超过已完成数量({CompletedQty})");
+        if (reworkQty.Value > CompletedQty.Value)
+            throw new DomainException($"返工数量({reworkQty.Value})超过已完成数量({CompletedQty.Value})");
 
-        CompletedQty -= reworkQty;
+        CompletedQty = CompletedQty - reworkQty;
 
         return new WorkOrder
         {
@@ -152,8 +154,8 @@ public class WorkOrder : BaseEntity, IAggregateRoot
             MaterialId = MaterialId,
             RoutingId = RoutingId,
             PlannedQty = reworkQty,
-            CompletedQty = 0,
-            ScrapQty = 0,
+            CompletedQty = Quantity.Zero(reworkQty.Unit),
+            ScrapQty = Quantity.Zero(reworkQty.Unit),
             Status = WorkOrderStatus.PENDING,
             Priority = Priority,
             PlanStartTime = PlanStartTime,
@@ -177,7 +179,15 @@ public class WorkOrder : BaseEntity, IAggregateRoot
     public void Release()
     {
         EnsureStatus(WorkOrderStatus.PENDING, "只有 PENDING 状态的工单才能下达");
+        var oldStatus = Status;
         Status = WorkOrderStatus.RELEASED;
+        AddDomainEvent(new WorkOrderStatusChangedEvent
+        {
+            WorkOrderId = Id,
+            OrderNo = OrderNo,
+            OldStatus = oldStatus,
+            NewStatus = Status
+        });
     }
 
     /// <summary>
@@ -267,11 +277,11 @@ public class WorkOrder : BaseEntity, IAggregateRoot
     /// <summary>
     /// 报工：增加完工/报废/返工数量
     /// </summary>
-    public void ReportProgress(decimal goodQty, decimal scrapQty, decimal reworkQty)
+    public void ReportProgress(Quantity goodQty, Quantity scrapQty, Quantity reworkQty)
     {
         EnsureStatusOneOf([WorkOrderStatus.RELEASED, WorkOrderStatus.IN_PROGRESS, WorkOrderStatus.SCHEDULED], "工单状态不允许报工");
 
-        if (goodQty < 0 || scrapQty < 0 || reworkQty < 0)
+        if (goodQty.Value < 0 || scrapQty.Value < 0 || reworkQty.Value < 0)
             throw new DomainException("报工数量不能为负数");
 
         // RELEASED 状态首次报工时自动转为 IN_PROGRESS
@@ -281,11 +291,11 @@ public class WorkOrder : BaseEntity, IAggregateRoot
             ActualStartTime ??= DateTime.UtcNow;
         }
 
-        CompletedQty += goodQty + reworkQty;
-        ScrapQty += scrapQty;
+        CompletedQty = CompletedQty + goodQty + reworkQty;
+        ScrapQty = ScrapQty + scrapQty;
 
         // 如果完工+报废达到计划数量，自动完成
-        if (CompletedQty + ScrapQty >= PlannedQty)
+        if (CompletedQty.Value + ScrapQty.Value >= PlannedQty.Value)
         {
             Status = WorkOrderStatus.COMPLETED;
         }
@@ -294,7 +304,7 @@ public class WorkOrder : BaseEntity, IAggregateRoot
     /// <summary>
     /// 拆分工单：扣减原单数量，返回新的子工单
     /// </summary>
-    public WorkOrder Split(decimal splitQty)
+    public WorkOrder Split(Quantity splitQty)
     {
         return CreateSplitChild(splitQty);
     }
@@ -302,7 +312,7 @@ public class WorkOrder : BaseEntity, IAggregateRoot
     /// <summary>
     /// 返工：扣减原单完工数量，返回返工子工单
     /// </summary>
-    public WorkOrder Rework(decimal reworkQty)
+    public WorkOrder Rework(Quantity reworkQty)
     {
         return CreateReworkChild(reworkQty);
     }
@@ -310,22 +320,22 @@ public class WorkOrder : BaseEntity, IAggregateRoot
     /// <summary>
     /// 报废：增加报废数量
     /// </summary>
-    public void Scrap(decimal scrapQty, string? remark = null)
+    public void Scrap(Quantity scrapQty, string? remark = null)
     {
         EnsureStatusOneOf([WorkOrderStatus.IN_PROGRESS, WorkOrderStatus.RELEASED], "只有 IN_PROGRESS/RELEASED 状态的工单才能报废");
 
-        if (scrapQty <= 0)
+        if (scrapQty.Value <= 0)
             throw new DomainException("报废数量必须大于0");
 
-        var remaining = PlannedQty - CompletedQty - ScrapQty;
-        if (scrapQty > remaining)
-            throw new DomainException($"报废数量({scrapQty})超过剩余可操作数量({remaining})");
+        var remaining = PlannedQty.Value - CompletedQty.Value - ScrapQty.Value;
+        if (scrapQty.Value > remaining)
+            throw new DomainException($"报废数量({scrapQty.Value})超过剩余可操作数量({remaining})");
 
-        ScrapQty += scrapQty;
+        ScrapQty = ScrapQty + scrapQty;
         Remark = remark ?? Remark;
 
         // 如果全部报废，标记取消
-        if (CompletedQty + ScrapQty >= PlannedQty)
+        if (CompletedQty.Value + ScrapQty.Value >= PlannedQty.Value)
             Status = WorkOrderStatus.CANCELLED;
     }
 
@@ -341,12 +351,12 @@ public class WorkOrder : BaseEntity, IAggregateRoot
     /// <summary>
     /// 增加报废数量（质检专用，不检查状态）
     /// </summary>
-    public void AddScrap(decimal scrapQty)
+    public void AddScrap(Quantity scrapQty)
     {
-        if (scrapQty <= 0)
+        if (scrapQty.Value <= 0)
             throw new DomainException("报废数量必须大于0");
 
-        ScrapQty += scrapQty;
+        ScrapQty = ScrapQty + scrapQty;
     }
 
     /// <summary>

@@ -1,22 +1,25 @@
+using MES.Domain.AggregateRoots;
 using MES.Domain.Enums;
+using MES.Domain.ValueObjects;
 
 namespace MES.Domain.Entities;
 
-public class WorkReport : BaseEntity
+public class WorkReport : BaseEntity, IAggregateRoot
 {
     internal WorkReport() { }
 
     public static WorkReport Create(
         long workOrderId,
         ReportType reportType,
-        decimal goodQty,
-        decimal scrapQty = 0,
-        decimal reworkQty = 0,
+        Quantity goodQty,
+        Quantity? scrapQty = null,
+        Quantity? reworkQty = null,
         long? stepId = null,
         long? workstationId = null,
         long? operatorId = null,
         string? remark = null)
     {
+        var unit = goodQty.Unit;
         return new WorkReport
         {
             WorkOrderId = workOrderId,
@@ -25,8 +28,8 @@ public class WorkReport : BaseEntity
             OperatorId = operatorId,
             ReportType = reportType,
             GoodQty = goodQty,
-            ScrapQty = scrapQty,
-            ReworkQty = reworkQty,
+            ScrapQty = scrapQty ?? Quantity.Zero(unit),
+            ReworkQty = reworkQty ?? Quantity.Zero(unit),
             ReportTime = DateTime.UtcNow,
             ReportNo = $"RP{DateTime.Now:yyyyMMddHHmmss}{Random.Shared.Next(100, 999)}",
             Remark = remark
@@ -39,9 +42,9 @@ public class WorkReport : BaseEntity
     public long? WorkstationId { get; set; }
     public long? OperatorId { get; set; }
     public ReportType ReportType { get; set; }
-    public decimal GoodQty { get; set; }
-    public decimal ScrapQty { get; set; }
-    public decimal ReworkQty { get; set; }
+    public Quantity GoodQty { get; set; } = Quantity.Zero();
+    public Quantity ScrapQty { get; set; } = Quantity.Zero();
+    public Quantity ReworkQty { get; set; } = Quantity.Zero();
     public int DurationMin { get; set; }
     public DateTime ReportTime { get; set; }
     public string? Remark { get; set; }

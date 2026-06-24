@@ -14,70 +14,86 @@ public class RoutingService : IRoutingService
 
     private static RoutingDto MapToDto(Routing entity) => new()
     {
-        Id = entity.Id, MaterialId = entity.MaterialId,
-        RoutingCode = entity.RoutingCode, RoutingName = entity.RoutingName,
-        Version = entity.Version, Status = entity.Status,
-        CreatedAt = entity.CreatedAt, CreatedBy = entity.CreatedBy,
-        UpdatedAt = entity.UpdatedAt, UpdatedBy = entity.UpdatedBy
+        Id = entity.Id,
+        MaterialId = entity.MaterialId,
+        RoutingCode = entity.RoutingCode,
+        RoutingName = entity.RoutingName,
+        Version = entity.Version,
+        Status = entity.Status,
+        CreatedAt = entity.CreatedAt,
+        CreatedBy = entity.CreatedBy,
+        UpdatedAt = entity.UpdatedAt,
+        UpdatedBy = entity.UpdatedBy
     };
 
     private static RoutingStepDto MapStepToDto(RoutingStep entity) => new()
     {
-        Id = entity.Id, RoutingId = entity.RoutingId,
-        StepNo = entity.StepNo, StepName = entity.StepName,
-        WorkstationType = entity.WorkstationType, StandardTime = entity.StandardTime,
-        IsQcPoint = entity.IsQcPoint, IsScrapPoint = entity.IsScrapPoint,
-        CreatedAt = entity.CreatedAt, CreatedBy = entity.CreatedBy,
-        UpdatedAt = entity.UpdatedAt, UpdatedBy = entity.UpdatedBy
+        Id = entity.Id,
+        RoutingId = entity.RoutingId,
+        StepNo = entity.StepNo,
+        StepName = entity.StepName,
+        WorkstationType = entity.WorkstationType,
+        StandardTime = entity.StandardTime,
+        IsQcPoint = entity.IsQcPoint,
+        IsScrapPoint = entity.IsScrapPoint,
+        CreatedAt = entity.CreatedAt,
+        CreatedBy = entity.CreatedBy,
+        UpdatedAt = entity.UpdatedAt,
+        UpdatedBy = entity.UpdatedBy
     };
 
-    public async Task<IEnumerable<object>> GetAllAsync()
+    private static RoutingDetailDto MapToDetailDto(Routing entity) => new()
+    {
+        Dto = MapToDto(entity),
+        Steps = entity.Steps.Select(MapStepToDto)
+    };
+
+    public async Task<IEnumerable<RoutingDetailDto>> GetAllAsync()
     {
         var list = await _repo.Query().Include(r => r.Steps).ToListAsync();
-        return list.Select(r => new
-        {
-            Dto = MapToDto(r),
-            Steps = r.Steps.Select(MapStepToDto)
-        });
+        return list.Select(MapToDetailDto);
     }
 
-    public async Task<object?> GetByIdAsync(long id)
+    public async Task<RoutingDetailDto?> GetByIdAsync(long id)
     {
         var entity = await _repo.Query().Include(r => r.Steps).FirstOrDefaultAsync(r => r.Id == id);
         if (entity == null) return null;
-        return new
-        {
-            Dto = MapToDto(entity),
-            Steps = entity.Steps.Select(MapStepToDto)
-        };
+        return MapToDetailDto(entity);
     }
 
-    public async Task<IEnumerable<object>> GetByMaterialIdAsync(long materialId)
+    public async Task<IEnumerable<RoutingDetailDto>> GetByMaterialIdAsync(long materialId)
     {
         var list = await _repo.Query()
             .Include(r => r.Steps)
             .Where(r => r.MaterialId == materialId)
             .ToListAsync();
-        return list.Select(r => new
-        {
-            Dto = MapToDto(r),
-            Steps = r.Steps.Select(MapStepToDto)
-        });
+        return list.Select(MapToDetailDto);
     }
 
-    public async Task<RoutingDto> CreateAsync(Routing entity)
+    public async Task<RoutingDto> CreateAsync(CreateRoutingRequest request)
     {
+        var entity = Routing.Create(
+            request.MaterialId,
+            request.RoutingCode,
+            request.RoutingName,
+            request.Version,
+            request.Status);
         var created = await _repo.AddAsync(entity);
         return MapToDto(created);
     }
 
-    public async Task UpdateAsync(long id, Routing entity)
+    public async Task UpdateAsync(long id, UpdateRoutingRequest request)
     {
         var existing = await _repo.GetByIdAsync(id);
         if (existing == null)
             throw new Domain.Exceptions.DomainException("工艺路线不存在");
-        entity.Id = id;
-        await _repo.UpdateAsync(entity);
+        existing.UpdateInfo(
+            request.MaterialId,
+            request.RoutingCode,
+            request.RoutingName,
+            request.Version,
+            request.Status);
+        await _repo.UpdateAsync(existing);
     }
 
     public async Task DeleteAsync(long id)

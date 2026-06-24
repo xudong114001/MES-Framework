@@ -38,15 +38,8 @@ public class RoleController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CreateRoleRequest request)
     {
-        try
-        {
-            await _service.CreateAsync(request.Name, request.Description);
-            return Ok(ApiResponse.Ok("创建成功"));
-        }
-        catch (Domain.Exceptions.DomainException ex)
-        {
-            return BadRequest(ApiResponse.Fail(ex.Message));
-        }
+        var created = await _service.CreateAsync(request.Name, request.Description);
+        return Ok(ApiResponse.Ok(created));
     }
 
     [HttpPut("{id}")]
@@ -59,29 +52,15 @@ public class RoleController : ControllerBase
     [HttpPut("{id}/permissions")]
     public async Task<IActionResult> AssignPermissions(long id, [FromBody] AssignPermissionsRequest request)
     {
-        try
-        {
-            await _service.AssignPermissionsAsync(id, request.Permissions);
-            return Ok(ApiResponse.Ok("权限分配成功"));
-        }
-        catch (Domain.Exceptions.DomainException ex)
-        {
-            return BadRequest(ApiResponse.Fail(ex.Message));
-        }
+        await _service.AssignPermissionsAsync(id, request.Permissions);
+        return Ok(ApiResponse.Ok("权限分配成功"));
     }
 
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(long id)
     {
-        try
-        {
-            await _service.DeleteAsync(id);
-            return Ok(ApiResponse.Ok("删除成功"));
-        }
-        catch (Domain.Exceptions.DomainException ex)
-        {
-            return BadRequest(ApiResponse.Fail(ex.Message));
-        }
+        await _service.DeleteAsync(id);
+        return Ok(ApiResponse.Ok("删除成功"));
     }
 }
 

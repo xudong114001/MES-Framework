@@ -1,3 +1,4 @@
+using MES.Domain.AggregateRoots;
 using MES.Domain.Enums;
 
 namespace MES.Domain.Entities;
@@ -5,7 +6,7 @@ namespace MES.Domain.Entities;
 /// <summary>
 /// 工序质检点配置实体
 /// </summary>
-public class QcCheckpoint : BaseEntity
+public class QcCheckpoint : BaseEntity, IAggregateRoot
 {
     internal QcCheckpoint() { }
 

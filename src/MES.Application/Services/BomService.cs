@@ -13,11 +13,19 @@ public class BomService : IBomService
 
     private static BomDto MapToDto(Bom entity) => new()
     {
-        Id = entity.Id, ProductId = entity.ProductId, MaterialId = entity.MaterialId,
-        Quantity = entity.Quantity, ScrapRate = entity.ScrapRate, SeqNo = entity.SeqNo,
-        ValidFrom = entity.ValidFrom, ValidTo = entity.ValidTo, Status = entity.Status,
-        CreatedAt = entity.CreatedAt, CreatedBy = entity.CreatedBy,
-        UpdatedAt = entity.UpdatedAt, UpdatedBy = entity.UpdatedBy
+        Id = entity.Id,
+        ProductId = entity.ProductId,
+        MaterialId = entity.MaterialId,
+        Quantity = entity.Quantity,
+        ScrapRate = entity.ScrapRate,
+        SeqNo = entity.SeqNo,
+        ValidFrom = entity.ValidFrom,
+        ValidTo = entity.ValidTo,
+        Status = entity.Status,
+        CreatedAt = entity.CreatedAt,
+        CreatedBy = entity.CreatedBy,
+        UpdatedAt = entity.UpdatedAt,
+        UpdatedBy = entity.UpdatedBy
     };
 
     public async Task<IEnumerable<BomDto>> GetAllAsync()
@@ -38,19 +46,37 @@ public class BomService : IBomService
         return list.Select(MapToDto);
     }
 
-    public async Task<BomDto> CreateAsync(Bom entity)
+    public async Task<BomDto> CreateAsync(CreateBomRequest request)
     {
+        var entity = new Bom
+        {
+            ProductId = request.ProductId,
+            MaterialId = request.MaterialId,
+            Quantity = request.Quantity,
+            ScrapRate = request.ScrapRate,
+            SeqNo = request.SeqNo,
+            ValidFrom = request.ValidFrom,
+            ValidTo = request.ValidTo,
+            Status = request.Status
+        };
         var created = await _repo.AddAsync(entity);
         return MapToDto(created);
     }
 
-    public async Task UpdateAsync(long id, Bom entity)
+    public async Task UpdateAsync(long id, UpdateBomRequest request)
     {
         var existing = await _repo.GetByIdAsync(id);
         if (existing == null)
             throw new Domain.Exceptions.DomainException("BOM明细不存在");
-        entity.Id = id;
-        await _repo.UpdateAsync(entity);
+        existing.ProductId = request.ProductId;
+        existing.MaterialId = request.MaterialId;
+        existing.Quantity = request.Quantity;
+        existing.ScrapRate = request.ScrapRate;
+        existing.SeqNo = request.SeqNo;
+        existing.ValidFrom = request.ValidFrom;
+        existing.ValidTo = request.ValidTo;
+        existing.Status = request.Status;
+        await _repo.UpdateAsync(existing);
     }
 
     public async Task DeleteAsync(long id)

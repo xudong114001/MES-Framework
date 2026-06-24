@@ -21,30 +21,16 @@ public class DispatchController : ControllerBase
     [HttpPost("dispatch-step")]
     public async Task<IActionResult> DispatchStep([FromBody] DispatchStepRequest request)
     {
-        try
-        {
-            await _dispatchService.DispatchStepAsync(request.WorkOrderStepId, request.WorkstationId);
-            return Ok(ApiResponse.Ok("派工成功"));
-        }
-        catch (InvalidOperationException ex)
-        {
-            return BadRequest(ApiResponse.Fail(ex.Message));
-        }
+        await _dispatchService.DispatchStepAsync(request.WorkOrderStepId, request.WorkstationId);
+        return Ok(ApiResponse.Ok("派工成功"));
     }
 
     /// <summary>取消派工</summary>
     [HttpPost("undispatch-step/{workOrderStepId}")]
     public async Task<IActionResult> UndispatchStep(long workOrderStepId)
     {
-        try
-        {
-            await _dispatchService.UndispatchStepAsync(workOrderStepId);
-            return Ok(ApiResponse.Ok("已取消派工"));
-        }
-        catch (InvalidOperationException ex)
-        {
-            return BadRequest(ApiResponse.Fail(ex.Message));
-        }
+        await _dispatchService.UndispatchStepAsync(workOrderStepId);
+        return Ok(ApiResponse.Ok("已取消派工"));
     }
 
     /// <summary>查询产线今日派工任务</summary>

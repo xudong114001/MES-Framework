@@ -83,6 +83,34 @@ public class QcService : IQcService
     }
 
     /// <summary>
+    /// 根据ID获取质检单（含质检项）
+    /// </summary>
+    public async Task<InspectionWithItemsDto?> GetInspectionWithItemsAsync(long id)
+    {
+        var inspection = await _inspectionRepo.GetByIdAsync(id);
+        if (inspection == null) return null;
+
+        var items = await _itemRepo.FindAsync(i => i.InspectionId == id);
+        return new InspectionWithItemsDto(
+            MapToDto(inspection),
+            items.Select(MapItemToDto));
+    }
+
+    private static QcInspectionItemDto MapItemToDto(QcInspectionItem entity) => new()
+    {
+        Id = entity.Id,
+        InspectionId = entity.InspectionId,
+        ItemName = entity.ItemName,
+        SpecValue = entity.SpecValue,
+        ActualValue = entity.ActualValue,
+        Result = entity.Result,
+        CreatedAt = entity.CreatedAt,
+        CreatedBy = entity.CreatedBy,
+        UpdatedAt = entity.UpdatedAt,
+        UpdatedBy = entity.UpdatedBy
+    };
+
+    /// <summary>
     /// 创建质检单
     /// </summary>
     public async Task<QcInspection> CreateInspectionAsync(string inspectNo, QcInspectionType sourceType, long? workOrderId = null, long? materialId = null, long? inspector = null, string? sourceRef = null, string? remark = null)
@@ -273,5 +301,26 @@ public class QcService : IQcService
             .Take(20)
             .ToList();
         return failedList.Select(MapToDto);
+    }
+
+    /// <summary>
+    /// 获取今日质检统计
+    /// </summary>
+    public async Task<object> GetDashboardStatsAsync()
+    {
+        var todayStart = DateTime.UtcNow.Date;
+        var todayEnd = todayStart.AddDays(1);
+
+        var allInspections = await _inspectionRepo.GetAllAsync();
+        var todayInspections = allInspections
+            .Where(i => i.CreatedAt >= todayStart && i.CreatedAt < todayEnd)
+            .ToList();
+
+        var total = todayInspections.Count;
+        var passed = todayInspections.Count(i => i.InspectResult == QcResult.PASS);
+        var failed = todayInspections.Count(i => i.InspectResult == QcResult.FAIL);
+        var pending = todayInspections.Count(i => i.InspectResult == QcResult.PENDING);
+
+        return new { total, passed, failed, pending };
     }
 }

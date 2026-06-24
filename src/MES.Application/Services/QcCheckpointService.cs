@@ -1,6 +1,7 @@
 using MES.Application.Interfaces;
 using MES.Domain.Entities;
 using MES.Domain.Enums;
+using MES.Domain.Exceptions;
 using MES.Domain.Repositories;
 
 namespace MES.Application.Services;
@@ -50,7 +51,7 @@ public class QcCheckpointService : IQcCheckpointService
         var existing = await _checkpointRepo0.FindAsync(
             c => c.StepId == checkpoint.StepId && c.CheckType == checkpoint.CheckType);
         if (existing.Any())
-            throw new InvalidOperationException("该工序已配置相同类型的质检点");
+            throw new DomainException("该工序已配置相同类型的质检点");
 
         return await _checkpointRepo0.AddAsync(checkpoint);
     }
@@ -62,7 +63,7 @@ public class QcCheckpointService : IQcCheckpointService
     {
         var existing = await _checkpointRepo0.GetByIdAsync(checkpoint.Id);
         if (existing == null)
-            throw new InvalidOperationException("质检点配置不存在");
+            throw new DomainException("质检点配置不存在");
 
         existing.StepId = checkpoint.StepId;
         existing.CheckType = checkpoint.CheckType;
@@ -79,7 +80,7 @@ public class QcCheckpointService : IQcCheckpointService
     {
         var checkpoint = await _checkpointRepo0.GetByIdAsync(checkpointId);
         if (checkpoint == null)
-            throw new InvalidOperationException("质检点配置不存在");
+            throw new DomainException("质检点配置不存在");
 
         await _checkpointRepo0.DeleteAsync(checkpoint);
     }

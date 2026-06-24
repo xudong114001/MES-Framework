@@ -1,13 +1,20 @@
 using MES.Application.Dtos;
+using MES.Domain.Entities;
 
 namespace MES.Application.Interfaces;
 
 public interface IProductionLineService
 {
     Task<IEnumerable<ProductionLineDto>> GetAllAsync();
+    Task<IEnumerable<ProductionLine>> GetAllLinesAsync();
     Task<ProductionLineDto?> GetByIdAsync(long id);
     Task<IEnumerable<ProductionLineDto>> GetByWorkshopIdAsync(long workshopId);
-    Task<ProductionLineDto> CreateAsync(Domain.Entities.ProductionLine entity);
-    Task UpdateAsync(long id, Domain.Entities.ProductionLine entity);
+
+    /// <summary>创建生产线（DTO版本）</summary>
+    Task<ProductionLineDto> CreateAsync(CreateProductionLineRequest request);
+
+    /// <summary>更新生产线（DTO版本）</summary>
+    Task UpdateAsync(long id, UpdateProductionLineRequest request);
+
     Task DeleteAsync(long id);
 }

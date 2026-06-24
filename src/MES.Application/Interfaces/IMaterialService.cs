@@ -6,7 +6,12 @@ public interface IMaterialService
 {
     Task<IEnumerable<MaterialDto>> GetAllAsync();
     Task<MaterialDto?> GetByIdAsync(long id);
-    Task<MaterialDto> CreateAsync(Domain.Entities.Material entity);
-    Task UpdateAsync(long id, Domain.Entities.Material entity);
+
+    /// <summary>创建物料（DTO版本）</summary>
+    Task<MaterialDto> CreateAsync(CreateMaterialRequest request);
+
+    /// <summary>更新物料（DTO版本）</summary>
+    Task UpdateAsync(long id, UpdateMaterialRequest request);
+
     Task DeleteAsync(long id);
 }

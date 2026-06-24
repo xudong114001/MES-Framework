@@ -187,8 +187,8 @@ public class SchedulingRecommendationService : ISchedulingRecommendationService
             wo.LineId == lineId &&
             (wo.Status == WorkOrderStatus.SCHEDULED || wo.Status == WorkOrderStatus.IN_PROGRESS));
 
-        var totalPlanned = scheduledOrders.Sum(wo => wo.PlannedQty);
-        var totalCompleted = scheduledOrders.Sum(wo => wo.CompletedQty);
+        var totalPlanned = scheduledOrders.Sum(wo => wo.PlannedQty.Value);
+        var totalCompleted = scheduledOrders.Sum(wo => wo.CompletedQty.Value);
 
         if (totalPlanned == 0) return 0;
         return (double)totalCompleted / (double)totalPlanned;
@@ -224,6 +224,6 @@ public class SchedulingRecommendationService : ISchedulingRecommendationService
             if (planned > 0) return planned;
         }
 
-        return (double)workOrder.PlannedQty * 10;
+        return (double)workOrder.PlannedQty.Value * 10;
     }
 }

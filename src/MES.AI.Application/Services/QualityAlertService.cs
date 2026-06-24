@@ -152,9 +152,9 @@ public class QualityAlertService : IQualityAlertService
             foreach (var wo in recentOrders)
             {
                 var woReports = reports.Where(r => r.WorkOrderId == wo.Id).ToList();
-                var totalQty = woReports.Sum(r => r.GoodQty + r.ScrapQty);
+                var totalQty = woReports.Sum(r => (r.GoodQty + r.ScrapQty).Value);
                 if (totalQty == 0) { allHigh = false; break; }
-                var scrapRate = woReports.Sum(r => r.ScrapQty) / totalQty;
+                var scrapRate = woReports.Sum(r => r.ScrapQty.Value) / totalQty;
                 if (scrapRate <= 0.05m) { allHigh = false; break; }
             }
 
@@ -190,10 +190,10 @@ public class QualityAlertService : IQualityAlertService
             if (workOrderId.HasValue && !woIds.Contains(workOrderId.Value)) continue;
 
             var batchReports = reports.Where(r => woIds.Contains(r.WorkOrderId)).ToList();
-            var totalQty = batchReports.Sum(r => r.GoodQty + r.ScrapQty + r.ReworkQty);
+            var totalQty = batchReports.Sum(r => (r.GoodQty + r.ScrapQty + r.ReworkQty).Value);
             if (totalQty == 0) continue;
 
-            var defectQty = batchReports.Sum(r => r.ScrapQty + r.ReworkQty);
+            var defectQty = batchReports.Sum(r => (r.ScrapQty + r.ReworkQty).Value);
             var defectRate = defectQty / totalQty;
 
             if (defectRate > 0.03m)

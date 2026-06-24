@@ -7,7 +7,12 @@ public interface IBomService
     Task<IEnumerable<BomDto>> GetAllAsync();
     Task<BomDto?> GetByIdAsync(long id);
     Task<IEnumerable<BomDto>> GetByProductIdAsync(long productId);
-    Task<BomDto> CreateAsync(Domain.Entities.Bom entity);
-    Task UpdateAsync(long id, Domain.Entities.Bom entity);
+
+    /// <summary>创建 BOM（DTO版本）</summary>
+    Task<BomDto> CreateAsync(CreateBomRequest request);
+
+    /// <summary>更新 BOM（DTO版本）</summary>
+    Task UpdateAsync(long id, UpdateBomRequest request);
+
     Task DeleteAsync(long id);
 }

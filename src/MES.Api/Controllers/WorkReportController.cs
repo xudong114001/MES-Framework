@@ -1,26 +1,22 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using MES.Api.Middleware;
 using MES.Api.Services;
 using MES.Application.Dtos;
 using MES.Application.Interfaces;
-using MES.Domain.Entities;
 
 namespace MES.Api.Controllers;
 
 [ApiController]
 [Route("api/v1/work-reports")]
 [Authorize(Roles = "admin,supervisor,operator")]
-public class WorkReportController : BaseController
+public class WorkReportController : ControllerBase
 {
     private readonly IWorkReportService _reportService;
-    private readonly HubNotificationService _hubNotification;
 
-    public WorkReportController(
-        IWorkReportService reportService,
-        HubNotificationService hubNotification)
+    public WorkReportController(IWorkReportService reportService)
     {
         _reportService = reportService;
-        _hubNotification = hubNotification;
     }
 
     /// <summary>
@@ -30,7 +26,7 @@ public class WorkReportController : BaseController
     public async Task<IActionResult> GetAll()
     {
         var list = await _reportService.GetAllAsync();
-        return Success(list);
+        return Ok(ApiResponse.Ok(list));
     }
 
     /// <summary>
@@ -41,53 +37,28 @@ public class WorkReportController : BaseController
     {
         var entity = await _reportService.GetByIdAsync(id);
         if (entity == null)
-            return Fail("报工记录不存在", 404);
-        return Success(entity);
+            return NotFound(ApiResponse.Fail("报工记录不存在"));
+        return Ok(ApiResponse.Ok(entity));
     }
 
     /// <summary>
     /// 提交报工
     /// </summary>
     [HttpPost]
-    public async Task<IActionResult> Submit([FromBody] WorkReport report)
+    public async Task<IActionResult> Submit([FromBody] SubmitWorkReportRequest request)
     {
-        var created = await _reportService.SubmitReportAsync(report);
-
-        // 报工完成后推送实时更新
-        _ = Task.Run(async () =>
-        {
-            try
-            {
-                await _hubNotification.NotifyOutputUpdate(new
-                {
-                    workOrderId = created.WorkOrderId,
-                    goodQty = created.GoodQty,
-                    scrapQty = created.ScrapQty,
-                    batchNo = created.BatchNo,
-                    timestamp = DateTime.UtcNow
-                });
-                await _hubNotification.NotifyOrderUpdate(new
-                {
-                    workOrderId = created.WorkOrderId,
-                    action = "report_submitted",
-                    timestamp = DateTime.UtcNow
-                });
-            }
-            catch { /* SignalR push failure is non-critical */ }
-        });
-
-        return Success(created);
+        var created = await _reportService.SubmitAsync(request);
+        return Ok(ApiResponse.Ok(created));
     }
 
     /// <summary>
     /// 修改报工
     /// </summary>
     [HttpPut("{id}")]
-    public async Task<IActionResult> Update(long id, [FromBody] WorkReport entity)
+    public async Task<IActionResult> Update(long id, [FromBody] UpdateWorkReportRequest request)
     {
-        entity.Id = id;
-        await _reportService.UpdateWorkReportAsync(entity);
-        return Success("更新成功");
+        await _reportService.UpdateAsync(id, request);
+        return Ok(ApiResponse.Ok("更新成功"));
     }
 
     /// <summary>
@@ -98,24 +69,6 @@ public class WorkReportController : BaseController
     public async Task<IActionResult> PdaScan([FromBody] PdaScanReportRequest request)
     {
         var report = await _reportService.PdaScanReportAsync(request);
-
-        // PDA 报工完成后推送实时更新
-        _ = Task.Run(async () =>
-        {
-            try
-            {
-                await _hubNotification.NotifyOutputUpdate(new
-                {
-                    workOrderId = report.WorkOrderId,
-                    goodQty = report.GoodQty,
-                    scrapQty = report.ScrapQty,
-                    batchNo = report.BatchNo,
-                    timestamp = DateTime.UtcNow
-                });
-            }
-            catch { }
-        });
-
-        return Success(report);
+        return Ok(ApiResponse.Ok(report));
     }
 }

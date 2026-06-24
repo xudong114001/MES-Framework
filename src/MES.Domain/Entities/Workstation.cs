@@ -1,6 +1,8 @@
+using MES.Domain.AggregateRoots;
+
 namespace MES.Domain.Entities;
 
-public class Workstation : BaseEntity
+public class Workstation : BaseEntity, IAggregateRoot
 {
     internal Workstation() { }
 

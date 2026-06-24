@@ -1,9 +1,10 @@
+using MES.Domain.AggregateRoots;
+using MES.Domain.Enums;
+using MES.Domain.Exceptions;
+
 namespace MES.Domain.Entities;
 
-/// <summary>
-/// Andon 异常事件 - 持久化到数据库
-/// </summary>
-public class AndonEvent : BaseEntity
+public class AndonEvent : BaseEntity, IAggregateRoot
 {
     /// <summary>事件类型</summary>
     public AndonEventType EventType { get; set; }
@@ -46,27 +47,36 @@ public class AndonEvent : BaseEntity
 
     /// <summary>处理时间</summary>
     public DateTime? ResolvedAt { get; set; }
-}
 
-/// <summary>
-/// Andon 事件类型
-/// </summary>
-public enum AndonEventType
-{
-    QUALITY_ALARM,     // 质量异常
-    EQUIPMENT_FAULT,   // 设备故障
-    MATERIAL_SHORTAGE, // 物料短缺
-    PRODUCTION_DELAY,  // 生产延迟
-    OTHER              // 其他异常
-}
+    /// <summary>
+    /// 处理/解决 Andon 事件
+    /// </summary>
+    public void Resolve(long resolvedById, string resolvedByName)
+    {
+        if (ResolvedAt.HasValue)
+            throw new DomainException("该事件已经被处理", "ANDON_ALREADY_RESOLVED");
+        if (resolvedById <= 0)
+            throw new DomainException("处理人ID无效", "ANDON_INVALID_RESOLVER");
+        if (string.IsNullOrWhiteSpace(resolvedByName))
+            throw new DomainException("处理人姓名不能为空", "ANDON_RESOLVER_NAME_REQUIRED");
 
-/// <summary>
-/// Andon 事件级别
-/// </summary>
-public enum AndonEventLevel
-{
-    Info,       // 提示
-    Warning,    // 警告
-    Error,      // 错误
-    Critical    // 紧急
+        ResolvedById = resolvedById;
+        ResolvedByName = resolvedByName;
+        ResolvedAt = DateTime.UtcNow;
+        UpdatedAt = DateTime.UtcNow;
+    }
+
+    /// <summary>
+    /// 升级 Andon 事件级别
+    /// </summary>
+    public void Escalate()
+    {
+        if (ResolvedAt.HasValue)
+            throw new DomainException("已处理的事件不允许升级", "ANDON_RESOLVED_CANNOT_ESCALATE");
+        if (Level == AndonEventLevel.Critical)
+            throw new DomainException("事件已达到最高级别，无法继续升级", "ANDON_MAX_LEVEL");
+
+        Level = (AndonEventLevel)((int)Level + 1);
+        UpdatedAt = DateTime.UtcNow;
+    }
 }

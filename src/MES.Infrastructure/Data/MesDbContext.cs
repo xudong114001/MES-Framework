@@ -46,11 +46,11 @@ public class MesDbContext : DbContext
             switch (entry.State)
             {
                 case EntityState.Added:
-                    entry.Entity.CreatedAt = DateTime.UtcNow;
-                    entry.Entity.UpdatedAt = DateTime.UtcNow;
+                    entry.Entity.SetCreationInfo(DateTime.UtcNow);
+                    entry.Entity.SetModificationInfo(DateTime.UtcNow);
                     break;
                 case EntityState.Modified:
-                    entry.Entity.UpdatedAt = DateTime.UtcNow;
+                    entry.Entity.SetModificationInfo(DateTime.UtcNow);
                     break;
             }
         }

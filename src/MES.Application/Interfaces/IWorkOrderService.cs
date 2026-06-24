@@ -8,15 +8,68 @@ public interface IWorkOrderService
 {
     Task<IEnumerable<WorkOrderDto>> GetAllAsync();
     Task<WorkOrderDto?> GetByIdAsync(long id);
-    Task<WorkOrder> CreateWorkOrderAsync(WorkOrder workOrder);
-    Task UpdateWorkOrderAsync(WorkOrder workOrder);
+
+    /// <summary>创建工单（DTO版本）</summary>
+    Task<WorkOrderDto> CreateAsync(CreateWorkOrderRequest request);
+
+    /// <summary>更新工单（DTO版本）</summary>
+    Task UpdateAsync(long id, UpdateWorkOrderRequest request);
+
     Task DeleteWorkOrderAsync(long id);
     Task ReleaseWorkOrderAsync(long workOrderId);
     Task HoldWorkOrderAsync(long workOrderId);
     Task ResumeWorkOrderAsync(long workOrderId);
     Task CancelWorkOrderAsync(long workOrderId);
     Task CloseWorkOrderAsync(long workOrderId);
-    Task<WorkOrder> SplitWorkOrderAsync(long workOrderId, decimal splitQty);
-    Task<WorkOrder> ReworkWorkOrderAsync(long workOrderId, decimal reworkQty, string? remark);
+    Task<WorkOrderDto> SplitWorkOrderAsync(long workOrderId, decimal splitQty);
+    Task<WorkOrderDto> ReworkWorkOrderAsync(long workOrderId, decimal reworkQty, string? remark);
     Task ScrapWorkOrderAsync(long workOrderId, decimal scrapQty, string? remark);
+}
+
+public class CreateWorkOrderRequest
+{
+    public string OrderNo { get; set; } = string.Empty;
+    public SourceType SourceType { get; set; }
+    public string? SourceRef { get; set; }
+    public long MaterialId { get; set; }
+    public long? RoutingId { get; set; }
+    public decimal PlannedQty { get; set; }
+    public DateTime? PlanStartTime { get; set; }
+    public DateTime? PlanEndTime { get; set; }
+    public int Priority { get; set; } = 0;
+    public long? FactoryId { get; set; }
+    public long? WorkshopId { get; set; }
+    public long? LineId { get; set; }
+    public string? Assignee { get; set; }
+    public string? Remark { get; set; }
+}
+
+public class UpdateWorkOrderRequest
+{
+    public decimal PlannedQty { get; set; }
+    public DateTime? PlanStartTime { get; set; }
+    public DateTime? PlanEndTime { get; set; }
+    public int Priority { get; set; }
+    public long? FactoryId { get; set; }
+    public long? WorkshopId { get; set; }
+    public long? LineId { get; set; }
+    public string? Assignee { get; set; }
+    public string? Remark { get; set; }
+}
+
+public class SplitRequest
+{
+    public decimal SplitQty { get; set; }
+}
+
+public class ReworkRequest
+{
+    public decimal ReworkQty { get; set; }
+    public string? Remark { get; set; }
+}
+
+public class ScrapRequest
+{
+    public decimal ScrapQty { get; set; }
+    public string? Remark { get; set; }
 }

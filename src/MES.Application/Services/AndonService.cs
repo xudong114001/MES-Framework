@@ -104,7 +104,6 @@ public class AndonService : IAndonService
         evt.ResolvedById = resolverId;
         evt.ResolvedByName = resolverName;
         evt.ResolvedAt = DateTime.UtcNow;
-        evt.UpdatedAt = DateTime.UtcNow;
 
         await _repository.UpdateAsync(evt);
         return true;

@@ -40,6 +40,11 @@ public record Quantity
     public bool IsNegative => Value < 0;
 
     /// <summary>
+    /// 创建零数量值对象
+    /// </summary>
+    public static Quantity Zero(string unit = "个") => new(0, unit);
+
+    /// <summary>
     /// 隐式转换为 decimal，便于与现有代码兼容
     /// </summary>
     public static implicit operator decimal(Quantity quantity) => quantity.Value;

@@ -4,7 +4,9 @@ using MES.Application.Interfaces;
 using MES.Application.Integration.Events;
 using MES.Domain.Entities;
 using MES.Domain.Enums;
+using MES.Domain.Exceptions;
 using MES.Domain.Repositories;
+using MES.Domain.ValueObjects;
 using StackExchange.Redis;
 
 namespace MES.Application.Services;
@@ -96,20 +98,60 @@ public class WorkReportService : IWorkReportService
     }
 
     /// <summary>
+    /// 更新报工记录（DTO版本）
+    /// </summary>
+    public async Task UpdateAsync(long id, UpdateWorkReportRequest request)
+    {
+        var existing = await _reportRepo.GetByIdAsync(id);
+        if (existing == null)
+            throw new DomainException("报工记录不存在");
+
+        existing.GoodQty = new Quantity(request.GoodQty);
+        existing.ScrapQty = new Quantity(request.ScrapQty);
+        existing.ReworkQty = new Quantity(request.ReworkQty);
+        existing.DurationMin = request.DurationMin;
+        existing.Remark = request.Remark;
+        existing.BatchNo = request.BatchNo;
+
+        await _reportRepo.UpdateAsync(existing);
+    }
+
+    /// <summary>
     /// 更新报工记录
     /// </summary>
     public async Task UpdateWorkReportAsync(WorkReport report)
     {
         var existing = await _reportRepo.GetByIdAsync(report.Id);
         if (existing == null)
-            throw new InvalidOperationException("报工记录不存在");
+            throw new DomainException("报工记录不存在");
 
         // 保留审计字段
-        report.CreatedAt = existing.CreatedAt;
-        report.CreatedBy = existing.CreatedBy;
-        report.UpdatedAt = DateTime.UtcNow;
+        report.SetCreationInfo(existing.CreatedAt, existing.CreatedBy);
+        report.SetModificationInfo(DateTime.UtcNow);
 
         await _reportRepo.UpdateAsync(report);
+    }
+
+    /// <summary>
+    /// 提交报工（DTO版本）
+    /// </summary>
+    public async Task<WorkReportDto> SubmitAsync(SubmitWorkReportRequest request)
+    {
+        var report = WorkReport.Create(
+            workOrderId: request.WorkOrderId,
+            reportType: request.ReportType,
+            goodQty: new Quantity(request.GoodQty),
+            scrapQty: new Quantity(request.ScrapQty),
+            reworkQty: new Quantity(request.ReworkQty),
+            stepId: request.StepId,
+            workstationId: request.WorkstationId,
+            remark: request.Remark);
+
+        report.DurationMin = request.DurationMin;
+        report.BatchNo = request.BatchNo;
+
+        var created = await SubmitReportAsync(report);
+        return MapToDto(created);
     }
 
     /// <summary>
@@ -121,7 +163,7 @@ public class WorkReportService : IWorkReportService
         var dedupKey = $"report:dup:{report.WorkOrderId}:{report.StepId}:{report.OperatorId}:{DateTimeOffset.UtcNow.ToUnixTimeSeconds() / 5}";
         var locked = await _redis.StringSetAsync(dedupKey, "1", TimeSpan.FromSeconds(10), When.NotExists);
         if (!locked)
-            throw new InvalidOperationException("请勿重复提交");
+            throw new DomainException("请勿重复提交");
 
         // ==================== 质检校验 ====================
         if (report.StepId.HasValue)
@@ -130,7 +172,7 @@ public class WorkReportService : IWorkReportService
         }
 
         // ==================== 批次号自动生成 ====================
-        if (report.GoodQty > 0)
+        if (report.GoodQty.Value > 0)
         {
             var today = DateTime.Now.ToString("yyyyMMdd");
             var seqKey = $"batch:seq:{today}";
@@ -143,15 +185,15 @@ public class WorkReportService : IWorkReportService
 
         // ==================== 原有报工校验和更新逻辑 ====================
         var wo = await _workOrderRepo.GetByIdAsync(report.WorkOrderId);
-        if (wo == null) throw new InvalidOperationException("工单不存在");
+        if (wo == null) throw new DomainException("工单不存在");
         if (wo.Status != WorkOrderStatus.RELEASED && wo.Status != WorkOrderStatus.IN_PROGRESS)
-            throw new InvalidOperationException($"工单状态({wo.Status})不允许报工");
+            throw new DomainException($"工单状态({wo.Status})不允许报工");
 
         // 校验报工数量不超过计划
-        var totalReported = wo.CompletedQty + wo.ScrapQty;
-        var currentTotal = report.GoodQty + report.ScrapQty + report.ReworkQty;
-        if (totalReported + currentTotal > wo.PlannedQty)
-            throw new InvalidOperationException($"报工数量({currentTotal})超过剩余可报工数量({wo.PlannedQty - totalReported})");
+        var totalReported = wo.CompletedQty.Value + wo.ScrapQty.Value;
+        var currentTotal = report.GoodQty.Value + report.ScrapQty.Value + report.ReworkQty.Value;
+        if (totalReported + currentTotal > wo.PlannedQty.Value)
+            throw new DomainException($"报工数量({currentTotal})超过剩余可报工数量({wo.PlannedQty.Value - totalReported})");
 
         // 使用领域方法更新工单进度
         wo.ReportProgress(report.GoodQty, report.ScrapQty, report.ReworkQty);
@@ -164,7 +206,7 @@ public class WorkReportService : IWorkReportService
             var step = (await _stepRepo.FindAsync(s => s.Id == report.StepId.Value)).FirstOrDefault();
             if (step != null)
             {
-                step.UpdateProgress(report.GoodQty, report.ScrapQty);
+                step.UpdateProgress(report.GoodQty.Value, report.ScrapQty.Value);
                 await _stepRepo.UpdateAsync(step);
             }
         }
@@ -231,7 +273,7 @@ public class WorkReportService : IWorkReportService
 
             if (pendingInspections.Any())
             {
-                throw new InvalidOperationException("该工序需先完成质检");
+                throw new DomainException("该工序需先完成质检");
             }
         }
     }
@@ -239,25 +281,25 @@ public class WorkReportService : IWorkReportService
     /// <summary>
     /// PDA 扫码报工
     /// </summary>
-    public async Task<WorkReport> PdaScanReportAsync(PdaScanReportRequest request)
+    public async Task<WorkReportDto> PdaScanReportAsync(PdaScanReportRequest request)
     {
         // 1. 根据 scan_code 查找工单
         var orders = await _workOrderRepo.FindAsync(o => o.OrderNo == request.ScanCode);
         var wo = orders.FirstOrDefault();
         if (wo == null)
-            throw new InvalidOperationException($"未找到工单: {request.ScanCode}");
+            throw new DomainException($"未找到工单: {request.ScanCode}");
 
         // 2. 根据 workstation_code 查找工位
         var workstations = await _workstationRepo.FindAsync(ws => ws.Code == request.WorkstationCode);
         var workstation = workstations.FirstOrDefault();
         if (workstation == null)
-            throw new InvalidOperationException($"未找到工位: {request.WorkstationCode}");
+            throw new DomainException($"未找到工位: {request.WorkstationCode}");
 
         // 3. 根据 operator_code 查找操作工
         var operators = await _userRepo.FindAsync(u => u.Username == request.OperatorCode);
         var operatorUser = operators.FirstOrDefault();
         if (operatorUser == null)
-            throw new InvalidOperationException($"未找到操作工: {request.OperatorCode}");
+            throw new DomainException($"未找到操作工: {request.OperatorCode}");
 
         // 4. 根据工单ID + 工序名称 匹�� WorkOrderStep
         WorkOrderStep? matchedStep = null;
@@ -268,15 +310,15 @@ public class WorkReportService : IWorkReportService
         var report = WorkReport.Create(
             workOrderId: wo.Id,
             reportType: ReportType.COMPLETE,
-            goodQty: request.GoodQty,
-            scrapQty: request.ScrapQty,
-            reworkQty: request.ReworkQty,
+            goodQty: new Quantity(request.GoodQty),
+            scrapQty: new Quantity(request.ScrapQty),
+            reworkQty: new Quantity(request.ReworkQty),
             stepId: matchedStep?.Id,
             workstationId: workstation.Id,
             operatorId: operatorUser.Id,
             remark: $"PDA扫码报工 - {request.WorkstationCode}"
         );
 
-        return await SubmitReportAsync(report);
+        return MapToDto(await SubmitReportAsync(report));
     }
 }

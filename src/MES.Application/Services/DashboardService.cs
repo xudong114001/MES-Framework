@@ -57,9 +57,9 @@ public class DashboardService : IDashboardService
         var list = orders.ToList();
         return new
         {
-            plannedQty = list.Sum(o => o.PlannedQty),
-            completedQty = list.Sum(o => o.CompletedQty),
-            scrapQty = list.Sum(o => o.ScrapQty)
+            plannedQty = list.Sum(o => o.PlannedQty.Value),
+            completedQty = list.Sum(o => o.CompletedQty.Value),
+            scrapQty = list.Sum(o => o.ScrapQty.Value)
         };
     }
 

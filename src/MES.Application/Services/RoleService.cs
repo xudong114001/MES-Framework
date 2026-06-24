@@ -1,3 +1,4 @@
+using MES.Application.Dtos;
 using MES.Application.Interfaces;
 using MES.Domain.Entities;
 using MES.Domain.Repositories;
@@ -15,23 +16,39 @@ public class RoleService : IRoleService
         _permissionRepo = permissionRepo;
     }
 
-    public async Task<IEnumerable<object>> GetAllAsync()
+    private static RoleDto MapToDto(Role r) => new()
+    {
+        Id = r.Id,
+        Name = r.Name,
+        Description = r.Description,
+        CreatedAt = r.CreatedAt,
+        CreatedBy = r.CreatedBy,
+        UpdatedAt = r.UpdatedAt,
+        UpdatedBy = r.UpdatedBy
+    };
+
+    public async Task<IEnumerable<RoleDto>> GetAllAsync()
     {
         var roles = await _roleRepo.FindAsync(r => !r.IsDeleted);
-        return roles.Select(r => new { r.Id, r.Name, r.Description, r.CreatedAt, r.UpdatedAt });
+        return roles.Select(MapToDto);
     }
 
-    public async Task<object?> GetByIdAsync(long id)
+    public async Task<RoleDetailDto?> GetByIdAsync(long id)
     {
         var role = (await _roleRepo.FindAsync(r => r.Id == id && !r.IsDeleted)).FirstOrDefault();
         if (role == null) return null;
 
         var permissions = await _permissionRepo.FindAsync(rp => rp.RoleId == id);
-        return new
+        return new RoleDetailDto
         {
-            role.Id, role.Name, role.Description,
+            Id = role.Id,
+            Name = role.Name,
+            Description = role.Description,
             Permissions = permissions.Select(rp => rp.Permission).ToList(),
-            role.CreatedAt, role.UpdatedAt
+            CreatedAt = role.CreatedAt,
+            CreatedBy = role.CreatedBy,
+            UpdatedAt = role.UpdatedAt,
+            UpdatedBy = role.UpdatedBy
         };
     }
 
@@ -41,13 +58,15 @@ public class RoleService : IRoleService
         return permissions.Select(rp => rp.Permission);
     }
 
-    public async Task CreateAsync(string name, string? description)
+    public async Task<RoleDto> CreateAsync(string name, string? description)
     {
         if (await _roleRepo.ExistsAsync(r => r.Name == name && !r.IsDeleted))
             throw new Domain.Exceptions.DomainException("角色已存在");
 
         var role = new Role { Name = name, Description = description };
         await _roleRepo.AddAsync(role);
+
+        return MapToDto(role);
     }
 
     public async Task UpdateAsync(long id, string name, string? description)
@@ -92,9 +111,7 @@ public class RoleService : IRoleService
         if (role == null)
             throw new Domain.Exceptions.DomainException("角色不存在");
 
-        // Check if any users have this role
-        // Note: UserRole uses IRepository<UserRole> which we'd need to inject or check via other means
-        role.IsDeleted = true;
+        role.MarkAsDeleted();
         await _roleRepo.UpdateAsync(role);
     }
 }
