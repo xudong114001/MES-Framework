@@ -139,7 +139,7 @@ const handleRules = {
 }
 
 function sourceTypeLabel(type?: string) {
-  const map: Record<string, string> = { INCOMING: '来料检', FIRST_ARTICLE: '首件检', IN_PROCESS: '过程检', FINAL: '完工检' }
+  const map: Record<string, string> = { INCOMING: '来料检', FIRST: '首件检', PATROL: '巡检', FINAL: '完工检' }
   return map[type || ''] || type || '-'
 }
 

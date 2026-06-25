@@ -11,6 +11,7 @@ using MES.Application.Interfaces;
 using MES.Application.Services;
 using MES.Infrastructure.Data;
 using MES.Infrastructure.Extensions;
+using MES.Infrastructure.Services;
 using MES.Integration;
 using MES.Integration.EventBus;
 using MES.Integration.Adapters;
@@ -150,6 +151,7 @@ builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
 builder.Services.AddScoped<MES.Application.Interfaces.ICacheService, MES.Infrastructure.Services.CacheService>();
 builder.Services.AddScoped<CachedMaterialService>();
 builder.Services.AddScoped<CachedRoutingService>();
+builder.Services.AddScoped<IBatchNumberService, BatchNumberService>();
 
 // SignalR
 builder.Services.AddSignalR();

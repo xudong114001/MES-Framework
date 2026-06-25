@@ -213,6 +213,23 @@ CREATE TABLE mes_qc_inspection_item (
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- ==================== 质检检查点 ====================
+
+CREATE TABLE mes_qc_checkpoint (
+    id BIGSERIAL PRIMARY KEY,
+    step_id BIGINT NOT NULL,
+    check_type INT NOT NULL,
+    is_mandatory BOOLEAN NOT NULL DEFAULT FALSE,
+    remark VARCHAR(500),
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    created_by BIGINT,
+    updated_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_by BIGINT,
+    is_deleted BOOLEAN DEFAULT FALSE
+);
+
+CREATE UNIQUE INDEX idx_qc_checkpoint_step_type ON mes_qc_checkpoint(step_id, check_type) WHERE is_deleted = FALSE;
+
 -- ==================== 追溯 ====================
 
 CREATE TABLE mes_material_trace (
@@ -320,7 +337,6 @@ CREATE INDEX idx_user_username ON mes_user(username);
 -- Work Report composite indexes for step-level reporting
 CREATE INDEX idx_work_report_work_order_step ON mes_work_report(work_order_id, step_id);
 CREATE INDEX idx_work_report_operator ON mes_work_report(operator_id);
-CREATE INDEX idx_work_report_batch ON mes_work_report(batch_no);
 
 -- Material Trace for work order traceability
 CREATE INDEX idx_material_trace_work_order ON mes_material_trace(work_order_id);
@@ -337,7 +353,7 @@ CREATE INDEX idx_work_order_status_line_priority ON mes_work_order(status, line_
 -- ==================== 种子数据 ====================
 
 INSERT INTO mes_user (username, password_hash, display_name, status) VALUES
-('admin', '$2a$11$K4YfGqJ1e4YHIYHIYHIYHuDummyHashForAdmin2026', '系统管理员', 1);
+('admin', 'F0CE0E86206541C60BC47BE815F83EBA98004F63C883E6D71FF5CC929CB5F9CA', '系统管理员', 1);
 
 INSERT INTO mes_factory (code, name, address) VALUES
 ('FACTORY-001', 'Demo Factory', '中国广东省深圳市南山区科技园');
