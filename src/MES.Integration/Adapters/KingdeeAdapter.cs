@@ -102,7 +102,7 @@ public class KingdeeAdapter : IERPAdapter, IDisposable
                     PlanStartTime = fields.Count > 3 && DateTime.TryParse(fields[3].ToString(), out var ps) ? ps : null,
                     PlanEndTime = fields.Count > 4 && DateTime.TryParse(fields[4].ToString(), out var pe) ? pe : null,
                     Status = MapKingdeeStatus(fields.Count > 5 ? fields[5].ToString() : null),
-                    Priority = fields.Count > 6 && int.TryParse(fields[6].ToString(), out var pri) ? pri : 0,
+                    Priority = fields.Count > 6 && int.TryParse(fields[6].ToString(), out var pri) ? MapIntToPriority(pri) : Priority.NORMAL,
                     Remark = fields.Count > 7 ? fields[7].ToString() : null
                 });
             }
@@ -142,7 +142,7 @@ public class KingdeeAdapter : IERPAdapter, IDisposable
                     MaterialCode = fields.Count > 1 ? fields[1].ToString() : "",
                     PlannedQty = fields.Count > 2 && decimal.TryParse(fields[2].ToString(), out var qty) ? qty : 0,
                     Status = MapKingdeeStatus(fields.Count > 5 ? fields[5].ToString() : null),
-                    Priority = fields.Count > 6 && int.TryParse(fields[6].ToString(), out var pri) ? pri : 0
+                    Priority = fields.Count > 6 && int.TryParse(fields[6].ToString(), out var pri) ? MapIntToPriority(pri) : Priority.NORMAL
                 };
             }
         }
@@ -348,6 +348,17 @@ public class KingdeeAdapter : IERPAdapter, IDisposable
             "E" or "Finish" => WorkOrderStatus.COMPLETED,
             "F" or "Close" => WorkOrderStatus.CLOSED,
             _ => WorkOrderStatus.PENDING
+        };
+    }
+
+    private static Priority MapIntToPriority(int value)
+    {
+        return value switch
+        {
+            <= 20 => Priority.LOW,
+            <= 60 => Priority.NORMAL,
+            <= 90 => Priority.HIGH,
+            _ => Priority.URGENT
         };
     }
 

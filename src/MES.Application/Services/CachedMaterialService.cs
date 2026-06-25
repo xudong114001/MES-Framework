@@ -1,4 +1,4 @@
-using MES.Domain.Interfaces;
+using MES.Application.Interfaces;
 using MES.Domain.Entities;
 using MES.Domain.Repositories;
 

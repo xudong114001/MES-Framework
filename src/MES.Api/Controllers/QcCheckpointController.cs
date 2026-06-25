@@ -46,8 +46,7 @@ public class QcCheckpointController : ControllerBase
     [HttpPut("{id}")]
     public async Task<IActionResult> Update(long id, [FromBody] QcCheckpoint checkpoint)
     {
-        checkpoint.Id = id;
-        await _checkpointService.UpdateCheckpointAsync(checkpoint);
+        await _checkpointService.UpdateCheckpointAsync(id, checkpoint);
         return Ok(ApiResponse.Ok("更新成功"));
     }
 

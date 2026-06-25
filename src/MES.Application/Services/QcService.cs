@@ -224,7 +224,7 @@ public class QcService : IQcService
     /// <param name="inspectionId">质检单ID</param>
     /// <param name="action">处理动作: CONCESSION(让步接收), REWORK(返工), SCRAP(报废)</param>
     /// <param name="remark">处理备注</param>
-    public async Task HandleNonconformingAsync(long inspectionId, string action, string? remark)
+    public async Task HandleNonconformingAsync(long inspectionId, InspectionResult action, string? remark)
     {
         var inspection = await _inspectionRepo.GetByIdAsync(inspectionId);
         if (inspection == null)
@@ -236,13 +236,13 @@ public class QcService : IQcService
         // 根据处理动作更新相关数据
         switch (action)
         {
-            case "SCRAP":
+            case InspectionResult.SCRAP:
                 await HandleScrapAsync(inspection);
                 break;
-            case "REWORK":
+            case InspectionResult.REWORK:
                 await HandleReworkAsync(inspection);
                 break;
-            case "CONCESSION":
+            case InspectionResult.CONCESSION:
                 // 让步接收：仅记录处理信息，无需更新数量
                 break;
         }

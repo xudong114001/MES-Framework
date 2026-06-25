@@ -59,9 +59,9 @@ public class QcCheckpointService : IQcCheckpointService
     /// <summary>
     /// 更新质检点（兼容前端）
     /// </summary>
-    public async Task UpdateCheckpointAsync(QcCheckpoint checkpoint)
+    public async Task UpdateCheckpointAsync(long id, QcCheckpoint checkpoint)
     {
-        var existing = await _checkpointRepo0.GetByIdAsync(checkpoint.Id);
+        var existing = await _checkpointRepo0.GetByIdAsync(id);
         if (existing == null)
             throw new DomainException("质检点配置不存在");
 

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using MES.Api.Middleware;
 using MES.Application.Dtos;
 using MES.Application.Interfaces;
+using MES.Domain.Enums;
 
 namespace MES.Api.Controllers;
 
@@ -148,7 +149,7 @@ public class EquipmentController : ControllerBase
     [HttpGet("maintenance-plans")]
     public async Task<IActionResult> GetAllMaintenancePlans(
         [FromQuery] string? equipmentName,
-        [FromQuery] string? status)
+        [FromQuery] MaintenancePlanStatus? status)
     {
         var result = await _equipmentService.GetAllMaintenancePlansAsync(equipmentName, status);
         return Ok(ApiResponse.Ok(result));

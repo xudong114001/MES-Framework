@@ -1,4 +1,4 @@
-using MES.Domain.Interfaces;
+using MES.Application.Interfaces;
 using Microsoft.Extensions.Logging;
 using StackExchange.Redis;
 

@@ -5,7 +5,6 @@ using MES.Application.Integration.Events;
 using MES.Domain.Entities;
 using MES.Domain.Enums;
 using MES.Domain.Exceptions;
-using MES.Domain.Interfaces;
 using MES.Domain.Repositories;
 using MES.Domain.ValueObjects;
 

@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.SignalR;
 using MES.AI.Domain.Entities;
+using MES.Domain.Enums;
 
 namespace MES.Api.Hubs;
 
@@ -31,7 +32,7 @@ public class AlertNotificationDto
     public long Id { get; set; }
     public string Title { get; set; } = string.Empty;
     public string Message { get; set; } = string.Empty;
-    public string Level { get; set; } = string.Empty;
+    public AndonEventLevel Level { get; set; }
     public string? RelatedEntityType { get; set; }
     public long? RelatedEntityId { get; set; }
     public DateTime CreatedAt { get; set; }

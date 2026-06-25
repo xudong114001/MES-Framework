@@ -94,7 +94,7 @@ public class SapB1Adapter : IERPAdapter, IDisposable
                     PlanStartTime = item.TryGetProperty("StartDate", out var start) && DateTime.TryParse(start.ToString(), out var s) ? s : null,
                     PlanEndTime = item.TryGetProperty("DueDate", out var end) && DateTime.TryParse(end.ToString(), out var e) ? e : null,
                     Status = MapSapStatus(item.TryGetProperty("ProductionOrderStatus", out var st) ? st.GetString() : null),
-                    Priority = item.TryGetProperty("Priority", out var pri) ? pri.GetInt32() : 0,
+                    Priority = MapIntToPriority(item.TryGetProperty("Priority", out var pri) ? pri.GetInt32() : 0),
                     Remark = item.TryGetProperty("Remarks", out var rem) ? rem.GetString() : null
                 });
             }
@@ -125,7 +125,7 @@ public class SapB1Adapter : IERPAdapter, IDisposable
             MaterialCode = item.TryGetProperty("ItemNo", out var itemNo) ? itemNo.ToString() : "",
             PlannedQty = item.TryGetProperty("PlannedQuantity", out var qty) ? qty.GetDecimal() : 0,
             Status = MapSapStatus(item.TryGetProperty("ProductionOrderStatus", out var st) ? st.GetString() : null),
-            Priority = item.TryGetProperty("Priority", out var pri) ? pri.GetInt32() : 0
+            Priority = MapIntToPriority(item.TryGetProperty("Priority", out var pri) ? pri.GetInt32() : 0)
         };
     }
 
@@ -270,6 +270,17 @@ public class SapB1Adapter : IERPAdapter, IDisposable
             "bop_Cancelled" => WorkOrderStatus.CANCELLED,
             "bop_Planned" => WorkOrderStatus.SCHEDULED,
             _ => WorkOrderStatus.PENDING
+        };
+    }
+
+    private static Priority MapIntToPriority(int value)
+    {
+        return value switch
+        {
+            <= 20 => Priority.LOW,
+            <= 60 => Priority.NORMAL,
+            <= 90 => Priority.HIGH,
+            _ => Priority.URGENT
         };
     }
 

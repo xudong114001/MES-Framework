@@ -5,6 +5,7 @@ using MES.Api.Middleware;
 using MES.Api.Services;
 using MES.Application.Interfaces;
 using MES.Domain.Entities;
+using MES.Domain.Enums;
 
 namespace MES.Api.Controllers;
 
@@ -38,15 +39,9 @@ public class AndonController : ControllerBase
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 20,
         [FromQuery] bool? isResolved = null,
-        [FromQuery] string? eventType = null)
+        [FromQuery] AndonEventType? eventType = null)
     {
-        AndonEventType? type = null;
-        if (!string.IsNullOrEmpty(eventType) && Enum.TryParse<AndonEventType>(eventType, true, out var parsed))
-        {
-            type = parsed;
-        }
-
-        var (items, total) = await _service.GetEventsAsync(page, pageSize, isResolved, type);
+        var (items, total) = await _service.GetEventsAsync(page, pageSize, isResolved, eventType);
         return Ok(ApiResponse.Ok(new
         {
             Items = items.ToList(),
@@ -71,19 +66,13 @@ public class AndonController : ControllerBase
     [HttpPost("trigger")]
     public async Task<IActionResult> Trigger([FromBody] TriggerAndonRequest request)
     {
-        if (!Enum.TryParse<AndonEventType>(request.EventType, true, out var eventType))
-            return Ok(ApiResponse.Fail($"无效的事件类型: {request.EventType}"));
-
-        if (!Enum.TryParse<AndonEventLevel>(request.Level ?? "Warning", true, out var level))
-            level = AndonEventLevel.Warning;
-
         var userId = GetCurrentUserId();
         var userName = GetCurrentUserName();
 
         var evt = await _service.TriggerEventAsync(
-            eventType,
-            level,
-            request.Title ?? $"{eventType} 异常",
+            request.EventType,
+            request.Level ?? AndonEventLevel.Warning,
+            request.Title ?? $"{request.EventType} 异常",
             request.Description,
             request.WorkstationId,
             request.WorkstationName,
@@ -93,18 +82,7 @@ public class AndonController : ControllerBase
             userName);
 
         // 触发异常后推送实时通知
-        _ = Task.Run(async () =>
-        {
-            try
-            {
-                await _hubNotification.NotifyAndonEvent(evt);
-            }
-            catch (Exception ex)
-            {
-                // 记录日志但不影响主流程
-                Serilog.Log.Warning(ex, "Andon 事件推送失败");
-            }
-        });
+        await _hubNotification.NotifyAndonEvent(evt);
 
         return Ok(ApiResponse.Ok(evt));
     }
@@ -160,8 +138,8 @@ public class AndonController : ControllerBase
 
 public class TriggerAndonRequest
 {
-    public string EventType { get; set; } = string.Empty;
-    public string? Level { get; set; }
+    public AndonEventType EventType { get; set; }
+    public AndonEventLevel? Level { get; set; }
     public string? Title { get; set; }
     public string? Description { get; set; }
     public long? WorkstationId { get; set; }

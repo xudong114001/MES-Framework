@@ -75,10 +75,7 @@ public class QcController : ControllerBase
     [HttpPost("inspections/{id}/verify")]
     public async Task<IActionResult> VerifyInspection(long id, [FromBody] VerifyRequest request)
     {
-        if (!Enum.TryParse<QcResult>(request.Result, true, out var result))
-            return BadRequest(ApiResponse.Fail($"无效的质检结果: {request.Result}"));
-
-        await _qcService.VerifyInspectionAsync(id, result);
+        await _qcService.VerifyInspectionAsync(id, request.Result);
         return Ok(ApiResponse.Ok("判定成功"));
     }
 
@@ -125,13 +122,13 @@ public class QcController : ControllerBase
 
 public class VerifyRequest
 {
-    public string Result { get; set; } = string.Empty;
+    public QcResult Result { get; set; }
 }
 
 public class HandleNonconformingRequest
 {
     /// <summary>处理动作: CONCESSION(让步接收), REWORK(返工), SCRAP(报废)</summary>
-    public string Action { get; set; } = string.Empty;
+    public InspectionResult Action { get; set; }
     /// <summary>处理备注</summary>
     public string? Remark { get; set; }
 }

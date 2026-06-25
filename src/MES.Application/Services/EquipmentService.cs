@@ -166,7 +166,7 @@ public class EquipmentService : IEquipmentService
             {
                 EquipmentId = eq.Id,
                 EquipmentName = eq.Name,
-                Status = eq.Status.ToString(),
+                Status = eq.Status,
                 OeeValue = 0,
                 Availability = 0,
                 Performance = 0,
@@ -244,7 +244,7 @@ public class EquipmentService : IEquipmentService
         {
             EquipmentId = eq.Id,
             EquipmentName = eq.Name,
-            Status = eq.Status.ToString(),
+            Status = eq.Status,
             OeeValue = Math.Round(oeeValue, 4),
             Availability = Math.Round(availability, 4),
             Performance = Math.Round(performance, 4),
@@ -308,19 +308,15 @@ public class EquipmentService : IEquipmentService
     /// 获取所有保养计划（支持按设备名称、状态筛选）
     /// </summary>
     public async Task<List<MaintenancePlan>> GetAllMaintenancePlansAsync(
-        string? equipmentName = null, string? status = null)
+        string? equipmentName = null, MaintenancePlanStatus? status = null)
     {
-        // 获取所有保养计划
         var allPlans = await _maintenancePlanRepo.GetAllAsync();
         var plans = allPlans.ToList();
 
         // 按状态筛选
-        if (!string.IsNullOrEmpty(status))
+        if (status.HasValue)
         {
-            if (Enum.TryParse<MaintenancePlanStatus>(status, out var statusEnum))
-            {
-                plans = plans.Where(p => p.Status == statusEnum).ToList();
-            }
+            plans = plans.Where(p => p.Status == status.Value).ToList();
         }
 
         // 加载设备信息用于筛选和显示

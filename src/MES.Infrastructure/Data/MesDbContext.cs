@@ -36,6 +36,10 @@ public class MesDbContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(MesDbContext).Assembly);
+
+        // 应用种子数据配置
+        SeedData.ConfigureSeedData(modelBuilder);
+
         base.OnModelCreating(modelBuilder);
     }
 
