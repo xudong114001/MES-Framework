@@ -107,7 +107,7 @@ dotnet test src/MES.Tests
 | 项目 | 状态 |
 |------|------|
 | MES.Domain | ✅ 0 错误 0 警告 |
-| MES.Application | ✅ 0 错误 0 警��� |
+| MES.Application | ✅ 0 错误 0 警告 |
 | MES.Infrastructure | ✅ 0 错误 0 警告 |
 | MES.Api | ✅ 0 错误 0 警告 |
 | MES.Tests | ✅ 0 错误 0 警告 |
