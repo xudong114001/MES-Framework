@@ -408,10 +408,10 @@ public class ControllerTests : IAsyncLifetime
             Name = "待更新物料",
             Unit = "PCS",
             StockQty = 100,
-            Status = true,
-            CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow
+            Status = true
         };
+        material.SetCreationInfo(DateTime.UtcNow);
+        material.SetModificationInfo(DateTime.UtcNow);
         _factory.DbContext.Materials.Add(material);
         await _factory.DbContext.SaveChangesAsync();
 

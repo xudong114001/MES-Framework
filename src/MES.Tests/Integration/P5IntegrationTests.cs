@@ -268,7 +268,7 @@ public class P5IntegrationTests : IDisposable
             OrderNo = "WO-001",
             MaterialCode = "M-001",
             PlannedQty = 100,
-            Priority = Priority.Normal
+            Priority = Priority.NORMAL
         };
 
         Assert.Equal("WO-001", dto.OrderNo);
