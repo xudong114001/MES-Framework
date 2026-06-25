@@ -36,11 +36,11 @@ public class CreateWorkOrderRequest
     public decimal PlannedQty { get; set; }
     public DateTime? PlanStartTime { get; set; }
     public DateTime? PlanEndTime { get; set; }
-    public int Priority { get; set; } = 0;
+    public Priority Priority { get; set; } = Priority.NORMAL;
     public long? FactoryId { get; set; }
     public long? WorkshopId { get; set; }
     public long? LineId { get; set; }
-    public long? Assignee { get; set; }
+    public string? Assignee { get; set; }
     public string? Remark { get; set; }
 }
 
@@ -49,11 +49,11 @@ public class UpdateWorkOrderRequest
     public decimal PlannedQty { get; set; }
     public DateTime? PlanStartTime { get; set; }
     public DateTime? PlanEndTime { get; set; }
-    public int Priority { get; set; }
+    public Priority Priority { get; set; }
     public long? FactoryId { get; set; }
     public long? WorkshopId { get; set; }
     public long? LineId { get; set; }
-    public long? Assignee { get; set; }
+    public string? Assignee { get; set; }
     public string? Remark { get; set; }
 }
 
