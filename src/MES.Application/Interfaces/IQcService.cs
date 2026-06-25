@@ -1,4 +1,5 @@
 using MES.Application.Dtos;
+using MES.Domain.Enums;
 
 namespace MES.Application.Interfaces;
 
@@ -23,7 +24,7 @@ public interface IQcService
     Task VerifyInspectionAsync(long inspectionId, Domain.Enums.QcResult result);
 
     /// <summary>不合格品处理</summary>
-    Task HandleNonconformingAsync(long inspectionId, string action, string? remark);
+    Task HandleNonconformingAsync(long inspectionId, InspectionResult action, string? remark);
 
     /// <summary>获取待检列表</summary>
     Task<IEnumerable<QcInspectionDto>> GetPendingInspectionsAsync();

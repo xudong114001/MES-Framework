@@ -13,6 +13,6 @@ public class QcInspectionCompletedEvent : IEvent
     public long? WorkOrderId { get; set; }
     public long? MaterialId { get; set; }
     public QcResult Result { get; set; }
-    public string? HandlingAction { get; set; }
+    public InspectionResult? HandlingAction { get; set; }
     public DateTime? HandledAt { get; set; }
 }

@@ -4,6 +4,7 @@ using MES.Domain.Entities;
 using MES.Domain.Enums;
 using MES.Domain.Exceptions;
 using MES.Domain.Repositories;
+using MES.Domain.ValueObjects;
 using MES.Application.Integration.Events;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -135,23 +136,23 @@ public class QcServiceTests
     public async Task HandleNonconformingAsync_WithScrap_UpdatesWorkOrder()
     {
         var inspection = CreateInspection(1, QcResult.FAIL);
-        var workOrder = WorkOrder.Create("WO-001", SourceType.MANUAL, 10, 100);
+        var workOrder = WorkOrder.Create("WO-001", SourceType.MANUAL, 10, new Quantity(100));
 
         _inspectionRepo.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(inspection);
         _inspectionRepo.Setup(r => r.UpdateAsync(It.IsAny<QcInspection>())).Returns(Task.CompletedTask);
         _workOrderRepo.Setup(r => r.GetByIdAsync(100)).ReturnsAsync(workOrder);
         _workOrderRepo.Setup(r => r.UpdateAsync(It.IsAny<WorkOrder>())).Returns(Task.CompletedTask);
 
-        await _service.HandleNonconformingAsync(1, "SCRAP", "报废处理");
+        await _service.HandleNonconformingAsync(1, InspectionResult.SCRAP, "报废处理");
 
-        Assert.Equal(1, workOrder.ScrapQty);
+        Assert.Equal(1, workOrder.ScrapQty.Value);
     }
 
     [Fact]
     public async Task HandleNonconformingAsync_WithRework_ResumesWorkOrder()
     {
         var inspection = CreateInspection(1, QcResult.FAIL);
-        var workOrder = WorkOrder.Create("WO-001", SourceType.MANUAL, 10, 100);
+        var workOrder = WorkOrder.Create("WO-001", SourceType.MANUAL, 10, new Quantity(100));
         workOrder.Release();
         workOrder.Start();
         workOrder.Complete();
@@ -161,7 +162,7 @@ public class QcServiceTests
         _workOrderRepo.Setup(r => r.GetByIdAsync(100)).ReturnsAsync(workOrder);
         _workOrderRepo.Setup(r => r.UpdateAsync(It.IsAny<WorkOrder>())).Returns(Task.CompletedTask);
 
-        await _service.HandleNonconformingAsync(1, "REWORK", "返工处理");
+        await _service.HandleNonconformingAsync(1, InspectionResult.REWORK, "返工处理");
 
         Assert.Equal(WorkOrderStatus.IN_PROGRESS, workOrder.Status);
     }
@@ -173,18 +174,9 @@ public class QcServiceTests
         _inspectionRepo.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(inspection);
 
         await Assert.ThrowsAsync<DomainException>(() =>
-            _service.HandleNonconformingAsync(1, "SCRAP", ""));
+            _service.HandleNonconformingAsync(1, InspectionResult.SCRAP, ""));
     }
 
-    [Fact]
-    public async Task HandleNonconformingAsync_ThrowsForInvalidAction()
-    {
-        var inspection = CreateInspection(1, QcResult.PENDING);
-        _inspectionRepo.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(inspection);
-
-        await Assert.ThrowsAsync<DomainException>(() =>
-            _service.HandleNonconformingAsync(1, "INVALID", ""));
-    }
 }
 
 // 测试辅助扩展方法

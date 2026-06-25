@@ -1,5 +1,8 @@
 using MES.Domain.Entities;
 using MES.Domain.Enums;
+using MES.Domain.ValueObjects;
+using MES.AI.Domain.Entities;
+using MES.AI.Domain.Enums;
 using System.Reflection;
 
 namespace MES.Tests;
@@ -26,7 +29,7 @@ public static class TestEntityFactory
             orderNo: orderNo,
             sourceType: sourceType,
             materialId: materialId,
-            plannedQty: plannedQty,
+            plannedQty: new Quantity(plannedQty),
             priority: priority,
             routingId: routingId
         );
@@ -50,13 +53,13 @@ public static class TestEntityFactory
             orderNo: orderNo,
             sourceType: SourceType.MANUAL,
             materialId: materialId,
-            plannedQty: plannedQty,
+            plannedQty: new Quantity(plannedQty),
             priority: priority,
             routingId: routingId
         );
         SetProperty(wo, "Status", status);
-        SetProperty(wo, "CompletedQty", completedQty);
-        SetProperty(wo, "ScrapQty", scrapQty);
+        SetProperty(wo, "CompletedQty", new Quantity(completedQty));
+        SetProperty(wo, "ScrapQty", new Quantity(scrapQty));
         if (lineId.HasValue)
             SetProperty(wo, "LineId", lineId.Value);
         return wo;
@@ -99,9 +102,9 @@ public static class TestEntityFactory
         SetProperty(wo, "SourceRef", null);
         SetProperty(wo, "MaterialId", materialId);
         SetProperty(wo, "RoutingId", routingId);
-        SetProperty(wo, "PlannedQty", plannedQty);
-        SetProperty(wo, "CompletedQty", completedQty);
-        SetProperty(wo, "ScrapQty", scrapQty);
+        SetProperty(wo, "PlannedQty", new Quantity(plannedQty));
+        SetProperty(wo, "CompletedQty", new Quantity(completedQty));
+        SetProperty(wo, "ScrapQty", new Quantity(scrapQty));
         SetProperty(wo, "Status", status);
         SetProperty(wo, "Priority", priority);
         SetProperty(wo, "PlanStartTime", null);
@@ -194,14 +197,10 @@ public static class TestEntityFactory
         decimal stockQty = 1000,
         bool status = true)
     {
-        var material = new Material
-        {
-            Id = id,
-            Code = code,
-            Name = name,
-            StockQty = stockQty,
-            Status = status
-        };
+        var material = Material.Create(code, name);
+        SetProperty(material, "Id", id);
+        SetProperty(material, "StockQty", stockQty);
+        SetProperty(material, "Status", status);
         return material;
     }
 
@@ -218,17 +217,9 @@ public static class TestEntityFactory
         decimal quantity = 1,
         bool status = true)
     {
-        var bom = new Bom
-        {
-            Id = 1,
-            ProductId = productId,
-            MaterialId = materialId,
-            Quantity = quantity,
-            ScrapRate = 0,
-            SeqNo = 1,
-            ValidFrom = DateTime.UtcNow,
-            Status = status
-        };
+        var bom = Bom.Create(productId, materialId, new Quantity(quantity), 0, 1);
+        SetProperty(bom, "Id", 1);
+        SetProperty(bom, "Status", status);
         return bom;
     }
 
@@ -405,9 +396,9 @@ public static class TestEntityFactory
         SetProperty(report, "StepId", stepId);
         SetProperty(report, "WorkstationId", workstationId);
         SetProperty(report, "ReportType", reportType);
-        SetProperty(report, "GoodQty", goodQty);
-        SetProperty(report, "ScrapQty", scrapQty);
-        SetProperty(report, "ReworkQty", reworkQty);
+        SetProperty(report, "GoodQty", new Quantity(goodQty));
+        SetProperty(report, "ScrapQty", new Quantity(scrapQty));
+        SetProperty(report, "ReworkQty", new Quantity(reworkQty));
         SetProperty(report, "DurationMin", durationMin);
         SetProperty(report, "ReportTime", reportTime ?? DateTime.UtcNow);
         SetProperty(report, "OperatorId", null);
@@ -649,6 +640,98 @@ public static class TestEntityFactory
         SetProperty(workstation, "UpdatedAt", DateTime.UtcNow);
 
         return workstation;
+    }
+
+    #endregion
+
+    #region MaterialTrace
+
+    /// <summary>
+    /// 使用反射直接创建 MaterialTrace
+    /// </summary>
+    public static MaterialTrace CreateMaterialTraceDirect(
+        long id = 1,
+        long materialId = 1,
+        string? batchNo = null,
+        long? workOrderId = null,
+        string? direction = null,
+        decimal qty = 0)
+    {
+        var ctor = typeof(MaterialTrace).GetConstructor(
+            BindingFlags.Instance | BindingFlags.NonPublic,
+            null,
+            Type.EmptyTypes,
+            null)!;
+
+        var trace = (MaterialTrace)ctor.Invoke(null);
+
+        SetProperty(trace, "Id", id);
+        SetProperty(trace, "MaterialId", materialId);
+        SetProperty(trace, "BatchNo", batchNo);
+        SetProperty(trace, "WorkOrderId", workOrderId);
+        SetProperty(trace, "Direction", direction);
+        SetProperty(trace, "Qty", qty);
+        SetProperty(trace, "OperateTime", DateTime.UtcNow);
+
+        return trace;
+    }
+
+    #endregion
+
+    #region WorkReport (using factory method)
+
+    /// <summary>
+    /// 使用工厂方法创建 WorkReport
+    /// </summary>
+    public static WorkReport CreateWorkReport(
+        long workOrderId = 1,
+        ReportType reportType = ReportType.COMPLETE,
+        decimal goodQty = 10,
+        decimal scrapQty = 0,
+        decimal reworkQty = 0,
+        long? stepId = null,
+        long? workstationId = null)
+    {
+        return WorkReport.Create(
+            workOrderId: workOrderId,
+            reportType: reportType,
+            goodQty: new Quantity(goodQty),
+            scrapQty: new Quantity(scrapQty),
+            reworkQty: new Quantity(reworkQty),
+            stepId: stepId,
+            workstationId: workstationId
+        );
+    }
+
+    #endregion
+
+    #region AlertRecord
+
+    /// <summary>
+    /// 使用反射直接创建 AlertRecord
+    /// </summary>
+    public static AlertRecord CreateAlertRecordDirect(
+        long id = 1,
+        string title = "Test Alert",
+        string message = "Test message",
+        AlertLevel level = AlertLevel.Low,
+        bool isProcessed = false)
+    {
+        var ctor = typeof(AlertRecord).GetConstructor(
+            BindingFlags.Instance | BindingFlags.NonPublic,
+            null,
+            Type.EmptyTypes,
+            null)!;
+
+        var alert = (AlertRecord)ctor.Invoke(null);
+
+        SetProperty(alert, "Id", id);
+        SetProperty(alert, "Title", title);
+        SetProperty(alert, "Message", message);
+        SetProperty(alert, "Level", level);
+        SetProperty(alert, "IsProcessed", isProcessed);
+
+        return alert;
     }
 
     #endregion

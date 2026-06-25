@@ -1,4 +1,4 @@
-namespace MES.Domain.Interfaces;
+namespace MES.Application.Interfaces;
 
 public interface IBatchNumberService
 {

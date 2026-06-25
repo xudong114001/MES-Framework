@@ -123,16 +123,16 @@ public class QualityAlertServiceTests
     {
         var traces = new List<MaterialTrace>
         {
-            new() { Id = 1, BatchNo = "BATCH001", WorkOrderId = 1 },
-            new() { Id = 2, BatchNo = "BATCH001", WorkOrderId = 2 },
-            new() { Id = 3, BatchNo = "BATCH001", WorkOrderId = 3 }
+            TestEntityFactory.CreateMaterialTraceDirect(id: 1, materialId: 1, batchNo: "BATCH001", workOrderId: 1),
+            TestEntityFactory.CreateMaterialTraceDirect(id: 2, materialId: 1, batchNo: "BATCH001", workOrderId: 2),
+            TestEntityFactory.CreateMaterialTraceDirect(id: 3, materialId: 1, batchNo: "BATCH001", workOrderId: 3)
         };
 
         var reports = new List<WorkReport>
         {
-            new() { Id = 1, WorkOrderId = 1, GoodQty = 97, ScrapQty = 2, ReworkQty = 1 },
-            new() { Id = 2, WorkOrderId = 2, GoodQty = 96, ScrapQty = 3, ReworkQty = 1 },
-            new() { Id = 3, WorkOrderId = 3, GoodQty = 95, ScrapQty = 4, ReworkQty = 1 }
+            TestEntityFactory.CreateWorkReportDirect(id: 1, workOrderId: 1, goodQty: 97, scrapQty: 2, reworkQty: 1),
+            TestEntityFactory.CreateWorkReportDirect(id: 2, workOrderId: 2, goodQty: 96, scrapQty: 3, reworkQty: 1),
+            TestEntityFactory.CreateWorkReportDirect(id: 3, workOrderId: 3, goodQty: 95, scrapQty: 4, reworkQty: 1)
         };
 
         _materialTraceRepo.Setup(r => r.GetAllAsync()).ReturnsAsync(traces);
@@ -149,14 +149,14 @@ public class QualityAlertServiceTests
     {
         var traces = new List<MaterialTrace>
         {
-            new() { Id = 1, BatchNo = "BATCH001", WorkOrderId = 1 },
-            new() { Id = 2, BatchNo = "BATCH001", WorkOrderId = 2 }
+            TestEntityFactory.CreateMaterialTraceDirect(id: 1, materialId: 1, batchNo: "BATCH001", workOrderId: 1),
+            TestEntityFactory.CreateMaterialTraceDirect(id: 2, materialId: 1, batchNo: "BATCH001", workOrderId: 2)
         };
 
         var reports = new List<WorkReport>
         {
-            new() { Id = 1, WorkOrderId = 1, GoodQty = 99, ScrapQty = 1, ReworkQty = 0 },
-            new() { Id = 2, WorkOrderId = 2, GoodQty = 99, ScrapQty = 1, ReworkQty = 0 }
+            TestEntityFactory.CreateWorkReportDirect(id: 1, workOrderId: 1, goodQty: 99, scrapQty: 1, reworkQty: 0),
+            TestEntityFactory.CreateWorkReportDirect(id: 2, workOrderId: 2, goodQty: 99, scrapQty: 1, reworkQty: 0)
         };
 
         _materialTraceRepo.Setup(r => r.GetAllAsync()).ReturnsAsync(traces);
@@ -173,11 +173,11 @@ public class QualityAlertServiceTests
     {
         var reports = new List<WorkReport>
         {
-            new() { Id = 1, WorkOrderId = 1, WorkstationId = 1, ReportType = ReportType.REWORK, ReworkQty = 5, ReportTime = DateTime.UtcNow.AddMinutes(-5) },
-            new() { Id = 2, WorkOrderId = 1, WorkstationId = 1, ReportType = ReportType.REWORK, ReworkQty = 3, ReportTime = DateTime.UtcNow.AddMinutes(-4) },
-            new() { Id = 3, WorkOrderId = 1, WorkstationId = 1, ReportType = ReportType.REWORK, ReworkQty = 4, ReportTime = DateTime.UtcNow.AddMinutes(-3) },
-            new() { Id = 4, WorkOrderId = 1, WorkstationId = 1, ReportType = ReportType.REWORK, ReworkQty = 2, ReportTime = DateTime.UtcNow.AddMinutes(-2) },
-            new() { Id = 5, WorkOrderId = 1, WorkstationId = 1, ReportType = ReportType.REWORK, ReworkQty = 6, ReportTime = DateTime.UtcNow.AddMinutes(-1) }
+            TestEntityFactory.CreateWorkReportDirect(id: 1, workOrderId: 1, workstationId: 1, reportType: ReportType.REWORK, reworkQty: 5, reportTime: DateTime.UtcNow.AddMinutes(-5)),
+            TestEntityFactory.CreateWorkReportDirect(id: 2, workOrderId: 1, workstationId: 1, reportType: ReportType.REWORK, reworkQty: 3, reportTime: DateTime.UtcNow.AddMinutes(-4)),
+            TestEntityFactory.CreateWorkReportDirect(id: 3, workOrderId: 1, workstationId: 1, reportType: ReportType.REWORK, reworkQty: 4, reportTime: DateTime.UtcNow.AddMinutes(-3)),
+            TestEntityFactory.CreateWorkReportDirect(id: 4, workOrderId: 1, workstationId: 1, reportType: ReportType.REWORK, reworkQty: 2, reportTime: DateTime.UtcNow.AddMinutes(-2)),
+            TestEntityFactory.CreateWorkReportDirect(id: 5, workOrderId: 1, workstationId: 1, reportType: ReportType.REWORK, reworkQty: 6, reportTime: DateTime.UtcNow.AddMinutes(-1))
         };
 
         _workReportRepo.Setup(r => r.GetAllAsync()).ReturnsAsync(reports);
@@ -193,8 +193,8 @@ public class QualityAlertServiceTests
     {
         var reports = new List<WorkReport>
         {
-            new() { Id = 1, WorkOrderId = 1, WorkstationId = 1, ReportType = ReportType.REWORK, ReworkQty = 1, ReportTime = DateTime.UtcNow.AddMinutes(-5) },
-            new() { Id = 2, WorkOrderId = 2, WorkstationId = 2, ReportType = ReportType.COMPLETE, ReworkQty = 0, ReportTime = DateTime.UtcNow.AddMinutes(-4) }
+            TestEntityFactory.CreateWorkReportDirect(id: 1, workOrderId: 1, workstationId: 1, reportType: ReportType.REWORK, reworkQty: 1, reportTime: DateTime.UtcNow.AddMinutes(-5)),
+            TestEntityFactory.CreateWorkReportDirect(id: 2, workOrderId: 2, workstationId: 2, reportType: ReportType.COMPLETE, reworkQty: 0, reportTime: DateTime.UtcNow.AddMinutes(-4))
         };
 
         _workReportRepo.Setup(r => r.GetAllAsync()).ReturnsAsync(reports);
@@ -208,11 +208,14 @@ public class QualityAlertServiceTests
     [Fact]
     public async Task GetActiveAlerts_ReturnsUnprocessedAlerts()
     {
-        var alerts = new List<AlertRecord>
-        {
-            new() { Id = 1, Title = "测试预警1", IsProcessed = false, Level = AlertLevel.Low },
-            new() { Id = 2, Title = "测试预警2", IsProcessed = true, Level = AlertLevel.Low }
-        };
+        var alert1 = new AlertRecord { Title = "测试预警1", Level = AlertLevel.Low };
+        TestEntityFactory.SetProperty(alert1, "Id", 1);
+        TestEntityFactory.SetProperty(alert1, "IsProcessed", false);
+        var alert2 = new AlertRecord { Title = "测试预警2", Level = AlertLevel.Low };
+        TestEntityFactory.SetProperty(alert2, "Id", 2);
+        TestEntityFactory.SetProperty(alert2, "IsProcessed", true);
+
+        var alerts = new List<AlertRecord> { alert1, alert2 };
 
         _workOrderRepo.Setup(r => r.GetAllAsync()).ReturnsAsync(new List<WorkOrder>());
         _workReportRepo.Setup(r => r.GetAllAsync()).ReturnsAsync(new List<WorkReport>());

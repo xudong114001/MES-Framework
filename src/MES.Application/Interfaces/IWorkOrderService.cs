@@ -56,20 +56,3 @@ public class UpdateWorkOrderRequest
     public long? Assignee { get; set; }
     public string? Remark { get; set; }
 }
-
-public class SplitRequest
-{
-    public decimal SplitQty { get; set; }
-}
-
-public class ReworkRequest
-{
-    public decimal ReworkQty { get; set; }
-    public string? Remark { get; set; }
-}
-
-public class ScrapRequest
-{
-    public decimal ScrapQty { get; set; }
-    public string? Remark { get; set; }
-}

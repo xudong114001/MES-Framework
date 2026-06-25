@@ -20,7 +20,7 @@ public interface IQcCheckpointService
     Task<QcCheckpoint> ConfigureCheckpointAsync(QcCheckpoint checkpoint);
 
     /// <summary>更新质检点（兼容前端）</summary>
-    Task UpdateCheckpointAsync(QcCheckpoint checkpoint);
+    Task UpdateCheckpointAsync(long id, QcCheckpoint checkpoint);
 
     /// <summary>取消配置质检点</summary>
     Task RemoveCheckpointAsync(long checkpointId);

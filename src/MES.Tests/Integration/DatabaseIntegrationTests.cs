@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using MES.Domain.Entities;
 using MES.Domain.Enums;
+using MES.Domain.ValueObjects;
 using MES.Infrastructure.Data;
 using Xunit;
 using Xunit.Abstractions;
@@ -99,9 +100,9 @@ public class DatabaseIntegrationTests : IntegrationTestBase
                                 ReportNo = $"WR-{index:D5}-{Guid.NewGuid():N}",
                                 WorkOrderId = workOrderId,
                                 ReportType = ReportType.COMPLETE,
-                                GoodQty = 1,
-                                ScrapQty = 0,
-                                ReworkQty = 0,
+                                GoodQty = new Quantity(1),
+                                ScrapQty = new Quantity(0),
+                                ReworkQty = new Quantity(0),
                                 DurationMin = 10,
                                 ReportTime = DateTime.UtcNow
                             };
@@ -136,7 +137,7 @@ public class DatabaseIntegrationTests : IntegrationTestBase
         // 使用串行化隔离级别，所有事务应串行执行成功
         Assert.Equal(concurrencyLevel - errors.Count, (int)finalOrder.CompletedQty);
         Assert.Equal(concurrencyLevel - errors.Count, reportCount);
-        Assert.Equal(finalOrder.CompletedQty, workOrderId > 0 ? finalOrder.CompletedQty : 0);
+        Assert.Equal(finalOrder.CompletedQty, workOrderId > 0 ? (decimal)finalOrder.CompletedQty : 0m);
 
         // 验证数值一致性：CompletedQty == 报工记录总数
         Assert.Equal((int)finalOrder.CompletedQty, reportCount);
@@ -232,9 +233,9 @@ public class DatabaseIntegrationTests : IntegrationTestBase
                     ReportNo = $"WR-PERF-{(batch * batchSize + i):D6}",
                     WorkOrderId = workOrder.Id,
                     ReportType = ReportType.COMPLETE,
-                    GoodQty = 1,
-                    ScrapQty = 0,
-                    ReworkQty = 0,
+                    GoodQty = new Quantity(1),
+                    ScrapQty = new Quantity(0),
+                    ReworkQty = new Quantity(0),
                     DurationMin = 5,
                     ReportTime = DateTime.UtcNow.AddMinutes(-(batch * batchSize + i))
                 });
@@ -316,9 +317,9 @@ public class DatabaseIntegrationTests : IntegrationTestBase
             ReportNo = $"WR-RB-{Guid.NewGuid():N}",
             WorkOrderId = workOrder.Id,
             ReportType = ReportType.COMPLETE,
-            GoodQty = 989,
-            ScrapQty = 0,
-            ReworkQty = 0,
+            GoodQty = new Quantity(989),
+            ScrapQty = new Quantity(0),
+            ReworkQty = new Quantity(0),
             DurationMin = 60,
             ReportTime = DateTime.UtcNow
         };

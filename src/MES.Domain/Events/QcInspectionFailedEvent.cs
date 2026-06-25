@@ -9,5 +9,5 @@ public class QcInspectionFailedEvent : DomainEvent
     public long? WorkOrderId { get; init; }
     public long? MaterialId { get; init; }
     public QcResult InspectResult { get; init; }
-    public string? HandlingAction { get; init; }
+    public InspectionResult? HandlingAction { get; init; }
 }

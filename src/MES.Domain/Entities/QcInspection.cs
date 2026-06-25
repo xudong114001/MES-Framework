@@ -21,7 +21,7 @@ public class QcInspection : BaseEntity, IAggregateRoot
     /// <summary>
     /// 不合格品处理动作: CONCESSION(让步接收), REWORK(返工), SCRAP(报废)
     /// </summary>
-    public string? HandlingAction { get; private set; }
+    public InspectionResult? HandlingAction { get; private set; }
     /// <summary>
     /// 不合格品处理备注
     /// </summary>
@@ -89,14 +89,13 @@ public class QcInspection : BaseEntity, IAggregateRoot
     /// </summary>
     /// <param name="action">处理动作: CONCESSION(让步接收), REWORK(返工), SCRAP(报废)</param>
     /// <param name="remark">处理备注</param>
-    public void HandleNonconforming(string action, string? remark)
+    public void HandleNonconforming(InspectionResult action, string? remark)
     {
         if (InspectResult != QcResult.FAIL)
             throw new DomainException("只有不合格的质检单才能进行不合格品处理");
 
-        var validActions = new[] { "CONCESSION", "REWORK", "SCRAP" };
-        if (!validActions.Contains(action))
-            throw new DomainException($"无效的处理动作，可选值: {string.Join(", ", validActions)}");
+        if (action != InspectionResult.REWORK && action != InspectionResult.SCRAP && action != InspectionResult.CONCESSION)
+            throw new DomainException($"无效的处理动作，可选值: REWORK, SCRAP, CONCESSION");
 
         HandlingAction = action;
         HandlingRemark = remark;

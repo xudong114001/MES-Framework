@@ -17,7 +17,7 @@ public class QcInspectionDto
     public QcResult InspectResult { get; set; }
     public DateTime InspectTime { get; set; }
     public string? Remark { get; set; }
-    public string? HandlingAction { get; set; }
+    public InspectionResult? HandlingAction { get; set; }
     public string? HandlingRemark { get; set; }
     public DateTime? HandledAt { get; set; }
 

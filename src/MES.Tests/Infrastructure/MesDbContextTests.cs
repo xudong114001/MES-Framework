@@ -443,8 +443,9 @@ public class MesDbContextTests
         var dbName = $"CtxTest_SoftDelete_{Guid.NewGuid()}";
         using var context = CreateContext(dbName);
 
-        var f1 = new Factory { Code = "F-ACTIVE", Name = "Active Factory", IsDeleted = false };
-        var f2 = new Factory { Code = "F-DELETED", Name = "Deleted Factory", IsDeleted = true };
+        var f1 = new Factory { Code = "F-ACTIVE", Name = "Active Factory" };
+        var f2 = new Factory { Code = "F-DELETED", Name = "Deleted Factory" };
+        TestEntityFactory.SetProperty(f2, "IsDeleted", true);
 
         // InMemory 不支持 HasQueryFilter，需绕过过滤器直接插入
         // 先禁用自动变更追踪来模拟直接数据插入
@@ -528,8 +529,10 @@ public class MesDbContextTests
             // 插入一条正常数据和一条软删除数据
             using (var seedContext = new MesDbContext(options))
             {
-                seedContext.Factories.Add(new Factory { Code = "F-ACTIVE", Name = "Active", IsDeleted = false });
-                seedContext.Factories.Add(new Factory { Code = "F-DELETED", Name = "Deleted", IsDeleted = true });
+                seedContext.Factories.Add(new Factory { Code = "F-ACTIVE", Name = "Active" });
+                var deletedFactory = new Factory { Code = "F-DELETED", Name = "Deleted" };
+                TestEntityFactory.SetProperty(deletedFactory, "IsDeleted", true);
+                seedContext.Factories.Add(deletedFactory);
                 await seedContext.SaveChangesAsync();
             }
 
@@ -582,7 +585,8 @@ public class MesDbContextTests
             long deletedId;
             using (var seedContext = new MesDbContext(options))
             {
-                var deleted = new Factory { Code = "F-DEL", Name = "Will Be Deleted", IsDeleted = true };
+                var deleted = new Factory { Code = "F-DEL", Name = "Will Be Deleted" };
+                TestEntityFactory.SetProperty(deleted, "IsDeleted", true);
                 seedContext.Factories.Add(deleted);
                 await seedContext.SaveChangesAsync();
                 deletedId = deleted.Id;

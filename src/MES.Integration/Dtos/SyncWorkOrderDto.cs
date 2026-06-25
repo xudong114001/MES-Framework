@@ -12,7 +12,7 @@ public class SyncWorkOrderDto
     public DateTime? PlanStartTime { get; set; }
     public DateTime? PlanEndTime { get; set; }
     public WorkOrderStatus Status { get; set; }
-    public int Priority { get; set; }
+    public Priority Priority { get; set; }
     public string? FactoryCode { get; set; }
     public string? WorkshopCode { get; set; }
     public string? LineCode { get; set; }

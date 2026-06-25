@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Logging;
 using MES.Integration.Dtos;
 using MES.Integration.Models;
+using MES.Domain.Enums;
 
 namespace MES.Integration.Adapters;
 
@@ -44,16 +45,16 @@ public class MockERPAdapter : IERPAdapter
                 OrderNo = "MO-2026-001",
                 MaterialCode = "M-001",
                 PlannedQty = 100,
-                Status = MES.Domain.Enums.WorkOrderStatus.PENDING,
-                Priority = 1
+                Status = WorkOrderStatus.PENDING,
+                Priority = Priority.NORMAL
             },
             new()
             {
                 OrderNo = "MO-2026-002",
                 MaterialCode = "M-002",
                 PlannedQty = 50,
-                Status = MES.Domain.Enums.WorkOrderStatus.PENDING,
-                Priority = 2
+                Status = WorkOrderStatus.PENDING,
+                Priority = Priority.HIGH
             }
         });
     }
@@ -66,8 +67,8 @@ public class MockERPAdapter : IERPAdapter
             OrderNo = orderNo,
             MaterialCode = "M-001",
             PlannedQty = 100,
-            Status = MES.Domain.Enums.WorkOrderStatus.PENDING,
-            Priority = 1
+            Status = WorkOrderStatus.PENDING,
+            Priority = Priority.NORMAL
         });
     }
 

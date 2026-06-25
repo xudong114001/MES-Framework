@@ -15,7 +15,7 @@ public class QcInspectionConfiguration : IEntityTypeConfiguration<QcInspection>
         builder.Property(e => e.SourceRef).HasMaxLength(100);
         builder.Property(e => e.InspectResult).HasConversion<int>().HasDefaultValue(MES.Domain.Enums.QcResult.PENDING);
         builder.Property(e => e.Remark).HasMaxLength(500);
-        builder.Property(e => e.HandlingAction).HasMaxLength(50);
+        builder.Property(e => e.HandlingAction).HasConversion<int>();
         builder.Property(e => e.HandlingRemark).HasMaxLength(500);
         builder.HasIndex(e => e.InspectNo).IsUnique();
 

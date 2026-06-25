@@ -47,6 +47,7 @@ builder.Services.AddControllers()
     {
         options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
         options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
+        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
     });
 
 builder.Services.AddCors(options =>
@@ -140,7 +141,6 @@ builder.Services.AddScoped<IBomService, BomService>();
 builder.Services.AddScoped<IRoutingService, RoutingService>();
 builder.Services.AddScoped<IRoleService, RoleService>();
 builder.Services.AddScoped<IUserService, UserService>();
-builder.Services.AddScoped<ISeedService, MES.Infrastructure.Services.SeedService>();
 
 // Redis 连接（防重复提交 + 批次号生成 + 缓存）
 builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
@@ -149,7 +149,7 @@ builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
     var redisConnStr = config.GetConnectionString("Redis") ?? "localhost:6379";
     return ConnectionMultiplexer.Connect(redisConnStr);
 });
-builder.Services.AddScoped<MES.Domain.Interfaces.ICacheService, MES.Infrastructure.Services.CacheService>();
+builder.Services.AddScoped<MES.Application.Interfaces.ICacheService, MES.Infrastructure.Services.CacheService>();
 builder.Services.AddScoped<CachedMaterialService>();
 builder.Services.AddScoped<CachedRoutingService>();
 

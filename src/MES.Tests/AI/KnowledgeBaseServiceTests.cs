@@ -5,6 +5,7 @@ using MES.AI.Domain.Entities;
 using MES.Infrastructure.Data;
 using MES.Domain.Repositories;
 using MES.Infrastructure.Repositories;
+using MES.Tests;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
@@ -37,10 +38,12 @@ public class KnowledgeBaseServiceTests : IDisposable
     [Fact]
     public async Task SearchAsync_ByTitle_ReturnsMatch()
     {
-        _db.Set<KnowledgeEntry>().AddRange(
-            new KnowledgeEntry { Id = 1, Title = "SMT Process Flow", Content = "Some content", Keywords = "smt,process", Category = 0 },
-            new KnowledgeEntry { Id = 2, Title = "Assembly Guide", Content = "Assembly steps", Keywords = "assembly", Category = 0 }
-        );
+        var entry1 = new KnowledgeEntry { Title = "SMT Process Flow", Content = "Some content", Keywords = "smt,process", Category = 0 };
+        TestEntityFactory.SetProperty(entry1, "Id", 1);
+        var entry2 = new KnowledgeEntry { Title = "Assembly Guide", Content = "Assembly steps", Keywords = "assembly", Category = 0 };
+        TestEntityFactory.SetProperty(entry2, "Id", 2);
+
+        _db.Set<KnowledgeEntry>().AddRange(entry1, entry2);
         await _db.SaveChangesAsync();
 
         var result = await _service.SearchAsync("SMT", null);
@@ -52,10 +55,12 @@ public class KnowledgeBaseServiceTests : IDisposable
     [Fact]
     public async Task SearchAsync_ByContent_ReturnsMatch()
     {
-        _db.Set<KnowledgeEntry>().AddRange(
-            new KnowledgeEntry { Id = 1, Title = "Process A", Content = "This describes SMT soldering process", Keywords = "soldering", Category = 0 },
-            new KnowledgeEntry { Id = 2, Title = "Process B", Content = "General assembly", Keywords = "assembly", Category = 0 }
-        );
+        var entry1 = new KnowledgeEntry { Title = "Process A", Content = "This describes SMT soldering process", Keywords = "soldering", Category = 0 };
+        TestEntityFactory.SetProperty(entry1, "Id", 1);
+        var entry2 = new KnowledgeEntry { Title = "Process B", Content = "General assembly", Keywords = "assembly", Category = 0 };
+        TestEntityFactory.SetProperty(entry2, "Id", 2);
+
+        _db.Set<KnowledgeEntry>().AddRange(entry1, entry2);
         await _db.SaveChangesAsync();
 
         var result = await _service.SearchAsync("soldering", null);
@@ -67,10 +72,12 @@ public class KnowledgeBaseServiceTests : IDisposable
     [Fact]
     public async Task SearchAsync_ByKeywords_ReturnsMatch()
     {
-        _db.Set<KnowledgeEntry>().AddRange(
-            new KnowledgeEntry { Id = 1, Title = "Process A", Content = "Content A", Keywords = "smt,reflow,profile", Category = 0 },
-            new KnowledgeEntry { Id = 2, Title = "Process B", Content = "Content B", Keywords = "assembly", Category = 0 }
-        );
+        var entry1 = new KnowledgeEntry { Title = "Process A", Content = "Content A", Keywords = "smt,reflow,profile", Category = 0 };
+        TestEntityFactory.SetProperty(entry1, "Id", 1);
+        var entry2 = new KnowledgeEntry { Title = "Process B", Content = "Content B", Keywords = "assembly", Category = 0 };
+        TestEntityFactory.SetProperty(entry2, "Id", 2);
+
+        _db.Set<KnowledgeEntry>().AddRange(entry1, entry2);
         await _db.SaveChangesAsync();
 
         var result = await _service.SearchAsync("reflow", null);
@@ -82,10 +89,12 @@ public class KnowledgeBaseServiceTests : IDisposable
     [Fact]
     public async Task SearchAsync_WithCategoryFilter_ReturnsFiltered()
     {
-        _db.Set<KnowledgeEntry>().AddRange(
-            new KnowledgeEntry { Id = 1, Title = "Process Standard Doc", Content = "Content", Keywords = "", Category = 0 },
-            new KnowledgeEntry { Id = 2, Title = "Quality Spec Doc", Content = "Content", Keywords = "", Category = 1 }
-        );
+        var entry1 = new KnowledgeEntry { Title = "Process Standard Doc", Content = "Content", Keywords = "", Category = 0 };
+        TestEntityFactory.SetProperty(entry1, "Id", 1);
+        var entry2 = new KnowledgeEntry { Title = "Quality Spec Doc", Content = "Content", Keywords = "", Category = 1 };
+        TestEntityFactory.SetProperty(entry2, "Id", 2);
+
+        _db.Set<KnowledgeEntry>().AddRange(entry1, entry2);
         await _db.SaveChangesAsync();
 
         var result = await _service.SearchAsync(null, 0);
@@ -97,9 +106,10 @@ public class KnowledgeBaseServiceTests : IDisposable
     [Fact]
     public async Task SearchAsync_WithNoMatch_ReturnsEmpty()
     {
-        _db.Set<KnowledgeEntry>().Add(
-            new KnowledgeEntry { Id = 1, Title = "Process A", Content = "Content A", Keywords = "smt", Category = 0 }
-        );
+        var entry = new KnowledgeEntry { Title = "Process A", Content = "Content A", Keywords = "smt", Category = 0 };
+        TestEntityFactory.SetProperty(entry, "Id", 1);
+
+        _db.Set<KnowledgeEntry>().Add(entry);
         await _db.SaveChangesAsync();
 
         var result = await _service.SearchAsync("nonexistent", null);
@@ -111,10 +121,12 @@ public class KnowledgeBaseServiceTests : IDisposable
     [Fact]
     public async Task SearchAsync_WithEmptyQuery_ReturnsAll()
     {
-        _db.Set<KnowledgeEntry>().AddRange(
-            new KnowledgeEntry { Id = 1, Title = "Doc 1", Content = "Content 1", Keywords = "", Category = 0 },
-            new KnowledgeEntry { Id = 2, Title = "Doc 2", Content = "Content 2", Keywords = "", Category = 0 }
-        );
+        var entry1 = new KnowledgeEntry { Title = "Doc 1", Content = "Content 1", Keywords = "", Category = 0 };
+        TestEntityFactory.SetProperty(entry1, "Id", 1);
+        var entry2 = new KnowledgeEntry { Title = "Doc 2", Content = "Content 2", Keywords = "", Category = 0 };
+        TestEntityFactory.SetProperty(entry2, "Id", 2);
+
+        _db.Set<KnowledgeEntry>().AddRange(entry1, entry2);
         await _db.SaveChangesAsync();
 
         var result = await _service.SearchAsync("", null);
@@ -125,11 +137,17 @@ public class KnowledgeBaseServiceTests : IDisposable
     [Fact]
     public async Task SearchAsync_WithPagination_ReturnsCorrectPage()
     {
-        _db.Set<KnowledgeEntry>().AddRange(
-            new KnowledgeEntry { Id = 1, Title = "Doc 1", Content = "A", Keywords = "", Category = 0, CreatedAt = new DateTime(2024, 1, 3) },
-            new KnowledgeEntry { Id = 2, Title = "Doc 2", Content = "B", Keywords = "", Category = 0, CreatedAt = new DateTime(2024, 1, 2) },
-            new KnowledgeEntry { Id = 3, Title = "Doc 3", Content = "C", Keywords = "", Category = 0, CreatedAt = new DateTime(2024, 1, 1) }
-        );
+        var entry1 = new KnowledgeEntry { Title = "Doc 1", Content = "A", Keywords = "", Category = 0 };
+        TestEntityFactory.SetProperty(entry1, "Id", 1);
+        TestEntityFactory.SetProperty(entry1, "CreatedAt", new DateTime(2024, 1, 3));
+        var entry2 = new KnowledgeEntry { Title = "Doc 2", Content = "B", Keywords = "", Category = 0 };
+        TestEntityFactory.SetProperty(entry2, "Id", 2);
+        TestEntityFactory.SetProperty(entry2, "CreatedAt", new DateTime(2024, 1, 2));
+        var entry3 = new KnowledgeEntry { Title = "Doc 3", Content = "C", Keywords = "", Category = 0 };
+        TestEntityFactory.SetProperty(entry3, "Id", 3);
+        TestEntityFactory.SetProperty(entry3, "CreatedAt", new DateTime(2024, 1, 1));
+
+        _db.Set<KnowledgeEntry>().AddRange(entry1, entry2, entry3);
         await _db.SaveChangesAsync();
 
         var result = await _service.SearchAsync(null, null, page: 2, pageSize: 1);
@@ -141,10 +159,13 @@ public class KnowledgeBaseServiceTests : IDisposable
     [Fact]
     public async Task SearchAsync_SkipsDeletedEntries()
     {
-        _db.Set<KnowledgeEntry>().AddRange(
-            new KnowledgeEntry { Id = 1, Title = "Doc 1", Content = "Content 1", Keywords = "", Category = 0, IsDeleted = true },
-            new KnowledgeEntry { Id = 2, Title = "Doc 2", Content = "Content 2", Keywords = "", Category = 0, IsDeleted = false }
-        );
+        var entry1 = new KnowledgeEntry { Title = "Doc 1", Content = "Content 1", Keywords = "", Category = 0 };
+        TestEntityFactory.SetProperty(entry1, "Id", 1);
+        entry1.MarkAsDeleted();
+        var entry2 = new KnowledgeEntry { Title = "Doc 2", Content = "Content 2", Keywords = "", Category = 0 };
+        TestEntityFactory.SetProperty(entry2, "Id", 2);
+
+        _db.Set<KnowledgeEntry>().AddRange(entry1, entry2);
         await _db.SaveChangesAsync();
 
         var result = await _service.SearchAsync("", null);
@@ -160,10 +181,12 @@ public class KnowledgeBaseServiceTests : IDisposable
     [Fact]
     public async Task GetAllAsync_WithoutCategory_ReturnsAll()
     {
-        _db.Set<KnowledgeEntry>().AddRange(
-            new KnowledgeEntry { Id = 1, Title = "Doc 1", Content = "Content 1", Keywords = "", Category = 0 },
-            new KnowledgeEntry { Id = 2, Title = "Doc 2", Content = "Content 2", Keywords = "", Category = 1 }
-        );
+        var entry1 = new KnowledgeEntry { Title = "Doc 1", Content = "Content 1", Keywords = "", Category = 0 };
+        TestEntityFactory.SetProperty(entry1, "Id", 1);
+        var entry2 = new KnowledgeEntry { Title = "Doc 2", Content = "Content 2", Keywords = "", Category = 1 };
+        TestEntityFactory.SetProperty(entry2, "Id", 2);
+
+        _db.Set<KnowledgeEntry>().AddRange(entry1, entry2);
         await _db.SaveChangesAsync();
 
         var result = await _service.GetAllAsync(null);
@@ -174,11 +197,17 @@ public class KnowledgeBaseServiceTests : IDisposable
     [Fact]
     public async Task GetAllAsync_WithCategory_ReturnsFiltered()
     {
-        _db.Set<KnowledgeEntry>().AddRange(
-            new KnowledgeEntry { Id = 1, Title = "Doc 1", Content = "Content 1", Keywords = "", Category = 0, CreatedAt = new DateTime(2024, 1, 2) },
-            new KnowledgeEntry { Id = 2, Title = "Doc 2", Content = "Content 2", Keywords = "", Category = 1, CreatedAt = new DateTime(2024, 1, 1) },
-            new KnowledgeEntry { Id = 3, Title = "Doc 3", Content = "Content 3", Keywords = "", Category = 0, CreatedAt = new DateTime(2024, 1, 3) }
-        );
+        var entry1 = new KnowledgeEntry { Title = "Doc 1", Content = "Content 1", Keywords = "", Category = 0 };
+        TestEntityFactory.SetProperty(entry1, "Id", 1);
+        TestEntityFactory.SetProperty(entry1, "CreatedAt", new DateTime(2024, 1, 2));
+        var entry2 = new KnowledgeEntry { Title = "Doc 2", Content = "Content 2", Keywords = "", Category = 1 };
+        TestEntityFactory.SetProperty(entry2, "Id", 2);
+        TestEntityFactory.SetProperty(entry2, "CreatedAt", new DateTime(2024, 1, 1));
+        var entry3 = new KnowledgeEntry { Title = "Doc 3", Content = "Content 3", Keywords = "", Category = 0 };
+        TestEntityFactory.SetProperty(entry3, "Id", 3);
+        TestEntityFactory.SetProperty(entry3, "CreatedAt", new DateTime(2024, 1, 3));
+
+        _db.Set<KnowledgeEntry>().AddRange(entry1, entry2, entry3);
         await _db.SaveChangesAsync();
 
         var result = await _service.GetAllAsync(0);
@@ -191,10 +220,13 @@ public class KnowledgeBaseServiceTests : IDisposable
     [Fact]
     public async Task GetAllAsync_SkipsDeletedEntries()
     {
-        _db.Set<KnowledgeEntry>().AddRange(
-            new KnowledgeEntry { Id = 1, Title = "Doc 1", Content = "Content 1", Keywords = "", Category = 0, IsDeleted = true },
-            new KnowledgeEntry { Id = 2, Title = "Doc 2", Content = "Content 2", Keywords = "", Category = 0, IsDeleted = false }
-        );
+        var entry1 = new KnowledgeEntry { Title = "Doc 1", Content = "Content 1", Keywords = "", Category = 0 };
+        TestEntityFactory.SetProperty(entry1, "Id", 1);
+        entry1.MarkAsDeleted();
+        var entry2 = new KnowledgeEntry { Title = "Doc 2", Content = "Content 2", Keywords = "", Category = 0 };
+        TestEntityFactory.SetProperty(entry2, "Id", 2);
+
+        _db.Set<KnowledgeEntry>().AddRange(entry1, entry2);
         await _db.SaveChangesAsync();
 
         var result = await _service.GetAllAsync(null);
@@ -210,7 +242,10 @@ public class KnowledgeBaseServiceTests : IDisposable
     [Fact]
     public async Task GetByIdAsync_Existing_ReturnsDto()
     {
-        _db.Set<KnowledgeEntry>().Add(new KnowledgeEntry { Id = 42, Title = "Found Doc", Content = "Content", Keywords = "key", Category = 0 });
+        var entry = new KnowledgeEntry { Title = "Found Doc", Content = "Content", Keywords = "key", Category = 0 };
+        TestEntityFactory.SetProperty(entry, "Id", 42);
+
+        _db.Set<KnowledgeEntry>().Add(entry);
         await _db.SaveChangesAsync();
 
         var result = await _service.GetByIdAsync(42);
@@ -230,7 +265,11 @@ public class KnowledgeBaseServiceTests : IDisposable
     [Fact]
     public async Task GetByIdAsync_DeletedEntry_ReturnsNull()
     {
-        _db.Set<KnowledgeEntry>().Add(new KnowledgeEntry { Id = 10, Title = "Deleted Doc", Content = "Content", Keywords = "key", Category = 0, IsDeleted = true });
+        var entry = new KnowledgeEntry { Title = "Deleted Doc", Content = "Content", Keywords = "key", Category = 0 };
+        TestEntityFactory.SetProperty(entry, "Id", 10);
+        entry.MarkAsDeleted();
+
+        _db.Set<KnowledgeEntry>().Add(entry);
         await _db.SaveChangesAsync();
 
         var result = await _service.GetByIdAsync(10);
@@ -273,7 +312,11 @@ public class KnowledgeBaseServiceTests : IDisposable
     [Fact]
     public async Task UpdateAsync_Existing_UpdatesFields()
     {
-        _db.Set<KnowledgeEntry>().Add(new KnowledgeEntry { Id = 5, Title = "Old Title", Content = "Old Content", Keywords = "old", Category = 0, CreatedAt = DateTime.UtcNow.AddDays(-1) });
+        var entry = new KnowledgeEntry { Title = "Old Title", Content = "Old Content", Keywords = "old", Category = 0 };
+        TestEntityFactory.SetProperty(entry, "Id", 5);
+        TestEntityFactory.SetProperty(entry, "CreatedAt", DateTime.UtcNow.AddDays(-1));
+
+        _db.Set<KnowledgeEntry>().Add(entry);
         await _db.SaveChangesAsync();
 
         var updateDto = new KnowledgeEntryDto { Title = "Updated Title", Content = "Updated Content", Keywords = "updated", Category = 2, MaterialId = 99, EquipmentId = 199 };
@@ -296,7 +339,11 @@ public class KnowledgeBaseServiceTests : IDisposable
     [Fact]
     public async Task UpdateAsync_DeletedEntry_ReturnsNull()
     {
-        _db.Set<KnowledgeEntry>().Add(new KnowledgeEntry { Id = 7, Title = "Deleted", Content = "Content", Keywords = "", Category = 0, IsDeleted = true });
+        var entry = new KnowledgeEntry { Title = "Deleted", Content = "Content", Keywords = "", Category = 0 };
+        TestEntityFactory.SetProperty(entry, "Id", 7);
+        entry.MarkAsDeleted();
+
+        _db.Set<KnowledgeEntry>().Add(entry);
         await _db.SaveChangesAsync();
 
         var dto = new KnowledgeEntryDto { Title = "Update", Content = "N/A" };
@@ -311,7 +358,10 @@ public class KnowledgeBaseServiceTests : IDisposable
     [Fact]
     public async Task DeleteAsync_Existing_SoftDeletes()
     {
-        _db.Set<KnowledgeEntry>().Add(new KnowledgeEntry { Id = 3, Title = "To Delete", Content = "Content", Keywords = "", Category = 0, IsDeleted = false });
+        var entry = new KnowledgeEntry { Title = "To Delete", Content = "Content", Keywords = "", Category = 0 };
+        TestEntityFactory.SetProperty(entry, "Id", 3);
+
+        _db.Set<KnowledgeEntry>().Add(entry);
         await _db.SaveChangesAsync();
 
         var result = await _service.DeleteAsync(3);
@@ -333,7 +383,11 @@ public class KnowledgeBaseServiceTests : IDisposable
     [Fact]
     public async Task DeleteAsync_AlreadyDeleted_ReturnsFalse()
     {
-        _db.Set<KnowledgeEntry>().Add(new KnowledgeEntry { Id = 4, Title = "Already Deleted", Content = "Content", Keywords = "", Category = 0, IsDeleted = true });
+        var entry = new KnowledgeEntry { Title = "Already Deleted", Content = "Content", Keywords = "", Category = 0 };
+        TestEntityFactory.SetProperty(entry, "Id", 4);
+        entry.MarkAsDeleted();
+
+        _db.Set<KnowledgeEntry>().Add(entry);
         await _db.SaveChangesAsync();
 
         var result = await _service.DeleteAsync(4);

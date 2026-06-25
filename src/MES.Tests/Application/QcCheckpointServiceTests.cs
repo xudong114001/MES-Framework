@@ -2,7 +2,9 @@ using MES.Application.Interfaces;
 using MES.Application.Services;
 using MES.Domain.Entities;
 using MES.Domain.Enums;
+using MES.Domain.Exceptions;
 using MES.Domain.Repositories;
+using MES.Tests;
 using Moq;
 using Xunit;
 
@@ -21,14 +23,13 @@ public class QcCheckpointServiceTests
 
     private QcCheckpoint CreateCheckpoint(long id, long stepId, QcInspectionType checkType, bool isMandatory = true)
     {
-        return new QcCheckpoint
-        {
-            Id = id,
-            StepId = stepId,
-            CheckType = checkType,
-            IsMandatory = isMandatory,
-            Remark = $"质检点 {id}"
-        };
+        return TestEntityFactory.CreateQcCheckpointDirect(
+            id: id,
+            stepId: stepId,
+            checkType: checkType,
+            isMandatory: isMandatory,
+            remark: $"质检点 {id}"
+        );
     }
 
     [Fact]
@@ -128,7 +129,7 @@ public class QcCheckpointServiceTests
         _checkpointRepo.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(existing);
         _checkpointRepo.Setup(r => r.UpdateAsync(It.IsAny<QcCheckpoint>())).Returns(Task.CompletedTask);
 
-        await _service.UpdateCheckpointAsync(updated);
+        await _service.UpdateCheckpointAsync(1, updated);
 
         _checkpointRepo.Verify(r => r.UpdateAsync(It.Is<QcCheckpoint>(c =>
             c.StepId == 20 &&
@@ -144,7 +145,7 @@ public class QcCheckpointServiceTests
         _checkpointRepo.Setup(r => r.GetByIdAsync(999)).ReturnsAsync((QcCheckpoint?)null);
 
         await Assert.ThrowsAsync<InvalidOperationException>(() =>
-            _service.UpdateCheckpointAsync(checkpoint));
+            _service.UpdateCheckpointAsync(999, checkpoint));
     }
 
     [Fact]

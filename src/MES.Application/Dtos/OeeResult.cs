@@ -1,10 +1,12 @@
+using MES.Domain.Enums;
+
 namespace MES.Application.Dtos;
 
 public class OeeResult
 {
     public long EquipmentId { get; set; }
     public string EquipmentName { get; set; } = string.Empty;
-    public string Status { get; set; } = string.Empty;
+    public EquipmentStatus Status { get; set; }
     public double OeeValue { get; set; }
     public double Availability { get; set; }
     public double Performance { get; set; }

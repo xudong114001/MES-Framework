@@ -1,5 +1,6 @@
 using MES.Application.Dtos;
 using MES.Domain.Entities;
+using MES.Domain.Enums;
 
 namespace MES.Application.Interfaces;
 
@@ -39,7 +40,7 @@ public interface IEquipmentService
     Task CompleteMaintenanceAsync(long planId);
 
     /// <summary>获取所有保养计划（可筛选）</summary>
-    Task<List<MaintenancePlan>> GetAllMaintenancePlansAsync(string? equipmentName = null, string? status = null);
+    Task<List<MaintenancePlan>> GetAllMaintenancePlansAsync(string? equipmentName = null, MaintenancePlanStatus? status = null);
 
     /// <summary>获取所有设备（下拉列表用）</summary>
     Task<List<Equipment>> GetAllEquipmentAsync();
