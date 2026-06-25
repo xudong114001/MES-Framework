@@ -115,5 +115,26 @@ public class Routing : BaseEntity, IAggregateRoot
         Version = newVersion;
     }
 
+    /// <summary>
+    /// 更新工艺路线信息
+    /// </summary>
+    public void UpdateInfo(long materialId, string routingCode, string routingName, string version, bool status)
+    {
+        if (string.IsNullOrWhiteSpace(routingCode))
+            throw new DomainException("工艺路线编码不能为空");
+
+        if (string.IsNullOrWhiteSpace(routingName))
+            throw new DomainException("工艺路线名称不能为空");
+
+        if (materialId <= 0)
+            throw new DomainException("物料ID无效");
+
+        MaterialId = materialId;
+        RoutingCode = routingCode;
+        RoutingName = routingName;
+        Version = version;
+        Status = status;
+    }
+
     #endregion
 }

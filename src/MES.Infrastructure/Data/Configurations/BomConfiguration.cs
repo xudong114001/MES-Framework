@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using MES.Domain.Entities;
+using MES.Infrastructure.Data.Converters;
 
 namespace MES.Infrastructure.Data.Configurations;
 
@@ -10,7 +11,7 @@ public class BomConfiguration : IEntityTypeConfiguration<Bom>
     {
         builder.ToTable("mes_bom");
         builder.HasKey(e => e.Id);
-        builder.Property(e => e.Quantity).HasColumnType("decimal(18,6)").IsRequired();
+        builder.Property(e => e.Quantity).HasColumnType("decimal(18,6)").HasConversion(new QuantityValueConverter()).IsRequired();
         builder.Property(e => e.ScrapRate).HasColumnType("decimal(5,2)").HasDefaultValue(0);
         builder.Property(e => e.SeqNo).HasDefaultValue(0);
         builder.Property(e => e.Status).HasDefaultValue(true);

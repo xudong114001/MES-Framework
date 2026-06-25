@@ -106,8 +106,8 @@ public class EquipmentHealthService : IEquipmentHealthService
         foreach (var group in grouped)
         {
             var dayReports = group.ToList();
-            var goodQty = (double)dayReports.Sum(r => (decimal)r.GoodQty);
-            var badQty = (double)dayReports.Sum(r => (decimal)(r.ScrapQty + r.ReworkQty));
+            var goodQty = dayReports.Sum(r => r.GoodQty.Value);
+            var badQty = dayReports.Sum(r => (r.ScrapQty + r.ReworkQty).Value);
             var actualRunMinutes = dayReports.Sum(r => r.DurationMin);
 
             double plannedRunMinutes = equipment?.PlannedRunTime.HasValue == true && equipment.PlannedRunTime.Value > 0

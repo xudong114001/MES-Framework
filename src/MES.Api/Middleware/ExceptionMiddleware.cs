@@ -1,5 +1,6 @@
 using System.Net;
 using System.Text.Json;
+using MES.Domain.Exceptions;
 using Serilog;
 
 namespace MES.Api.Middleware;
@@ -15,6 +16,42 @@ public class ExceptionMiddleware
         try
         {
             await _next(context);
+        }
+        catch (EntityNotFoundException ex)
+        {
+            Log.Warning(ex, "Entity not found: {Message}", ex.Message);
+            context.Response.ContentType = "application/json";
+            context.Response.StatusCode = (int)HttpStatusCode.NotFound;
+
+            var response = new ApiResponse(404, ex.Message);
+            await context.Response.WriteAsync(JsonSerializer.Serialize(response));
+        }
+        catch (ForbiddenException ex)
+        {
+            Log.Warning(ex, "Forbidden access: {Message}", ex.Message);
+            context.Response.ContentType = "application/json";
+            context.Response.StatusCode = (int)HttpStatusCode.Forbidden;
+
+            var response = new ApiResponse(403, ex.Message);
+            await context.Response.WriteAsync(JsonSerializer.Serialize(response));
+        }
+        catch (ValidationException ex)
+        {
+            Log.Warning(ex, "Validation failed: {Message}", ex.Message);
+            context.Response.ContentType = "application/json";
+            context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
+
+            var response = new ApiResponse(400, ex.Message, ex.Errors);
+            await context.Response.WriteAsync(JsonSerializer.Serialize(response));
+        }
+        catch (DomainException ex)
+        {
+            Log.Warning(ex, "Domain rule violation: {Message}", ex.Message);
+            context.Response.ContentType = "application/json";
+            context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
+
+            var response = new ApiResponse(400, ex.Message);
+            await context.Response.WriteAsync(JsonSerializer.Serialize(response));
         }
         catch (Exception ex)
         {

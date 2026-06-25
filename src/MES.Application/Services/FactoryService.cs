@@ -13,10 +13,15 @@ public class FactoryService : IFactoryService
 
     private static FactoryDto MapToDto(Factory entity) => new()
     {
-        Id = entity.Id, Code = entity.Code, Name = entity.Name,
-        Address = entity.Address, Status = entity.Status,
-        CreatedAt = entity.CreatedAt, CreatedBy = entity.CreatedBy,
-        UpdatedAt = entity.UpdatedAt, UpdatedBy = entity.UpdatedBy
+        Id = entity.Id,
+        Code = entity.Code,
+        Name = entity.Name,
+        Address = entity.Address,
+        Status = entity.Status,
+        CreatedAt = entity.CreatedAt,
+        CreatedBy = entity.CreatedBy,
+        UpdatedAt = entity.UpdatedAt,
+        UpdatedBy = entity.UpdatedBy
     };
 
     public async Task<IEnumerable<FactoryDto>> GetAllAsync()
@@ -31,19 +36,29 @@ public class FactoryService : IFactoryService
         return entity == null ? null : MapToDto(entity);
     }
 
-    public async Task<FactoryDto> CreateAsync(Factory entity)
+    public async Task<FactoryDto> CreateAsync(CreateFactoryRequest request)
     {
+        var entity = new Factory
+        {
+            Code = request.Code,
+            Name = request.Name,
+            Address = request.Address,
+            Status = request.Status
+        };
         var created = await _repo.AddAsync(entity);
         return MapToDto(created);
     }
 
-    public async Task UpdateAsync(long id, Factory entity)
+    public async Task UpdateAsync(long id, UpdateFactoryRequest request)
     {
         var existing = await _repo.GetByIdAsync(id);
         if (existing == null)
             throw new Domain.Exceptions.DomainException("工厂不存在");
-        entity.Id = id;
-        await _repo.UpdateAsync(entity);
+        existing.Code = request.Code;
+        existing.Name = request.Name;
+        existing.Address = request.Address;
+        existing.Status = request.Status;
+        await _repo.UpdateAsync(existing);
     }
 
     public async Task DeleteAsync(long id)

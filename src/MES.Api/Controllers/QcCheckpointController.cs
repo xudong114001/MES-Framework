@@ -47,15 +47,8 @@ public class QcCheckpointController : ControllerBase
     public async Task<IActionResult> Update(long id, [FromBody] QcCheckpoint checkpoint)
     {
         checkpoint.Id = id;
-        try
-        {
-            await _checkpointService.UpdateCheckpointAsync(checkpoint);
-            return Ok(ApiResponse.Ok("更新成功"));
-        }
-        catch (InvalidOperationException ex)
-        {
-            return BadRequest(ApiResponse.Fail(ex.Message));
-        }
+        await _checkpointService.UpdateCheckpointAsync(checkpoint);
+        return Ok(ApiResponse.Ok("更新成功"));
     }
 
     /// <summary>
@@ -74,15 +67,8 @@ public class QcCheckpointController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Configure([FromBody] QcCheckpoint checkpoint)
     {
-        try
-        {
-            var created = await _checkpointService.ConfigureCheckpointAsync(checkpoint);
-            return Ok(ApiResponse.Ok(created));
-        }
-        catch (InvalidOperationException ex)
-        {
-            return BadRequest(ApiResponse.Fail(ex.Message));
-        }
+        var created = await _checkpointService.ConfigureCheckpointAsync(checkpoint);
+        return Ok(ApiResponse.Ok(created));
     }
 
     /// <summary>
@@ -91,14 +77,7 @@ public class QcCheckpointController : ControllerBase
     [HttpDelete("{id}")]
     public async Task<IActionResult> Remove(long id)
     {
-        try
-        {
-            await _checkpointService.RemoveCheckpointAsync(id);
-            return Ok(ApiResponse.Ok("删除成功"));
-        }
-        catch (InvalidOperationException ex)
-        {
-            return BadRequest(ApiResponse.Fail(ex.Message));
-        }
+        await _checkpointService.RemoveCheckpointAsync(id);
+        return Ok(ApiResponse.Ok("删除成功"));
     }
 }

@@ -139,6 +139,8 @@ builder.Services.AddScoped<IMaterialService, MaterialService>();
 builder.Services.AddScoped<IBomService, BomService>();
 builder.Services.AddScoped<IRoutingService, RoutingService>();
 builder.Services.AddScoped<IRoleService, RoleService>();
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<ISeedService, MES.Infrastructure.Services.SeedService>();
 
 // Redis 连接（防重复提交 + 批次号生成 + 缓存）
 builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>

@@ -4,7 +4,9 @@ using MES.Application.Interfaces;
 using MES.Application.Integration.Events;
 using MES.Domain.Entities;
 using MES.Domain.Enums;
+using MES.Domain.Exceptions;
 using MES.Domain.Repositories;
+using MES.Domain.ValueObjects;
 
 namespace MES.Application.Services;
 
@@ -102,13 +104,54 @@ public class WorkOrderService : IWorkOrderService
     {
         var existing = await _workOrderRepo.GetByIdAsync(workOrder.Id);
         if (existing == null)
-            throw new InvalidOperationException("工单不存在");
+            throw new DomainException("工单不存在");
 
-        // 使用实体方法更新计划时间
         existing.UpdatePlannedTimes(workOrder.PlanStartTime, workOrder.PlanEndTime);
+        await _workOrderRepo.UpdateAsync(existing);
+    }
 
-        // 更新其他可更新字段（通过私有 setter）
-        // 注意：这里只能更新允许外部修改的字段，状态变更必须通过业务方法
+    /// <summary>
+    /// 创建工单（DTO版本）
+    /// </summary>
+    public async Task<WorkOrderDto> CreateAsync(CreateWorkOrderRequest request)
+    {
+        var workOrder = WorkOrder.Create(
+            orderNo: request.OrderNo,
+            sourceType: request.SourceType,
+            materialId: request.MaterialId,
+            plannedQty: new Quantity(request.PlannedQty),
+            priority: (Priority)request.Priority,
+            routingId: request.RoutingId,
+            sourceRef: request.SourceRef,
+            planStartTime: request.PlanStartTime,
+            planEndTime: request.PlanEndTime,
+            factoryId: request.FactoryId,
+            workshopId: request.WorkshopId,
+            lineId: request.LineId,
+            assignee: request.Assignee,
+            remark: request.Remark);
+
+        var created = await CreateWorkOrderAsync(workOrder);
+        return MapToDto(created);
+    }
+
+    /// <summary>
+    /// 更新工单（DTO版本）
+    /// </summary>
+    public async Task UpdateAsync(long id, UpdateWorkOrderRequest request)
+    {
+        var existing = await _workOrderRepo.GetByIdAsync(id);
+        if (existing == null)
+            throw new DomainException("工单不存在");
+
+        existing.UpdatePlannedTimes(request.PlanStartTime, request.PlanEndTime);
+        existing.UpdateBasicInfo(
+            priority: (Priority)request.Priority,
+            assignee: request.Assignee,
+            remark: request.Remark,
+            factoryId: request.FactoryId,
+            workshopId: request.WorkshopId,
+            lineId: request.LineId);
 
         await _workOrderRepo.UpdateAsync(existing);
     }
@@ -120,7 +163,7 @@ public class WorkOrderService : IWorkOrderService
     {
         var entity = await _workOrderRepo.GetByIdAsync(id);
         if (entity == null)
-            throw new InvalidOperationException("工单不存在");
+            throw new DomainException("工单不存在");
 
         await _workOrderRepo.DeleteAsync(entity);
     }
@@ -133,7 +176,7 @@ public class WorkOrderService : IWorkOrderService
         // 验证物料存在
         var material = await _materialRepo.GetByIdAsync(workOrder.MaterialId);
         if (material == null)
-            throw new InvalidOperationException($"物料不存在 (MaterialId={workOrder.MaterialId})");
+            throw new DomainException($"物料不存在 (MaterialId={workOrder.MaterialId})");
 
         // BOM 库存校验
         var bomComponents = await _bomRepo.FindAsync(b => b.ProductId == workOrder.MaterialId && b.Status);
@@ -144,10 +187,10 @@ public class WorkOrderService : IWorkOrderService
                 var component = await _materialRepo.GetByIdAsync(bomItem.MaterialId);
                 if (component == null) continue;
 
-                var requiredQty = bomItem.Quantity * workOrder.PlannedQty;
+                var requiredQty = bomItem.Quantity.Value * workOrder.PlannedQty.Value;
                 if (component.StockQty < requiredQty)
                 {
-                    throw new InvalidOperationException(
+                    throw new DomainException(
                         $"物料 {component.Name} 库存不足（需要 {requiredQty}，可用 {component.StockQty}）");
                 }
             }
@@ -249,7 +292,7 @@ public class WorkOrderService : IWorkOrderService
     public async Task ReleaseWorkOrderAsync(long workOrderId)
     {
         var wo = await _workOrderRepo.GetByIdAsync(workOrderId);
-        if (wo == null) throw new InvalidOperationException("工单不存在");
+        if (wo == null) throw new DomainException("工单不存在");
 
         var oldStatus = wo.Status;
 
@@ -318,7 +361,7 @@ public class WorkOrderService : IWorkOrderService
     public async Task HoldWorkOrderAsync(long workOrderId)
     {
         var wo = await _workOrderRepo.GetByIdAsync(workOrderId);
-        if (wo == null) throw new InvalidOperationException("工单不存在");
+        if (wo == null) throw new DomainException("工单不存在");
 
         // 使用实体方法暂停工单
         wo.Hold();
@@ -331,7 +374,7 @@ public class WorkOrderService : IWorkOrderService
     public async Task ResumeWorkOrderAsync(long workOrderId)
     {
         var wo = await _workOrderRepo.GetByIdAsync(workOrderId);
-        if (wo == null) throw new InvalidOperationException("工单不存在");
+        if (wo == null) throw new DomainException("工单不存在");
 
         // 使用实体方法恢复工单
         wo.Resume();
@@ -344,7 +387,7 @@ public class WorkOrderService : IWorkOrderService
     public async Task CancelWorkOrderAsync(long workOrderId)
     {
         var wo = await _workOrderRepo.GetByIdAsync(workOrderId);
-        if (wo == null) throw new InvalidOperationException("工单不存在");
+        if (wo == null) throw new DomainException("工单不存在");
 
         // 使用实体方法取消工单
         wo.Cancel();
@@ -357,7 +400,7 @@ public class WorkOrderService : IWorkOrderService
     public async Task CloseWorkOrderAsync(long workOrderId)
     {
         var wo = await _workOrderRepo.GetByIdAsync(workOrderId);
-        if (wo == null) throw new InvalidOperationException("工单不存在");
+        if (wo == null) throw new DomainException("工单不存在");
 
         // 使用实体方法关闭工单
         wo.Close();
@@ -368,13 +411,13 @@ public class WorkOrderService : IWorkOrderService
     /// 拆分工单：扣减原单数量，创建子单
     /// 原单必须是 PENDING / RELEASED 状态
     /// </summary>
-    public async Task<WorkOrder> SplitWorkOrderAsync(long workOrderId, decimal splitQty)
+    public async Task<WorkOrderDto> SplitWorkOrderAsync(long workOrderId, decimal splitQty)
     {
         var wo = await _workOrderRepo.GetByIdAsync(workOrderId);
-        if (wo == null) throw new InvalidOperationException("工单不存在");
+        if (wo == null) throw new DomainException("工单不存在");
 
-        // 使用实体方法拆分工单（内部包含验证和扣减逻辑）
-        var child = wo.Split(splitQty);
+        // 使用实��方法拆分工单（内部包含验证和扣减逻辑）
+        var child = wo.Split(new Quantity(splitQty));
         await _workOrderRepo.UpdateAsync(wo);
 
         var created = await _workOrderRepo.AddAsync(child);
@@ -400,19 +443,19 @@ public class WorkOrderService : IWorkOrderService
             }
         }
 
-        return created;
+        return MapToDto(created);
     }
 
     /// <summary>
     /// 返工：从 COMPLETED/IN_PROGRESS 工单创建返工子工单
     /// </summary>
-    public async Task<WorkOrder> ReworkWorkOrderAsync(long workOrderId, decimal reworkQty, string? remark)
+    public async Task<WorkOrderDto> ReworkWorkOrderAsync(long workOrderId, decimal reworkQty, string? remark)
     {
         var wo = await _workOrderRepo.GetByIdAsync(workOrderId);
-        if (wo == null) throw new InvalidOperationException("工单不存在");
+        if (wo == null) throw new DomainException("工单不存在");
 
         // 使用实体方法返工（内部包含验证和扣减逻辑）
-        var child = wo.Rework(reworkQty);
+        var child = wo.Rework(new Quantity(reworkQty));
         await _workOrderRepo.UpdateAsync(wo);
 
         var created = await _workOrderRepo.AddAsync(child);
@@ -438,7 +481,7 @@ public class WorkOrderService : IWorkOrderService
             }
         }
 
-        return created;
+        return MapToDto(created);
     }
 
     /// <summary>
@@ -447,10 +490,10 @@ public class WorkOrderService : IWorkOrderService
     public async Task ScrapWorkOrderAsync(long workOrderId, decimal scrapQty, string? remark)
     {
         var wo = await _workOrderRepo.GetByIdAsync(workOrderId);
-        if (wo == null) throw new InvalidOperationException("工单不存在");
+        if (wo == null) throw new DomainException("工单不存在");
 
         // 使用实体方法报废（内部包含验证逻辑）
-        wo.Scrap(scrapQty, remark);
+        wo.Scrap(new Quantity(scrapQty), remark);
         await _workOrderRepo.UpdateAsync(wo);
     }
 }

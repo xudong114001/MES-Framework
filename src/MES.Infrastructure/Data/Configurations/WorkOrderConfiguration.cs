@@ -1,6 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using MES.Domain.Entities;
+using MES.Domain.ValueObjects;
+using MES.Infrastructure.Data.Converters;
 
 namespace MES.Infrastructure.Data.Configurations;
 
@@ -12,9 +14,9 @@ public class WorkOrderConfiguration : IEntityTypeConfiguration<WorkOrder>
         builder.HasKey(e => e.Id);
         builder.Property(e => e.OrderNo).HasMaxLength(50).IsRequired();
         builder.Property(e => e.SourceRef).HasMaxLength(100);
-        builder.Property(e => e.PlannedQty).HasColumnType("decimal(18,2)").IsRequired();
-        builder.Property(e => e.CompletedQty).HasColumnType("decimal(18,2)").HasDefaultValue(0);
-        builder.Property(e => e.ScrapQty).HasColumnType("decimal(18,2)").HasDefaultValue(0);
+        builder.Property(e => e.PlannedQty).HasColumnType("decimal(18,2)").HasConversion(new QuantityValueConverter()).IsRequired();
+        builder.Property(e => e.CompletedQty).HasColumnType("decimal(18,2)").HasConversion(new QuantityValueConverter()).HasDefaultValue(new Quantity(0));
+        builder.Property(e => e.ScrapQty).HasColumnType("decimal(18,2)").HasConversion(new QuantityValueConverter()).HasDefaultValue(new Quantity(0));
         builder.Property(e => e.Status).HasConversion<int>().HasDefaultValue(MES.Domain.Enums.WorkOrderStatus.PENDING);
         builder.Property(e => e.Priority).HasConversion<int>().HasDefaultValue(MES.Domain.Enums.Priority.NORMAL);
         builder.Property(e => e.Remark).HasMaxLength(500);

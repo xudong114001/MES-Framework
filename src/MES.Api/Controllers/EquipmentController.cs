@@ -3,8 +3,6 @@ using Microsoft.AspNetCore.Mvc;
 using MES.Api.Middleware;
 using MES.Application.Dtos;
 using MES.Application.Interfaces;
-using MES.Domain.Entities;
-using MES.Domain.Repositories;
 
 namespace MES.Api.Controllers;
 
@@ -13,36 +11,12 @@ namespace MES.Api.Controllers;
 [Authorize(Roles = "admin,supervisor")]
 public class EquipmentController : ControllerBase
 {
-    private readonly IRepository<Equipment> _repo;
     private readonly IEquipmentService _equipmentService;
 
-    public EquipmentController(IRepository<Equipment> repo, IEquipmentService equipmentService)
+    public EquipmentController(IEquipmentService equipmentService)
     {
-        _repo = repo;
         _equipmentService = equipmentService;
     }
-
-    private static EquipmentDto MapToDto(Equipment entity) => new()
-    {
-        Id = entity.Id,
-        Code = entity.Code,
-        Name = entity.Name,
-        Model = entity.Model,
-        FactoryId = entity.FactoryId,
-        WorkshopId = entity.WorkshopId,
-        LineId = entity.LineId,
-        InstallDate = entity.InstallDate,
-        Status = entity.Status,
-        LastMaintainDate = entity.LastMaintainDate,
-        NextMaintainDate = entity.NextMaintainDate,
-        MaintainCycle = entity.MaintainCycle,
-        TheoreticalCycleTime = entity.TheoreticalCycleTime,
-        PlannedRunTime = entity.PlannedRunTime,
-        CreatedAt = entity.CreatedAt,
-        CreatedBy = entity.CreatedBy,
-        UpdatedAt = entity.UpdatedAt,
-        UpdatedBy = entity.UpdatedBy
-    };
 
     /// <summary>
     /// 获取所有设备
@@ -50,8 +24,8 @@ public class EquipmentController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetAll()
     {
-        var list = await _repo.GetAllAsync();
-        return Ok(ApiResponse.Ok(list.Select(MapToDto)));
+        var list = await _equipmentService.GetAllAsync();
+        return Ok(ApiResponse.Ok(list));
     }
 
     /// <summary>
@@ -61,7 +35,7 @@ public class EquipmentController : ControllerBase
     public async Task<IActionResult> GetEquipmentList()
     {
         var list = await _equipmentService.GetAllEquipmentAsync();
-        return Ok(ApiResponse.Ok(list.Select(MapToDto)));
+        return Ok(ApiResponse.Ok(list));
     }
 
     /// <summary>
@@ -70,34 +44,29 @@ public class EquipmentController : ControllerBase
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(long id)
     {
-        var entity = await _repo.GetByIdAsync(id);
+        var entity = await _equipmentService.GetByIdAsync(id);
         if (entity == null)
             return NotFound(ApiResponse.Fail("设备不存在"));
-        return Ok(ApiResponse.Ok(MapToDto(entity)));
+        return Ok(ApiResponse.Ok(entity));
     }
 
     /// <summary>
     /// 创建设备
     /// </summary>
     [HttpPost]
-    public async Task<IActionResult> Create([FromBody] Equipment entity)
+    public async Task<IActionResult> Create([FromBody] EquipmentDto dto)
     {
-        var created = await _repo.AddAsync(entity);
-        return Ok(ApiResponse.Ok(MapToDto(created)));
+        var created = await _equipmentService.CreateAsync(dto);
+        return Ok(ApiResponse.Ok(created));
     }
 
     /// <summary>
     /// 更新设备
     /// </summary>
     [HttpPut("{id}")]
-    public async Task<IActionResult> Update(long id, [FromBody] Equipment entity)
+    public async Task<IActionResult> Update(long id, [FromBody] EquipmentDto dto)
     {
-        var existing = await _repo.GetByIdAsync(id);
-        if (existing == null)
-            return NotFound(ApiResponse.Fail("设备不存在"));
-
-        entity.Id = id;
-        await _repo.UpdateAsync(entity);
+        await _equipmentService.UpdateAsync(id, dto);
         return Ok(ApiResponse.Ok("更新成功"));
     }
 
@@ -107,10 +76,7 @@ public class EquipmentController : ControllerBase
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(long id)
     {
-        var entity = await _repo.GetByIdAsync(id);
-        if (entity == null)
-            return NotFound(ApiResponse.Fail("设备不存在"));
-        await _repo.DeleteAsync(entity);
+        await _equipmentService.DeleteAsync(id);
         return Ok(ApiResponse.Ok("删除成功"));
     }
 

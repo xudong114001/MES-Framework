@@ -1,6 +1,7 @@
 using MES.Application.Interfaces;
 using MES.Domain.Entities;
 using MES.Domain.Enums;
+using MES.Domain.Exceptions;
 using MES.Domain.Repositories;
 
 namespace MES.Application.Services;
@@ -27,17 +28,16 @@ public class DispatchService : IDispatchService
         _lineRepo = lineRepo;
     }
 
-    /// <summary>将工单的某工序派工到指定���位</summary>
+    /// <summary>将工单的某工序派工到指定工位</summary>
     public async Task DispatchStepAsync(long workOrderStepId, long workstationId)
     {
         var step = await _stepRepo.GetByIdAsync(workOrderStepId)
-            ?? throw new InvalidOperationException("工序不存在");
+            ?? throw new DomainException("工序不存在");
 
         var ws = await _workstationRepo.GetByIdAsync(workstationId)
-            ?? throw new InvalidOperationException("工位不存在");
+            ?? throw new DomainException("工位不存在");
 
         step.AssignWorkstation(workstationId);
-        step.UpdatedAt = DateTime.UtcNow;
         await _stepRepo.UpdateAsync(step);
     }
 
@@ -45,10 +45,9 @@ public class DispatchService : IDispatchService
     public async Task UndispatchStepAsync(long workOrderStepId)
     {
         var step = await _stepRepo.GetByIdAsync(workOrderStepId)
-            ?? throw new InvalidOperationException("工序不存在");
+            ?? throw new DomainException("工序不存在");
 
         step.UnassignWorkstation();
-        step.UpdatedAt = DateTime.UtcNow;
         await _stepRepo.UpdateAsync(step);
     }
 

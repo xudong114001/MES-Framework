@@ -13,11 +13,19 @@ public class MaterialService : IMaterialService
 
     private static MaterialDto MapToDto(Material entity) => new()
     {
-        Id = entity.Id, Code = entity.Code, Name = entity.Name,
-        Spec = entity.Spec, Unit = entity.Unit, Category = entity.Category,
-        BomLevel = entity.BomLevel, StockQty = entity.StockQty, Status = entity.Status,
-        CreatedAt = entity.CreatedAt, CreatedBy = entity.CreatedBy,
-        UpdatedAt = entity.UpdatedAt, UpdatedBy = entity.UpdatedBy
+        Id = entity.Id,
+        Code = entity.Code,
+        Name = entity.Name,
+        Spec = entity.Spec,
+        Unit = entity.Unit,
+        Category = entity.Category,
+        BomLevel = entity.BomLevel,
+        StockQty = entity.StockQty,
+        Status = entity.Status,
+        CreatedAt = entity.CreatedAt,
+        CreatedBy = entity.CreatedBy,
+        UpdatedAt = entity.UpdatedAt,
+        UpdatedBy = entity.UpdatedBy
     };
 
     public async Task<IEnumerable<MaterialDto>> GetAllAsync()
@@ -32,23 +40,37 @@ public class MaterialService : IMaterialService
         return entity == null ? null : MapToDto(entity);
     }
 
-    public async Task<MaterialDto> CreateAsync(Material entity)
+    public async Task<MaterialDto> CreateAsync(CreateMaterialRequest request)
     {
+        var entity = new Material
+        {
+            Code = request.Code,
+            Name = request.Name,
+            Spec = request.Spec,
+            Unit = request.Unit,
+            Category = request.Category,
+            BomLevel = request.BomLevel,
+            StockQty = request.StockQty,
+            Status = request.Status
+        };
         var created = await _repo.AddAsync(entity);
         return MapToDto(created);
     }
 
-    public async Task UpdateAsync(long id, Material entity)
+    public async Task UpdateAsync(long id, UpdateMaterialRequest request)
     {
         var existing = await _repo.GetByIdAsync(id);
         if (existing == null)
             throw new Domain.Exceptions.DomainException("物料不存在");
-
-        entity.Id = id;
-        entity.CreatedAt = existing.CreatedAt;
-        entity.CreatedBy = existing.CreatedBy;
-        entity.UpdatedAt = DateTime.UtcNow;
-        await _repo.UpdateAsync(entity);
+        existing.Code = request.Code;
+        existing.Name = request.Name;
+        existing.Spec = request.Spec;
+        existing.Unit = request.Unit;
+        existing.Category = request.Category;
+        existing.BomLevel = request.BomLevel;
+        existing.StockQty = request.StockQty;
+        existing.Status = request.Status;
+        await _repo.UpdateAsync(existing);
     }
 
     public async Task DeleteAsync(long id)

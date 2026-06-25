@@ -1,6 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using MES.Domain.Entities;
+using MES.Domain.ValueObjects;
+using MES.Infrastructure.Data.Converters;
 
 namespace MES.Infrastructure.Data.Configurations;
 
@@ -12,9 +14,9 @@ public class WorkReportConfiguration : IEntityTypeConfiguration<WorkReport>
         builder.HasKey(e => e.Id);
         builder.Property(e => e.ReportNo).HasMaxLength(50).IsRequired();
         builder.Property(e => e.ReportType).HasConversion<int>().HasDefaultValue(MES.Domain.Enums.ReportType.COMPLETE);
-        builder.Property(e => e.GoodQty).HasColumnType("decimal(18,2)").IsRequired();
-        builder.Property(e => e.ScrapQty).HasColumnType("decimal(18,2)").HasDefaultValue(0);
-        builder.Property(e => e.ReworkQty).HasColumnType("decimal(18,2)").HasDefaultValue(0);
+        builder.Property(e => e.GoodQty).HasColumnType("decimal(18,2)").HasConversion(new QuantityValueConverter()).IsRequired();
+        builder.Property(e => e.ScrapQty).HasColumnType("decimal(18,2)").HasConversion(new QuantityValueConverter()).HasDefaultValue(new Quantity(0));
+        builder.Property(e => e.ReworkQty).HasColumnType("decimal(18,2)").HasConversion(new QuantityValueConverter()).HasDefaultValue(new Quantity(0));
         builder.Property(e => e.Remark).HasMaxLength(500);
         builder.HasIndex(e => e.ReportNo).IsUnique();
 

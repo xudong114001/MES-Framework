@@ -13,10 +13,15 @@ public class WorkshopService : IWorkshopService
 
     private static WorkshopDto MapToDto(Workshop entity) => new()
     {
-        Id = entity.Id, FactoryId = entity.FactoryId, Code = entity.Code, Name = entity.Name,
+        Id = entity.Id,
+        FactoryId = entity.FactoryId,
+        Code = entity.Code,
+        Name = entity.Name,
         Status = entity.Status,
-        CreatedAt = entity.CreatedAt, CreatedBy = entity.CreatedBy,
-        UpdatedAt = entity.UpdatedAt, UpdatedBy = entity.UpdatedBy
+        CreatedAt = entity.CreatedAt,
+        CreatedBy = entity.CreatedBy,
+        UpdatedAt = entity.UpdatedAt,
+        UpdatedBy = entity.UpdatedBy
     };
 
     public async Task<IEnumerable<WorkshopDto>> GetAllAsync()
@@ -48,8 +53,11 @@ public class WorkshopService : IWorkshopService
         var existing = await _repo.GetByIdAsync(id);
         if (existing == null)
             throw new Domain.Exceptions.DomainException("车间不存在");
-        entity.Id = id;
-        await _repo.UpdateAsync(entity);
+        existing.FactoryId = entity.FactoryId;
+        existing.Code = entity.Code;
+        existing.Name = entity.Name;
+        existing.Status = entity.Status;
+        await _repo.UpdateAsync(existing);
     }
 
     public async Task DeleteAsync(long id)

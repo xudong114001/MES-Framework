@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using MES.Domain.Entities;
+using MES.Infrastructure.Data.Converters;
 
 namespace MES.Infrastructure.Data.Configurations;
 

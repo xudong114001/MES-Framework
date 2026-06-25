@@ -68,4 +68,16 @@ public class CacheService : ICacheService
         var db = _redis.GetDatabase();
         return await db.StringSetAsync(key, "1", expiry, When.NotExists);
     }
+
+    public async Task<long> IncrementAsync(string key)
+    {
+        var db = _redis.GetDatabase();
+        return await db.StringIncrementAsync(key);
+    }
+
+    public async Task SetExpiryAsync(string key, TimeSpan expiry)
+    {
+        var db = _redis.GetDatabase();
+        await db.KeyExpireAsync(key, expiry);
+    }
 }

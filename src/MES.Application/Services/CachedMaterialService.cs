@@ -1,7 +1,6 @@
 using MES.Domain.Interfaces;
 using MES.Domain.Entities;
 using MES.Domain.Repositories;
-using Microsoft.EntityFrameworkCore;
 
 namespace MES.Application.Services;
 

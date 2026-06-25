@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using MES.Api.Middleware;
 using MES.Application.Dtos;
 using MES.Application.Interfaces;
 using MES.Domain.Entities;
@@ -9,7 +10,7 @@ namespace MES.Api.Controllers;
 [ApiController]
 [Route("api/v1/work-orders")]
 [Authorize(Roles = "admin,supervisor,operator")]
-public class WorkOrderController : BaseController
+public class WorkOrderController : ControllerBase
 {
     private readonly IWorkOrderService _service;
 
@@ -54,7 +55,7 @@ public class WorkOrderController : BaseController
     public async Task<IActionResult> GetAll()
     {
         var list = await _service.GetAllAsync();
-        return Success(list);
+        return Ok(ApiResponse.Ok(list));
     }
 
     /// <summary>
@@ -64,29 +65,28 @@ public class WorkOrderController : BaseController
     public async Task<IActionResult> GetById(long id)
     {
         var entity = await _service.GetByIdAsync(id);
-        if (entity == null) return Fail("工单不存在", 404);
-        return Success(entity);
+        if (entity == null) return NotFound(ApiResponse.Fail("工单不存在"));
+        return Ok(ApiResponse.Ok(entity));
     }
 
     /// <summary>
     /// 创建工单
     /// </summary>
     [HttpPost]
-    public async Task<IActionResult> Create([FromBody] WorkOrder entity)
+    public async Task<IActionResult> Create([FromBody] CreateWorkOrderRequest request)
     {
-        var created = await _service.CreateWorkOrderAsync(entity);
-        return Success(MapToDto(created));
+        var created = await _service.CreateAsync(request);
+        return Ok(ApiResponse.Ok(created));
     }
 
     /// <summary>
     /// 更新工单
     /// </summary>
     [HttpPut("{id}")]
-    public async Task<IActionResult> Update(long id, [FromBody] WorkOrder entity)
+    public async Task<IActionResult> Update(long id, [FromBody] UpdateWorkOrderRequest request)
     {
-        entity.Id = id;
-        await _service.UpdateWorkOrderAsync(entity);
-        return Success("更新成功");
+        await _service.UpdateAsync(id, request);
+        return Ok(ApiResponse.Ok("更新成功"));
     }
 
     /// <summary>
@@ -96,7 +96,7 @@ public class WorkOrderController : BaseController
     public async Task<IActionResult> Delete(long id)
     {
         await _service.DeleteWorkOrderAsync(id);
-        return Success("删除成功");
+        return Ok(ApiResponse.Ok("删除成功"));
     }
 
     /// <summary>
@@ -106,7 +106,7 @@ public class WorkOrderController : BaseController
     public async Task<IActionResult> Release(long id)
     {
         await _service.ReleaseWorkOrderAsync(id);
-        return Success("下达成功");
+        return Ok(ApiResponse.Ok("下达成功"));
     }
 
     /// <summary>
@@ -116,7 +116,7 @@ public class WorkOrderController : BaseController
     public async Task<IActionResult> Hold(long id)
     {
         await _service.HoldWorkOrderAsync(id);
-        return Success("已暂停");
+        return Ok(ApiResponse.Ok("已暂停"));
     }
 
     /// <summary>
@@ -126,7 +126,7 @@ public class WorkOrderController : BaseController
     public async Task<IActionResult> Resume(long id)
     {
         await _service.ResumeWorkOrderAsync(id);
-        return Success("已恢复");
+        return Ok(ApiResponse.Ok("已恢复"));
     }
 
     /// <summary>
@@ -136,7 +136,7 @@ public class WorkOrderController : BaseController
     public async Task<IActionResult> Cancel(long id)
     {
         await _service.CancelWorkOrderAsync(id);
-        return Success("已取消");
+        return Ok(ApiResponse.Ok("已取消"));
     }
 
     /// <summary>
@@ -146,7 +146,7 @@ public class WorkOrderController : BaseController
     public async Task<IActionResult> Close(long id)
     {
         await _service.CloseWorkOrderAsync(id);
-        return Success("已关闭");
+        return Ok(ApiResponse.Ok("已关闭"));
     }
 
     /// <summary>
@@ -156,7 +156,7 @@ public class WorkOrderController : BaseController
     public async Task<IActionResult> Split(long id, [FromBody] SplitRequest request)
     {
         var child = await _service.SplitWorkOrderAsync(id, request.SplitQty);
-        return Success(MapToDto(child));
+        return Ok(ApiResponse.Ok(child));
     }
 
     /// <summary>
@@ -166,7 +166,7 @@ public class WorkOrderController : BaseController
     public async Task<IActionResult> Rework(long id, [FromBody] ReworkRequest request)
     {
         var child = await _service.ReworkWorkOrderAsync(id, request.ReworkQty, request.Remark);
-        return Success(MapToDto(child));
+        return Ok(ApiResponse.Ok(child));
     }
 
     /// <summary>
@@ -176,6 +176,6 @@ public class WorkOrderController : BaseController
     public async Task<IActionResult> Scrap(long id, [FromBody] ScrapRequest request)
     {
         await _service.ScrapWorkOrderAsync(id, request.ScrapQty, request.Remark);
-        return Success("报废成功");
+        return Ok(ApiResponse.Ok("报废成功"));
     }
 }

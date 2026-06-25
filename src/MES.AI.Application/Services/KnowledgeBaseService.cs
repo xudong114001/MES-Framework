@@ -112,7 +112,6 @@ public class KnowledgeBaseService : IKnowledgeBaseService
         entity.Keywords = dto.Keywords;
         entity.MaterialId = dto.MaterialId;
         entity.EquipmentId = dto.EquipmentId;
-        entity.UpdatedAt = DateTime.UtcNow;
 
         await _repo.UpdateAsync(entity);
         await _repo.SaveChangesAsync();
@@ -127,8 +126,7 @@ public class KnowledgeBaseService : IKnowledgeBaseService
         var entity = await _repo.GetByIdAsync(id);
         if (entity == null || entity.IsDeleted) return false;
 
-        entity.IsDeleted = true;
-        entity.UpdatedAt = DateTime.UtcNow;
+        entity.MarkAsDeleted();
 
         await _repo.UpdateAsync(entity);
         await _repo.SaveChangesAsync();

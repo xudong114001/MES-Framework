@@ -16,6 +16,8 @@ public static class ServiceCollectionExtensions
                    .UseNpgsql(configuration.GetConnectionString("MesDb")));
 
         services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+        services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<IRoutingRepository, RoutingRepository>();
 
         return services;
     }

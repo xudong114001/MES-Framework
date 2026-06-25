@@ -4,7 +4,6 @@ using MES.Domain.Entities;
 using MES.Domain.Enums;
 using MES.Domain.Exceptions;
 using MES.Domain.Repositories;
-using Microsoft.EntityFrameworkCore;
 
 namespace MES.Application.Services;
 
@@ -25,6 +24,96 @@ public class EquipmentService : IEquipmentService
         _workReportRepo = workReportRepo;
         _workOrderRepo = workOrderRepo;
         _maintenancePlanRepo = maintenancePlanRepo;
+    }
+
+    private static EquipmentDto MapToDto(Equipment entity) => new()
+    {
+        Id = entity.Id,
+        Code = entity.Code,
+        Name = entity.Name,
+        Model = entity.Model,
+        FactoryId = entity.FactoryId,
+        WorkshopId = entity.WorkshopId,
+        LineId = entity.LineId,
+        InstallDate = entity.InstallDate,
+        Status = entity.Status,
+        LastMaintainDate = entity.LastMaintainDate,
+        NextMaintainDate = entity.NextMaintainDate,
+        MaintainCycle = entity.MaintainCycle,
+        TheoreticalCycleTime = entity.TheoreticalCycleTime,
+        PlannedRunTime = entity.PlannedRunTime,
+        CreatedAt = entity.CreatedAt,
+        CreatedBy = entity.CreatedBy,
+        UpdatedAt = entity.UpdatedAt,
+        UpdatedBy = entity.UpdatedBy
+    };
+
+    private static Equipment MapToEntity(EquipmentDto dto)
+    {
+        return Equipment.Create(
+            code: dto.Code,
+            name: dto.Name,
+            model: dto.Model,
+            factoryId: dto.FactoryId,
+            workshopId: dto.WorkshopId,
+            lineId: dto.LineId,
+            installDate: dto.InstallDate,
+            maintainCycle: dto.MaintainCycle,
+            theoreticalCycleTime: dto.TheoreticalCycleTime,
+            plannedRunTime: dto.PlannedRunTime);
+    }
+
+    /// <summary>获取所有设���</summary>
+    public async Task<IEnumerable<EquipmentDto>> GetAllAsync()
+    {
+        var list = await _equipmentRepo.GetAllAsync();
+        return list.Select(MapToDto);
+    }
+
+    /// <summary>根据ID获取设备</summary>
+    public async Task<EquipmentDto?> GetByIdAsync(long id)
+    {
+        var entity = await _equipmentRepo.GetByIdAsync(id);
+        return entity == null ? null : MapToDto(entity);
+    }
+
+    /// <summary>创建设备</summary>
+    public async Task<EquipmentDto> CreateAsync(EquipmentDto dto)
+    {
+        var entity = MapToEntity(dto);
+        var created = await _equipmentRepo.AddAsync(entity);
+        return MapToDto(created);
+    }
+
+    /// <summary>更新设备</summary>
+    public async Task UpdateAsync(long id, EquipmentDto dto)
+    {
+        var existing = await _equipmentRepo.GetByIdAsync(id);
+        if (existing == null)
+            throw new DomainException("设备不存在");
+
+        existing.Update(
+            name: dto.Name,
+            model: dto.Model,
+            factoryId: dto.FactoryId,
+            workshopId: dto.WorkshopId,
+            lineId: dto.LineId,
+            installDate: dto.InstallDate,
+            status: dto.Status,
+            maintainCycle: dto.MaintainCycle,
+            theoreticalCycleTime: dto.TheoreticalCycleTime,
+            plannedRunTime: dto.PlannedRunTime);
+        await _equipmentRepo.UpdateAsync(existing);
+    }
+
+    /// <summary>删除设备</summary>
+    public async Task DeleteAsync(long id)
+    {
+        var entity = await _equipmentRepo.GetByIdAsync(id);
+        if (entity == null)
+            throw new DomainException("设备不存在");
+
+        await _equipmentRepo.DeleteAsync(entity);
     }
 
     // 记录保养
@@ -221,15 +310,18 @@ public class EquipmentService : IEquipmentService
     public async Task<List<MaintenancePlan>> GetAllMaintenancePlansAsync(
         string? equipmentName = null, string? status = null)
     {
-        var query = _maintenancePlanRepo.Query();
+        // 获取所有保养计划
+        var allPlans = await _maintenancePlanRepo.GetAllAsync();
+        var plans = allPlans.ToList();
 
+        // 按状态筛选
         if (!string.IsNullOrEmpty(status))
         {
             if (Enum.TryParse<MaintenancePlanStatus>(status, out var statusEnum))
-                query = query.Where(p => p.Status == statusEnum);
+            {
+                plans = plans.Where(p => p.Status == statusEnum).ToList();
+            }
         }
-
-        var plans = await query.ToListAsync();
 
         // 加载设备信息用于筛选和显示
         var equipmentIds = plans.Select(p => p.EquipmentId).Distinct().ToList();

@@ -5,8 +5,9 @@ COPY ["src/MES.Domain/MES.Domain.csproj", "src/MES.Domain/"]
 COPY ["src/MES.Application/MES.Application.csproj", "src/MES.Application/"]
 COPY ["src/MES.Infrastructure/MES.Infrastructure.csproj", "src/MES.Infrastructure/"]
 COPY ["src/MES.Integration/MES.Integration.csproj", "src/MES.Integration/"]
+COPY ["src/MES.AI.Domain/MES.AI.Domain.csproj", "src/MES.AI.Domain/"]
+COPY ["src/MES.AI.Application/MES.AI.Application.csproj", "src/MES.AI.Application/"]
 COPY ["src/MES.Api/MES.Api.csproj", "src/MES.Api/"]
-COPY ["src/MES.Tests/MES.Tests.csproj", "src/MES.Tests/"]
 RUN dotnet restore
 COPY . .
 RUN dotnet build "src/MES.Api/MES.Api.csproj" -c Release -o /app/build

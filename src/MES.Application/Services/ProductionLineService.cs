@@ -13,16 +13,27 @@ public class ProductionLineService : IProductionLineService
 
     private static ProductionLineDto MapToDto(ProductionLine entity) => new()
     {
-        Id = entity.Id, WorkshopId = entity.WorkshopId, Code = entity.Code, Name = entity.Name,
-        LineType = entity.LineType, Status = entity.Status,
-        CreatedAt = entity.CreatedAt, CreatedBy = entity.CreatedBy,
-        UpdatedAt = entity.UpdatedAt, UpdatedBy = entity.UpdatedBy
+        Id = entity.Id,
+        WorkshopId = entity.WorkshopId,
+        Code = entity.Code,
+        Name = entity.Name,
+        LineType = entity.LineType,
+        Status = entity.Status,
+        CreatedAt = entity.CreatedAt,
+        CreatedBy = entity.CreatedBy,
+        UpdatedAt = entity.UpdatedAt,
+        UpdatedBy = entity.UpdatedBy
     };
 
     public async Task<IEnumerable<ProductionLineDto>> GetAllAsync()
     {
         var list = await _repo.GetAllAsync();
         return list.Select(MapToDto);
+    }
+
+    public async Task<IEnumerable<ProductionLine>> GetAllLinesAsync()
+    {
+        return await _repo.FindAsync(l => l.Status);
     }
 
     public async Task<ProductionLineDto?> GetByIdAsync(long id)
@@ -37,19 +48,31 @@ public class ProductionLineService : IProductionLineService
         return list.Select(MapToDto);
     }
 
-    public async Task<ProductionLineDto> CreateAsync(ProductionLine entity)
+    public async Task<ProductionLineDto> CreateAsync(CreateProductionLineRequest request)
     {
+        var entity = new ProductionLine
+        {
+            WorkshopId = request.WorkshopId,
+            Code = request.Code,
+            Name = request.Name,
+            LineType = request.LineType,
+            Status = request.Status
+        };
         var created = await _repo.AddAsync(entity);
         return MapToDto(created);
     }
 
-    public async Task UpdateAsync(long id, ProductionLine entity)
+    public async Task UpdateAsync(long id, UpdateProductionLineRequest request)
     {
         var existing = await _repo.GetByIdAsync(id);
         if (existing == null)
             throw new Domain.Exceptions.DomainException("产线不存在");
-        entity.Id = id;
-        await _repo.UpdateAsync(entity);
+        existing.WorkshopId = request.WorkshopId;
+        existing.Code = request.Code;
+        existing.Name = request.Name;
+        existing.LineType = request.LineType;
+        existing.Status = request.Status;
+        await _repo.UpdateAsync(existing);
     }
 
     public async Task DeleteAsync(long id)

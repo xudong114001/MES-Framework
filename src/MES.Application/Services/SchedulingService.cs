@@ -1,6 +1,7 @@
 using MES.Application.Interfaces;
 using MES.Domain.Entities;
 using MES.Domain.Enums;
+using MES.Domain.Exceptions;
 using MES.Domain.Repositories;
 
 namespace MES.Application.Services;
@@ -35,13 +36,13 @@ public class SchedulingService : ISchedulingService
     public async Task ScheduleOrderAsync(long workOrderId, long lineId)
     {
         var wo = await _workOrderRepo.GetByIdAsync(workOrderId)
-            ?? throw new InvalidOperationException("工单不存在");
+            ?? throw new DomainException("工单不存在");
 
         if (wo.Status != WorkOrderStatus.RELEASED)
-            throw new InvalidOperationException($"工单状态 {wo.Status} 不允许排产，仅 RELEASED 可排产");
+            throw new DomainException($"工单状态 {wo.Status} 不允许排产，仅 RELEASED 可排产");
 
         var line = await _lineRepo.GetByIdAsync(lineId)
-            ?? throw new InvalidOperationException("产线不存在");
+            ?? throw new DomainException("产线不存在");
 
         wo.Schedule(lineId);
         await _workOrderRepo.UpdateAsync(wo);
@@ -90,7 +91,7 @@ public class SchedulingService : ISchedulingService
 
         // 简单策略：按产线当前负载分配（轮询所有可用产线）
         var lines = await _lineRepo.FindAsync(l => l.Status);
-        if (!lines.Any()) throw new InvalidOperationException("没有可用的产线");
+        if (!lines.Any()) throw new DomainException("没有可用的产线");
 
         var lineList = lines.ToList();
         for (int i = 0; i < unscheduled.Count; i++)
@@ -104,18 +105,18 @@ public class SchedulingService : ISchedulingService
     public async Task SwapSchedulingOrderAsync(long orderId1, long orderId2)
     {
         var wo1 = await _workOrderRepo.GetByIdAsync(orderId1)
-            ?? throw new InvalidOperationException("工单1不存在");
+            ?? throw new DomainException("工单1不存在");
         var wo2 = await _workOrderRepo.GetByIdAsync(orderId2)
-            ?? throw new InvalidOperationException("工单2不存在");
+            ?? throw new DomainException("工单2不存在");
 
         if (wo1.LineId == null || wo2.LineId == null)
-            throw new InvalidOperationException("两条工单必须都已排产");
+            throw new DomainException("两条工单必须都已排产");
 
         // 简单的交换：更新更新时间（作为排序依据），或者后续支持 SortOrder 字段
         // 此处通过交换 UpdatedAt 来实现顺序调整
         var tempTime = wo1.UpdatedAt;
-        wo1.UpdatedAt = wo2.UpdatedAt;
-        wo2.UpdatedAt = tempTime;
+        wo1.SetModificationInfo(wo2.UpdatedAt);
+        wo2.SetModificationInfo(tempTime);
         await _workOrderRepo.UpdateAsync(wo1);
         await _workOrderRepo.UpdateAsync(wo2);
     }
@@ -143,10 +144,10 @@ public class SchedulingService : ISchedulingService
     public async Task UnscheduleOrderAsync(long workOrderId)
     {
         var wo = await _workOrderRepo.GetByIdAsync(workOrderId)
-            ?? throw new InvalidOperationException("工单不存在");
+            ?? throw new DomainException("工单不存在");
 
         if (wo.Status != WorkOrderStatus.SCHEDULED)
-            throw new InvalidOperationException($"工单状态 {wo.Status} 不允许取消排产，仅 SCHEDULED 可操作");
+            throw new DomainException($"工单状态 {wo.Status} 不允许取消排产，仅 SCHEDULED 可操作");
 
         wo.Unschedule();
         await _workOrderRepo.UpdateAsync(wo);

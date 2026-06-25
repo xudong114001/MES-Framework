@@ -1,13 +1,8 @@
-using System.Security.Cryptography;
-using System.Text;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using MES.Api.Middleware;
 using MES.Application.Dtos;
-using MES.Domain.Entities;
-using MES.Infrastructure.Data;
-using MES.Domain.Repositories;
+using MES.Application.Interfaces;
 
 namespace MES.Api.Controllers;
 
@@ -16,15 +11,11 @@ namespace MES.Api.Controllers;
 [Authorize(Roles = "admin")]
 public class UserController : ControllerBase
 {
-    private readonly MesDbContext _db;
-    private readonly IRepository<User> _repo;
-    private readonly IRepository<Role> _roleRepo;
+    private readonly IUserService _userService;
 
-    public UserController(MesDbContext db, IRepository<User> repo, IRepository<Role> roleRepo)
+    public UserController(IUserService userService)
     {
-        _db = db;
-        _repo = repo;
-        _roleRepo = roleRepo;
+        _userService = userService;
     }
 
     /// <summary>
@@ -33,23 +24,7 @@ public class UserController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetAll()
     {
-        var list = await _db.Users
-            .Where(u => !u.IsDeleted)
-            .Select(u => new UserDto
-            {
-                Id = u.Id,
-                Username = u.Username,
-                DisplayName = u.DisplayName,
-                Email = u.Email,
-                Phone = u.Phone,
-                Status = u.Status,
-                LastLoginTime = u.LastLoginTime,
-                CreatedAt = u.CreatedAt,
-                CreatedBy = u.CreatedBy,
-                UpdatedAt = u.UpdatedAt,
-                UpdatedBy = u.UpdatedBy
-            })
-            .ToListAsync();
+        var list = await _userService.GetAllAsync();
         return Ok(ApiResponse.Ok(list));
     }
 
@@ -59,23 +34,7 @@ public class UserController : ControllerBase
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(long id)
     {
-        var user = await _db.Users
-            .Where(u => u.Id == id && !u.IsDeleted)
-            .Select(u => new UserDto
-            {
-                Id = u.Id,
-                Username = u.Username,
-                DisplayName = u.DisplayName,
-                Email = u.Email,
-                Phone = u.Phone,
-                Status = u.Status,
-                LastLoginTime = u.LastLoginTime,
-                CreatedAt = u.CreatedAt,
-                CreatedBy = u.CreatedBy,
-                UpdatedAt = u.UpdatedAt,
-                UpdatedBy = u.UpdatedBy
-            })
-            .FirstOrDefaultAsync();
+        var user = await _userService.GetByIdAsync(id);
         if (user == null)
             return NotFound(ApiResponse.Fail("用户不存在"));
         return Ok(ApiResponse.Ok(user));
@@ -87,35 +46,8 @@ public class UserController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CreateUserRequest request)
     {
-        if (await _db.Users.AnyAsync(u => u.Username == request.Username && !u.IsDeleted))
-            return BadRequest(ApiResponse.Fail("用户名已存在"));
-
-        var passwordHash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(request.Password)));
-
-        var user = Domain.Entities.User.Create(
-            username: request.Username,
-            displayName: request.DisplayName,
-            passwordHash: passwordHash,
-            email: request.Email,
-            phone: request.Phone,
-            status: request.Status
-        );
-
-        await _repo.AddAsync(user);
-        var dto = new UserDto
-        {
-            Id = user.Id,
-            Username = user.Username,
-            DisplayName = user.DisplayName,
-            Email = user.Email,
-            Phone = user.Phone,
-            Status = user.Status,
-            CreatedAt = user.CreatedAt,
-            CreatedBy = user.CreatedBy,
-            UpdatedAt = user.UpdatedAt,
-            UpdatedBy = user.UpdatedBy
-        };
-        return Ok(ApiResponse.Ok(dto));
+        var created = await _userService.CreateAsync(request);
+        return Ok(ApiResponse.Ok(created));
     }
 
     /// <summary>
@@ -124,21 +56,7 @@ public class UserController : ControllerBase
     [HttpPut("{id}")]
     public async Task<IActionResult> Update(long id, [FromBody] UpdateUserRequest request)
     {
-        var user = await _repo.GetByIdAsync(id);
-        if (user == null || user.IsDeleted)
-            return NotFound(ApiResponse.Fail("用户不存在"));
-
-        if (request.Username != user.Username &&
-            await _db.Users.AnyAsync(u => u.Username == request.Username && !u.IsDeleted && u.Id != id))
-            return BadRequest(ApiResponse.Fail("用户名已存在"));
-
-        user.Username = request.Username;
-        user.DisplayName = request.DisplayName;
-        user.Email = request.Email;
-        user.Phone = request.Phone;
-        user.Status = request.Status;
-
-        await _repo.UpdateAsync(user);
+        await _userService.UpdateAsync(id, request);
         return Ok(ApiResponse.Ok("更新成功"));
     }
 
@@ -148,14 +66,7 @@ public class UserController : ControllerBase
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(long id)
     {
-        var user = await _repo.GetByIdAsync(id);
-        if (user == null || user.IsDeleted)
-            return NotFound(ApiResponse.Fail("用户不存在"));
-
-        if (user.Username == "admin")
-            return BadRequest(ApiResponse.Fail("不能删除超级管理员"));
-
-        await _repo.DeleteAsync(user);
+        await _userService.DeleteAsync(id);
         return Ok(ApiResponse.Ok("删除成功"));
     }
 
@@ -165,12 +76,7 @@ public class UserController : ControllerBase
     [HttpPost("{id}/reset-password")]
     public async Task<IActionResult> ResetPassword(long id, [FromBody] ResetPasswordRequest request)
     {
-        var user = await _repo.GetByIdAsync(id);
-        if (user == null || user.IsDeleted)
-            return NotFound(ApiResponse.Fail("用户不存在"));
-
-        user.PasswordHash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(request.NewPassword)));
-        await _repo.UpdateAsync(user);
+        await _userService.ResetPasswordAsync(id, request.NewPassword);
         return Ok(ApiResponse.Ok("密码已重置"));
     }
 
@@ -180,52 +86,7 @@ public class UserController : ControllerBase
     [HttpPut("{id}/roles")]
     public async Task<IActionResult> AssignRoles(long id, [FromBody] AssignRolesRequest request)
     {
-        var user = await _repo.GetByIdAsync(id);
-        if (user == null || user.IsDeleted)
-            return NotFound(ApiResponse.Fail("用户不存在"));
-
-        var existingRoles = await _db.UserRoles.Where(ur => ur.UserId == id).ToListAsync();
-        _db.UserRoles.RemoveRange(existingRoles);
-
-        foreach (var roleName in request.Roles)
-        {
-            var role = await _db.Roles.FirstOrDefaultAsync(r => r.Name == roleName && !r.IsDeleted);
-            if (role != null)
-            {
-                _db.UserRoles.Add(new UserRole { UserId = id, RoleId = role.Id });
-            }
-        }
-
-        await _db.SaveChangesAsync();
+        await _userService.AssignRolesAsync(id, request.Roles);
         return Ok(ApiResponse.Ok("角色分配成功"));
     }
-}
-
-public class CreateUserRequest
-{
-    public string Username { get; set; } = string.Empty;
-    public string Password { get; set; } = string.Empty;
-    public string DisplayName { get; set; } = string.Empty;
-    public string? Email { get; set; }
-    public string? Phone { get; set; }
-    public bool Status { get; set; } = true;
-}
-
-public class UpdateUserRequest
-{
-    public string Username { get; set; } = string.Empty;
-    public string DisplayName { get; set; } = string.Empty;
-    public string? Email { get; set; }
-    public string? Phone { get; set; }
-    public bool Status { get; set; } = true;
-}
-
-public class ResetPasswordRequest
-{
-    public string NewPassword { get; set; } = string.Empty;
-}
-
-public class AssignRolesRequest
-{
-    public List<string> Roles { get; set; } = [];
 }

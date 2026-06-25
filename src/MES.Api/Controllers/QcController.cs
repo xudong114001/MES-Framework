@@ -3,10 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using MES.Api.Middleware;
 using MES.Application.Dtos;
 using MES.Application.Interfaces;
-using MES.Domain.Entities;
 using MES.Domain.Enums;
-using MES.Domain.Exceptions;
-using MES.Domain.Repositories;
 
 namespace MES.Api.Controllers;
 
@@ -15,17 +12,10 @@ namespace MES.Api.Controllers;
 [Authorize(Roles = "admin,supervisor,inspector")]
 public class QcController : ControllerBase
 {
-    private readonly IRepository<QcInspection> _inspectionRepo;
-    private readonly IRepository<QcInspectionItem> _itemRepo;
     private readonly IQcService _qcService;
 
-    public QcController(
-        IRepository<QcInspection> inspectionRepo,
-        IRepository<QcInspectionItem> itemRepo,
-        IQcService qcService)
+    public QcController(IQcService qcService)
     {
-        _inspectionRepo = inspectionRepo;
-        _itemRepo = itemRepo;
         _qcService = qcService;
     }
 
@@ -45,12 +35,11 @@ public class QcController : ControllerBase
     [HttpGet("inspections/{id}")]
     public async Task<IActionResult> GetInspectionById(long id)
     {
-        var inspection = await _qcService.GetInspectionByIdAsync(id);
-        if (inspection == null)
+        var result = await _qcService.GetInspectionWithItemsAsync(id);
+        if (result == null)
             return NotFound(ApiResponse.Fail("质检单不存在"));
 
-        var items = await _itemRepo.FindAsync(i => i.InspectionId == id);
-        return Ok(ApiResponse.Ok(new { Inspection = inspection, Items = items }));
+        return Ok(ApiResponse.Ok(result));
     }
 
     /// <summary>
@@ -59,22 +48,15 @@ public class QcController : ControllerBase
     [HttpPost("inspections")]
     public async Task<IActionResult> CreateInspection([FromBody] CreateInspectionRequest request)
     {
-        try
-        {
-            var created = await _qcService.CreateInspectionAsync(
-                request.InspectNo,
-                request.SourceType,
-                request.WorkOrderId,
-                request.MaterialId,
-                request.Inspector,
-                request.SourceRef,
-                request.Remark);
-            return Ok(ApiResponse.Ok(created));
-        }
-        catch (DomainException ex)
-        {
-            return BadRequest(ApiResponse.Fail(ex.Message));
-        }
+        var created = await _qcService.CreateInspectionAsync(
+            request.InspectNo,
+            request.SourceType,
+            request.WorkOrderId,
+            request.MaterialId,
+            request.Inspector,
+            request.SourceRef,
+            request.Remark);
+        return Ok(ApiResponse.Ok(created));
     }
 
     /// <summary>
@@ -83,15 +65,8 @@ public class QcController : ControllerBase
     [HttpPost("inspections/{id}/items")]
     public async Task<IActionResult> AddItem(long id, [FromBody] AddItemRequest request)
     {
-        try
-        {
-            var created = await _qcService.AddItemAsync(id, request.ItemName, request.SpecValue);
-            return Ok(ApiResponse.Ok(created));
-        }
-        catch (DomainException ex)
-        {
-            return BadRequest(ApiResponse.Fail(ex.Message));
-        }
+        var created = await _qcService.AddItemAsync(id, request.ItemName, request.SpecValue);
+        return Ok(ApiResponse.Ok(created));
     }
 
     /// <summary>
@@ -100,18 +75,11 @@ public class QcController : ControllerBase
     [HttpPost("inspections/{id}/verify")]
     public async Task<IActionResult> VerifyInspection(long id, [FromBody] VerifyRequest request)
     {
-        try
-        {
-            if (!Enum.TryParse<QcResult>(request.Result, true, out var result))
-                return BadRequest(ApiResponse.Fail($"无效的质检结果: {request.Result}"));
+        if (!Enum.TryParse<QcResult>(request.Result, true, out var result))
+            return BadRequest(ApiResponse.Fail($"无效的质检结果: {request.Result}"));
 
-            await _qcService.VerifyInspectionAsync(id, result);
-            return Ok(ApiResponse.Ok("判定成功"));
-        }
-        catch (DomainException ex)
-        {
-            return BadRequest(ApiResponse.Fail(ex.Message));
-        }
+        await _qcService.VerifyInspectionAsync(id, result);
+        return Ok(ApiResponse.Ok("判定成功"));
     }
 
     /// <summary>
@@ -120,15 +88,8 @@ public class QcController : ControllerBase
     [HttpPost("inspections/{id}/handle-nonconforming")]
     public async Task<IActionResult> HandleNonconforming(long id, [FromBody] HandleNonconformingRequest request)
     {
-        try
-        {
-            await _qcService.HandleNonconformingAsync(id, request.Action, request.Remark);
-            return Ok(ApiResponse.Ok("处理成功"));
-        }
-        catch (DomainException ex)
-        {
-            return BadRequest(ApiResponse.Fail(ex.Message));
-        }
+        await _qcService.HandleNonconformingAsync(id, request.Action, request.Remark);
+        return Ok(ApiResponse.Ok("处理成功"));
     }
 
     /// <summary>
@@ -137,24 +98,8 @@ public class QcController : ControllerBase
     [HttpGet("dashboard/stats")]
     public async Task<IActionResult> GetDashboardStats()
     {
-        var todayStart = DateTime.UtcNow.Date;
-        var todayEnd = todayStart.AddDays(1);
-
-        var allInspections = await _inspectionRepo.GetAllAsync();
-        var todayInspections = allInspections.Where(i => i.CreatedAt >= todayStart && i.CreatedAt < todayEnd).ToList();
-
-        var total = todayInspections.Count;
-        var passed = todayInspections.Count(i => i.InspectResult == QcResult.PASS);
-        var failed = todayInspections.Count(i => i.InspectResult == QcResult.FAIL);
-        var pending = todayInspections.Count(i => i.InspectResult == QcResult.PENDING);
-
-        return Ok(ApiResponse.Ok(new
-        {
-            total,
-            passed,
-            failed,
-            pending
-        }));
+        var stats = await _qcService.GetDashboardStatsAsync();
+        return Ok(ApiResponse.Ok(stats));
     }
 
     /// <summary>

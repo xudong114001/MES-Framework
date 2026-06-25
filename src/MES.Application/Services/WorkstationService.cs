@@ -13,10 +13,16 @@ public class WorkstationService : IWorkstationService
 
     private static WorkstationDto MapToDto(Workstation entity) => new()
     {
-        Id = entity.Id, LineId = entity.LineId, Code = entity.Code, Name = entity.Name,
-        SeqNo = entity.SeqNo, Status = entity.Status,
-        CreatedAt = entity.CreatedAt, CreatedBy = entity.CreatedBy,
-        UpdatedAt = entity.UpdatedAt, UpdatedBy = entity.UpdatedBy
+        Id = entity.Id,
+        LineId = entity.LineId,
+        Code = entity.Code,
+        Name = entity.Name,
+        SeqNo = entity.SeqNo,
+        Status = entity.Status,
+        CreatedAt = entity.CreatedAt,
+        CreatedBy = entity.CreatedBy,
+        UpdatedAt = entity.UpdatedAt,
+        UpdatedBy = entity.UpdatedBy
     };
 
     public async Task<IEnumerable<WorkstationDto>> GetAllAsync()
@@ -48,8 +54,12 @@ public class WorkstationService : IWorkstationService
         var existing = await _repo.GetByIdAsync(id);
         if (existing == null)
             throw new Domain.Exceptions.DomainException("工位不存在");
-        entity.Id = id;
-        await _repo.UpdateAsync(entity);
+        existing.LineId = entity.LineId;
+        existing.Code = entity.Code;
+        existing.Name = entity.Name;
+        existing.SeqNo = entity.SeqNo;
+        existing.Status = entity.Status;
+        await _repo.UpdateAsync(existing);
     }
 
     public async Task DeleteAsync(long id)
