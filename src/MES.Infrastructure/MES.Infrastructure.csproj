@@ -3,7 +3,6 @@
   <ItemGroup>
     <ProjectReference Include="..\MES.Domain\MES.Domain.csproj" />
     <ProjectReference Include="..\MES.Application\MES.Application.csproj" />
-    <ProjectReference Include="..\MES.AI.Domain\MES.AI.Domain.csproj" />
   </ItemGroup>
 
   <ItemGroup>

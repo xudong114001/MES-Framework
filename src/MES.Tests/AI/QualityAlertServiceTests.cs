@@ -1,6 +1,4 @@
-using MES.AI.Application.Services;
-using MES.AI.Domain.Entities;
-using MES.AI.Domain.Enums;
+using MES.Application.Services;
 using MES.Domain.Entities;
 using MES.Domain.Enums;
 using MES.Domain.Repositories;
