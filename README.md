@@ -2,7 +2,7 @@
 
 [![.NET](https://img.shields.io/badge/.NET-10.0-blue)](https://dotnet.microsoft.com/)
 [![Vue 3](https://img.shields.io/badge/Vue-3.4+-42b883)](https://vuejs.org/)
-[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+[![License](https://img.shields.io/badge/license-Apache_2.0-blue.svg)](LICENSE)
 
 通用、可扩展的 MES 系统基础框架，面向中小型制造企业生产管理。
 
