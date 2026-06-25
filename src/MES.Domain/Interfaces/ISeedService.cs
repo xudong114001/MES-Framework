@@ -1,4 +1,4 @@
-namespace MES.Application.Interfaces;
+namespace MES.Domain.Interfaces;
 
 public interface ISeedService
 {
