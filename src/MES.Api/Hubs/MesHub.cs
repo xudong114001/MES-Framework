@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.SignalR;
-using MES.AI.Domain.Entities;
+using MES.Domain.Entities;
 using MES.Domain.Enums;
 
 namespace MES.Api.Hubs;

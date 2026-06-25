@@ -159,6 +159,7 @@ public class WebTestFactory : IAsyncLifetime
             "mes_material", "mes_role_permission", "mes_user_role", "mes_role", "mes_user"
         };
 
+#pragma warning disable EF1002
         foreach (var table in tableNames)
         {
             try
@@ -170,6 +171,7 @@ public class WebTestFactory : IAsyncLifetime
                 // 表可能不存在，忽略
             }
         }
+#pragma warning restore EF1002
     }
 
     /// <summary>

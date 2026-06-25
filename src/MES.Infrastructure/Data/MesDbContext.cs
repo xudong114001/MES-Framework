@@ -1,6 +1,5 @@
 using Microsoft.EntityFrameworkCore;
 using MES.Domain.Entities;
-using MES.AI.Domain.Entities;
 
 namespace MES.Infrastructure.Data;
 

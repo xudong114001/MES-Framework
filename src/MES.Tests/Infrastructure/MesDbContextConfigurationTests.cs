@@ -1,5 +1,4 @@
 using Microsoft.EntityFrameworkCore;
-using MES.AI.Domain.Entities;
 using MES.Domain.Entities;
 using MES.Infrastructure.Data;
 using MES.Tests;

@@ -1,8 +1,6 @@
 using MES.Domain.Entities;
 using MES.Domain.Enums;
 using MES.Domain.ValueObjects;
-using MES.AI.Domain.Entities;
-using MES.AI.Domain.Enums;
 using System.Reflection;
 
 namespace MES.Tests;

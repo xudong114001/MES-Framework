@@ -13,8 +13,6 @@ using MES.Infrastructure.Data;
 using MES.Infrastructure.Extensions;
 using MES.Integration;
 using MES.Integration.EventBus;
-using MES.AI.Application.Interfaces;
-using MES.AI.Application.Services;
 using MES.Integration.Adapters;
 using Microsoft.OpenApi;
 using Serilog;
