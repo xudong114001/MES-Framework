@@ -4,6 +4,7 @@ using MES.Domain.Entities;
 using MES.Domain.Enums;
 using MES.Domain.Exceptions;
 using MES.Domain.Repositories;
+using MES.Domain.ValueObjects;
 using MES.Application.Integration.Events;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -135,7 +136,7 @@ public class QcServiceTests
     public async Task HandleNonconformingAsync_WithScrap_UpdatesWorkOrder()
     {
         var inspection = CreateInspection(1, QcResult.FAIL);
-        var workOrder = WorkOrder.Create("WO-001", SourceType.MANUAL, 10, 100);
+        var workOrder = WorkOrder.Create("WO-001", SourceType.MANUAL, 10, new Quantity(100));
 
         _inspectionRepo.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(inspection);
         _inspectionRepo.Setup(r => r.UpdateAsync(It.IsAny<QcInspection>())).Returns(Task.CompletedTask);
@@ -144,14 +145,14 @@ public class QcServiceTests
 
         await _service.HandleNonconformingAsync(1, InspectionResult.SCRAP, "报废处理");
 
-        Assert.Equal(1, workOrder.ScrapQty);
+        Assert.Equal(1, workOrder.ScrapQty.Value);
     }
 
     [Fact]
     public async Task HandleNonconformingAsync_WithRework_ResumesWorkOrder()
     {
         var inspection = CreateInspection(1, QcResult.FAIL);
-        var workOrder = WorkOrder.Create("WO-001", SourceType.MANUAL, 10, 100);
+        var workOrder = WorkOrder.Create("WO-001", SourceType.MANUAL, 10, new Quantity(100));
         workOrder.Release();
         workOrder.Start();
         workOrder.Complete();
@@ -176,18 +177,20 @@ public class QcServiceTests
             _service.HandleNonconformingAsync(1, InspectionResult.SCRAP, ""));
     }
 
-    // 测试辅助扩展方法
-    public static class QcInspectionTestExtensions
-    {
-        public static void SetIdForTest(this QcInspection inspection, long id)
-        {
-            var prop = typeof(BaseEntity).GetProperty("Id");
-            prop?.SetValue(inspection, id);
-        }
+}
 
-        public static void SetSourceRefForTest(this QcInspection inspection, string sourceRef)
-        {
-            var prop = typeof(QcInspection).GetProperty("SourceRef");
-            prop?.SetValue(inspection, sourceRef);
-        }
+// 测试辅助扩展方法
+public static class QcInspectionTestExtensions
+{
+    public static void SetIdForTest(this QcInspection inspection, long id)
+    {
+        var prop = typeof(BaseEntity).GetProperty("Id");
+        prop?.SetValue(inspection, id);
     }
+
+    public static void SetSourceRefForTest(this QcInspection inspection, string sourceRef)
+    {
+        var prop = typeof(QcInspection).GetProperty("SourceRef");
+        prop?.SetValue(inspection, sourceRef);
+    }
+}

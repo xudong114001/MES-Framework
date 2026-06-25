@@ -46,13 +46,10 @@ public class SchedulingServiceTests
 
     private ProductionLine CreateLine(long id, bool status = true)
     {
-        return new ProductionLine
-        {
-            Id = id,
-            Code = $"LINE-{id}",
-            Name = $"产线 {id}",
-            Status = status
-        };
+        var line = ProductionLine.Create($"LINE-{id}", $"产线 {id}", 1, LineType.FLOW);
+        TestEntityFactory.SetProperty(line, "Id", id);
+        TestEntityFactory.SetProperty(line, "Status", status);
+        return line;
     }
 
     [Fact]

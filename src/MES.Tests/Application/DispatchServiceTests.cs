@@ -44,15 +44,14 @@ public class DispatchServiceTests
 
     private Workstation CreateWorkstation(long id, long lineId, bool status = true)
     {
-        return new Workstation
-        {
-            Id = id,
-            Code = $"WS-{id}",
-            Name = $"工位 {id}",
-            LineId = lineId,
-            Status = status,
-            SeqNo = (int)id
-        };
+        return TestEntityFactory.CreateWorkstationDirect(
+            id: id,
+            lineId: lineId,
+            code: $"WS-{id}",
+            name: $"工位 {id}",
+            seqNo: (int)id,
+            status: status
+        );
     }
 
     private WorkOrder CreateWorkOrder(long id, WorkOrderStatus status = WorkOrderStatus.SCHEDULED, Priority priority = Priority.NORMAL)

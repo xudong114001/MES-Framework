@@ -33,7 +33,7 @@ public class MesDbContextConfigurationTests
         // Assert
         Assert.Single(workOrders);
         Assert.Equal("WO-TEST-001", workOrders[0].OrderNo);
-        Assert.Equal(100, workOrders[0].PlannedQty);
+        Assert.Equal(100, workOrders[0].PlannedQty.Value);
     }
 
     [Fact]

@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Logging;
+using MES.Domain.Enums;
 using MES.Integration.Adapters;
 using MES.Integration.Dtos;
 using MES.Integration.EventBus;
@@ -267,7 +268,7 @@ public class P5IntegrationTests : IDisposable
             OrderNo = "WO-001",
             MaterialCode = "M-001",
             PlannedQty = 100,
-            Priority = 1
+            Priority = Priority.Normal
         };
 
         Assert.Equal("WO-001", dto.OrderNo);

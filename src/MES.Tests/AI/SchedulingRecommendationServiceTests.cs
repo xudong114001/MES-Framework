@@ -34,6 +34,14 @@ public class SchedulingRecommendationServiceTests
             _workstationRepo.Object);
     }
 
+    private ProductionLine CreateLine(long id, string name, bool status)
+    {
+        var line = ProductionLine.Create($"LINE-{id}", name, 1, LineType.FLOW);
+        TestEntityFactory.SetProperty(line, "Id", id);
+        TestEntityFactory.SetProperty(line, "Status", status);
+        return line;
+    }
+
     [Fact]
     public async Task GetRecommendationsAsync_ReturnsEmpty_WhenNoActiveLines()
     {
@@ -71,8 +79,8 @@ public class SchedulingRecommendationServiceTests
 
         var lines = new List<ProductionLine>
         {
-            new() { Id = 1, Name = "Line1", Status = true },
-            new() { Id = 2, Name = "Line2", Status = true }
+            CreateLine(1, "Line1", true),
+            CreateLine(2, "Line2", true)
         };
 
         _workOrderRepo.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(workOrder);

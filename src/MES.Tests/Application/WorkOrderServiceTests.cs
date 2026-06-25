@@ -114,8 +114,8 @@ public class WorkOrderServiceTests
 
         var result = await _service.CreateWorkOrderAsync(wo);
 
-        Assert.Equal(0, result.CompletedQty);
-        Assert.Equal(0, result.ScrapQty);
+        Assert.Equal(0, result.CompletedQty.Value);
+        Assert.Equal(0, result.ScrapQty.Value);
     }
 
     [Fact]
@@ -338,8 +338,8 @@ public class WorkOrderServiceTests
 
         var child = await _service.SplitWorkOrderAsync(wo.Id, 30);
 
-        Assert.Equal(70, wo.PlannedQty);
-        Assert.Equal(30, child.PlannedQty);
+        Assert.Equal(70, wo.PlannedQty.Value);
+        Assert.Equal(30, child.PlannedQty.Value);
         Assert.Equal("WO-001-SUB", child.OrderNo);
         Assert.Equal(WorkOrderStatus.PENDING, child.Status);
     }
@@ -385,8 +385,8 @@ public class WorkOrderServiceTests
 
         var child = await _service.ReworkWorkOrderAsync(wo.Id, 20, "quality issue");
 
-        Assert.Equal(30, wo.CompletedQty);
-        Assert.Equal(20, child.PlannedQty);
+        Assert.Equal(30, wo.CompletedQty.Value);
+        Assert.Equal(20, child.PlannedQty.Value);
         Assert.Equal("WO-001-RWK", child.OrderNo);
         Assert.Equal(WorkOrderStatus.PENDING, child.Status);
         Assert.Equal(wo.Id, child.ReworkFromId);
@@ -425,7 +425,7 @@ public class WorkOrderServiceTests
 
         await _service.ScrapWorkOrderAsync(wo.Id, 20, "defective");
 
-        Assert.Equal(30, wo.ScrapQty);
+        Assert.Equal(30, wo.ScrapQty.Value);
         Assert.Equal("defective", wo.Remark);
     }
 
@@ -501,8 +501,8 @@ public class WorkOrderServiceTests
 
         var child = await _service.ReworkWorkOrderAsync(wo.Id, 10, null);
 
-        Assert.Equal(20, wo.CompletedQty);
-        Assert.Equal(10, child.PlannedQty);
+        Assert.Equal(20, wo.CompletedQty.Value);
+        Assert.Equal(10, child.PlannedQty.Value);
         Assert.Equal("WO-002-RWK", child.OrderNo);
     }
 }

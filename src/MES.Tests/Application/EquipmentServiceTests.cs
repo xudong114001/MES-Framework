@@ -3,6 +3,7 @@ using MES.Domain.Entities;
 using MES.Domain.Enums;
 using MES.Domain.Exceptions;
 using MES.Domain.Repositories;
+using MES.Tests;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
@@ -101,8 +102,8 @@ public class EquipmentServiceTests
         var eq = CreateEquipment(1);
         var reports = new List<WorkReport>
         {
-            new() { Id = 1, WorkOrderId = 100, GoodQty = 100, ScrapQty = 5, ReworkQty = 2, DurationMin = 480, ReportTime = DateTime.UtcNow.AddDays(-5) },
-            new() { Id = 2, WorkOrderId = 100, GoodQty = 90, ScrapQty = 3, ReworkQty = 1, DurationMin = 450, ReportTime = DateTime.UtcNow.AddDays(-3) }
+            TestEntityFactory.CreateWorkReportDirect(id: 1, workOrderId: 100, goodQty: 100, scrapQty: 5, reworkQty: 2, durationMin: 480, reportTime: DateTime.UtcNow.AddDays(-5)),
+            TestEntityFactory.CreateWorkReportDirect(id: 2, workOrderId: 100, goodQty: 90, scrapQty: 3, reworkQty: 1, durationMin: 450, reportTime: DateTime.UtcNow.AddDays(-3))
         };
 
         _equipmentRepo.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(eq);

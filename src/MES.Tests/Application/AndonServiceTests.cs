@@ -3,6 +3,7 @@ using MES.Application.Services;
 using MES.Domain.Entities;
 using MES.Domain.Enums;
 using MES.Domain.Repositories;
+using MES.Tests;
 using Moq;
 using Xunit;
 
@@ -21,17 +22,17 @@ public class AndonServiceTests
 
     private AndonEvent CreateEvent(long id, bool resolved = false)
     {
-        return new AndonEvent
-        {
-            Id = id,
-            EventType = AndonEventType.EQUIPMENT_FAULT,
-            Level = AndonEventLevel.Warning,
-            Title = $"异常 {id}",
-            TriggeredAt = DateTime.UtcNow.AddHours(-id),
-            ResolvedAt = resolved ? DateTime.UtcNow : null,
-            ResolvedById = resolved ? 1 : null,
-            ResolvedByName = resolved ? "张三" : null
-        };
+        var evt = TestEntityFactory.CreateAndonEventDirect(
+            id: id,
+            eventType: AndonEventType.EQUIPMENT_FAULT,
+            level: AndonEventLevel.Warning,
+            title: $"异常 {id}",
+            triggeredAt: DateTime.UtcNow.AddHours(-id),
+            resolvedAt: resolved ? DateTime.UtcNow : null,
+            resolvedById: resolved ? 1 : null,
+            resolvedByName: resolved ? "张三" : null
+        );
+        return evt;
     }
 
     [Fact]
@@ -107,9 +108,9 @@ public class AndonServiceTests
     {
         var events = new List<AndonEvent>
         {
-            new AndonEvent { Id = 1, EventType = AndonEventType.EQUIPMENT_FAULT, Title = "设备故障" },
-            new AndonEvent { Id = 2, EventType = AndonEventType.QUALITY_ALARM, Title = "质量异常" },
-            new AndonEvent { Id = 3, EventType = AndonEventType.EQUIPMENT_FAULT, Title = "设备故障2" }
+            TestEntityFactory.CreateAndonEventDirect(id: 1, eventType: AndonEventType.EQUIPMENT_FAULT, title: "设备故障"),
+            TestEntityFactory.CreateAndonEventDirect(id: 2, eventType: AndonEventType.QUALITY_ALARM, title: "质量异常"),
+            TestEntityFactory.CreateAndonEventDirect(id: 3, eventType: AndonEventType.EQUIPMENT_FAULT, title: "设备故障2")
         };
 
         _repository.Setup(r => r.FindAsync(It.IsAny<System.Linq.Expressions.Expression<Func<AndonEvent, bool>>>()))
@@ -241,9 +242,9 @@ public class AndonServiceTests
     {
         var events = new List<AndonEvent>
         {
-            new AndonEvent { Id = 1, EventType = AndonEventType.EQUIPMENT_FAULT },
-            new AndonEvent { Id = 2, EventType = AndonEventType.EQUIPMENT_FAULT },
-            new AndonEvent { Id = 3, EventType = AndonEventType.QUALITY_ALARM }
+            TestEntityFactory.CreateAndonEventDirect(id: 1, eventType: AndonEventType.EQUIPMENT_FAULT),
+            TestEntityFactory.CreateAndonEventDirect(id: 2, eventType: AndonEventType.EQUIPMENT_FAULT),
+            TestEntityFactory.CreateAndonEventDirect(id: 3, eventType: AndonEventType.QUALITY_ALARM)
         };
 
         _repository.Setup(r => r.FindAsync(It.IsAny<System.Linq.Expressions.Expression<Func<AndonEvent, bool>>>()))
