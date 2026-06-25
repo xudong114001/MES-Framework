@@ -109,6 +109,7 @@ public abstract class IntegrationTestBase : IAsyncLifetime
             "mes_material", "mes_user"
         };
 
+#pragma warning disable EF1002
         foreach (var table in tableNames)
         {
             try
@@ -120,6 +121,7 @@ public abstract class IntegrationTestBase : IAsyncLifetime
                 // 表可能不存在，忽略
             }
         }
+#pragma warning restore EF1002
     }
 
     /// <summary>
