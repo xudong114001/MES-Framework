@@ -71,13 +71,15 @@ services:
     ports:
       - "5180:5180"
     environment:
-      - ConnectionStrings__DefaultConnection=Host=mes-postgres;Database=mes_db;Username=mes_user;Password=Mes@2026!
+      - ConnectionStrings__MesDb=Host=mes-postgres;Database=mes_db;Username=mes_user;Password=Mes@2026!
       - ConnectionStrings__Redis=mes-redis:6379
-      - ConnectionStrings__RabbitMQ=mes-rabbitmq:5672
+      - ConnectionStrings__RabbitMQ=host=mes-rabbitmq;username=mes_user;password=Mes@2026!
     depends_on:
       mes-postgres:
         condition: service_healthy
       mes-redis:
+        condition: service_healthy
+      mes-rabbitmq:
         condition: service_healthy
     restart: unless-stopped
     networks:

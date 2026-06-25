@@ -63,11 +63,10 @@
         </el-form-item>
         <el-form-item label="检查类型" prop="checkType">
           <el-select v-model="form.checkType" placeholder="请选择检查类型" style="width:100%">
-            <el-option label="首检" value="FIRST_PIECE" />
-            <el-option label="抽检" value="SPOT_CHECK" />
-            <el-option label="全检" value="FULL_INSPECTION" />
+            <el-option label="来料检" value="INCOMING" />
+            <el-option label="首件检" value="FIRST" />
             <el-option label="巡检" value="PATROL" />
-            <el-option label="末检" value="FINAL_PIECE" />
+            <el-option label="完工检" value="FINAL" />
           </el-select>
         </el-form-item>
         <el-form-item label="强制检查">
@@ -89,6 +88,7 @@
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { qcCheckpointApi } from '../../api/qc-checkpoint'
+import { routingApi } from '../../api/routing'
 
 const loading = ref(false)
 const list = ref<any[]>([])
@@ -109,7 +109,7 @@ const formRef = ref()
 const form = reactive({
   routingId: undefined as number | undefined,
   stepId: undefined as number | undefined,
-  checkType: 'SPOT_CHECK',
+  checkType: 'PATROL',
   isMandatory: false,
   remark: ''
 })
@@ -121,30 +121,30 @@ const formRules = {
 
 function checkTypeLabel(type: string): string {
   const map: Record<string, string> = {
-    FIRST_PIECE: '首检', SPOT_CHECK: '抽检',
-    FULL_INSPECTION: '全检', PATROL: '巡检', FINAL_PIECE: '末检'
+    INCOMING: '来料检', FIRST: '首件检',
+    PATROL: '巡检', FINAL: '完工检'
   }
   return map[type] || type
 }
 
 function checkTypeTag(type: string): string {
   const map: Record<string, string> = {
-    FIRST_PIECE: '', SPOT_CHECK: 'primary',
-    FULL_INSPECTION: 'success', PATROL: 'warning', FINAL_PIECE: 'info'
+    INCOMING: '', FIRST: 'primary',
+    PATROL: 'warning', FINAL: 'info'
   }
   return map[type] || ''
 }
 
 async function loadRoutings() {
   try {
-    const res: any = await fetch('/api/v1/routings').then(r => r.json())
+    const res: any = await routingApi.list()
     routings.value = res.data || []
   } catch {}
 }
 
 async function loadStepsByRouting(routingId: number): Promise<any[]> {
   try {
-    const res: any = await fetch(`/api/v1/routings/${routingId}/steps`).then(r => r.json())
+    const res: any = await routingApi.getSteps(routingId)
     return res.data || []
   } catch {
     return []
@@ -209,7 +209,7 @@ async function handleSubmit() {
 function resetForm() {
   form.routingId = undefined
   form.stepId = undefined
-  form.checkType = 'SPOT_CHECK'
+  form.checkType = 'PATROL'
   form.isMandatory = false
   form.remark = ''
   formSteps.value = []

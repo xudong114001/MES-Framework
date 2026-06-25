@@ -18,5 +18,6 @@ export const routingApi = {
   create(data: Routing) { return http.post('/routings', data) },
   update(id: number, data: Routing) { return http.put(`/routings/${id}`, data) },
   delete(id: number) { return http.delete(`/routings/${id}`) },
-  listByMaterial(materialId: number) { return http.get(`/routings/by-material/${materialId}`) }
+  listByMaterial(materialId: number) { return http.get(`/routings/by-material/${materialId}`) },
+  getSteps(id: number) { return http.get(`/routings/${id}/steps`) }
 }

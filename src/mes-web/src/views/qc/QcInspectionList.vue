@@ -39,8 +39,8 @@
         <el-form-item label="来源类型" prop="sourceType">
           <el-select v-model="createForm.sourceType" style="width: 100%">
             <el-option label="来料检" value="INCOMING" />
-            <el-option label="首件检" value="FIRST_ARTICLE" />
-            <el-option label="过程检" value="IN_PROCESS" />
+            <el-option label="首件检" value="FIRST" />
+            <el-option label="巡检" value="PATROL" />
             <el-option label="完工检" value="FINAL" />
           </el-select>
         </el-form-item>
@@ -191,7 +191,7 @@ const itemRules = {
 }
 
 function sourceTypeLabel(type?: string) {
-  const map: Record<string, string> = { INCOMING: '来料检', FIRST_ARTICLE: '首件检', IN_PROCESS: '过程检', FINAL: '完工检' }
+  const map: Record<string, string> = { INCOMING: '来料检', FIRST: '首件检', PATROL: '巡检', FINAL: '完工检' }
   return map[type || ''] || type || '未知'
 }
 

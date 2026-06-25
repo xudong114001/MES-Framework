@@ -177,6 +177,8 @@ import { workOrderApi } from '../../api/work-order'
 import { workReportApi } from '../../api/work-report'
 import type { WorkOrder } from '../../api/work-order'
 import { materialApi } from '../../api/material'
+import { routingApi } from '../../api/routing'
+import { productionLineApi } from '../../api/production-line'
 
 const route = useRoute()
 const router = useRouter()
@@ -353,7 +355,7 @@ function materialSearch(query: string) {
 async function onMaterialChange(materialId: number) {
   if (!materialId) { routings.value = []; return }
   try {
-    const res: any = await fetch(`/api/v1/routings/by-material/${materialId}`).then(r => r.json())
+    const res: any = await routingApi.listByMaterial(materialId)
     routings.value = res.data || []
   } catch {
     routings.value = []
@@ -362,7 +364,7 @@ async function onMaterialChange(materialId: number) {
 
 async function loadLines() {
   try {
-    const res: any = await fetch('/api/v1/production-lines').then(r => r.json())
+    const res: any = await productionLineApi.list()
     lines.value = res.data || []
   } catch {}
 }

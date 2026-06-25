@@ -2,7 +2,7 @@ using MES.Domain.Enums;
 
 namespace MES.Domain.Entities;
 
-public class AlertRule
+public class AlertRule : BaseEntity
 {
     public string Name { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;

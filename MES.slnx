@@ -6,7 +6,5 @@
     <Project Path="src/MES.Infrastructure/MES.Infrastructure.csproj" />
     <Project Path="src/MES.Tests/MES.Tests.csproj" />
     <Project Path="src/MES.Integration/MES.Integration.csproj" />
-    <Project Path="src/MES.AI.Domain/MES.AI.Domain.csproj" />
-    <Project Path="src/MES.AI.Application/MES.AI.Application.csproj" />
   </Folder>
 </Solution>
