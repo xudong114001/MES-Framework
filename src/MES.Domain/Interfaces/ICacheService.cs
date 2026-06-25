@@ -12,4 +12,14 @@ public interface ICacheService
     /// 防重复提交：仅当 key 不存在时设置值并返回 true，否则返回 false
     /// </summary>
     Task<bool> SetIfNotExistsAsync(string key, TimeSpan expiry);
+
+    /// <summary>
+    /// 自增计数器并返回自增后的值
+    /// </summary>
+    Task<long> IncrementAsync(string key);
+
+    /// <summary>
+    /// 设置 key 的过期时间
+    /// </summary>
+    Task SetExpiryAsync(string key, TimeSpan expiry);
 }

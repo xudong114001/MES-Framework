@@ -2,6 +2,7 @@ using MES.Application.Dtos;
 using MES.Application.Interfaces;
 using MES.Domain.Entities;
 using MES.Domain.Repositories;
+using MES.Domain.ValueObjects;
 
 namespace MES.Application.Services;
 
@@ -52,7 +53,7 @@ public class BomService : IBomService
         {
             ProductId = request.ProductId,
             MaterialId = request.MaterialId,
-            Quantity = request.Quantity,
+            Quantity = new Quantity(request.Quantity),
             ScrapRate = request.ScrapRate,
             SeqNo = request.SeqNo,
             ValidFrom = request.ValidFrom,
@@ -70,7 +71,7 @@ public class BomService : IBomService
             throw new Domain.Exceptions.DomainException("BOM明细不存在");
         existing.ProductId = request.ProductId;
         existing.MaterialId = request.MaterialId;
-        existing.Quantity = request.Quantity;
+        existing.Quantity = new Quantity(request.Quantity);
         existing.ScrapRate = request.ScrapRate;
         existing.SeqNo = request.SeqNo;
         existing.ValidFrom = request.ValidFrom;

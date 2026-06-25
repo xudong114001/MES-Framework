@@ -6,25 +6,20 @@ using MES.Domain.Entities;
 using MES.Domain.Enums;
 using MES.Domain.Exceptions;
 using MES.Domain.Repositories;
-using MES.Infrastructure.Data;
-using Microsoft.EntityFrameworkCore;
 
 namespace MES.Application.Services;
 
 public class UserService : IUserService
 {
-    private readonly IRepository<User> _userRepo;
+    private readonly IUserRepository _userRepo;
     private readonly IRepository<Role> _roleRepo;
-    private readonly MesDbContext _db;
 
     public UserService(
-        IRepository<User> userRepo,
-        IRepository<Role> roleRepo,
-        MesDbContext db)
+        IUserRepository userRepo,
+        IRepository<Role> roleRepo)
     {
         _userRepo = userRepo;
         _roleRepo = roleRepo;
-        _db = db;
     }
 
     private static UserDto MapToDto(User entity) => new()
@@ -44,46 +39,15 @@ public class UserService : IUserService
 
     public async Task<IEnumerable<UserDto>> GetAllAsync()
     {
-        var list = await _db.Users
-            .Where(u => !u.IsDeleted)
-            .Select(u => new UserDto
-            {
-                Id = u.Id,
-                Username = u.Username,
-                DisplayName = u.DisplayName,
-                Email = u.Email,
-                Phone = u.Phone,
-                Status = u.Status,
-                LastLoginTime = u.LastLoginTime,
-                CreatedAt = u.CreatedAt,
-                CreatedBy = u.CreatedBy,
-                UpdatedAt = u.UpdatedAt,
-                UpdatedBy = u.UpdatedBy
-            })
-            .ToListAsync();
-        return list;
+        var list = await _userRepo.GetAllAsync();
+        return list.Where(u => !u.IsDeleted).Select(MapToDto);
     }
 
     public async Task<UserDto?> GetByIdAsync(long id)
     {
-        var user = await _db.Users
-            .Where(u => u.Id == id && !u.IsDeleted)
-            .Select(u => new UserDto
-            {
-                Id = u.Id,
-                Username = u.Username,
-                DisplayName = u.DisplayName,
-                Email = u.Email,
-                Phone = u.Phone,
-                Status = u.Status,
-                LastLoginTime = u.LastLoginTime,
-                CreatedAt = u.CreatedAt,
-                CreatedBy = u.CreatedBy,
-                UpdatedAt = u.UpdatedAt,
-                UpdatedBy = u.UpdatedBy
-            })
-            .FirstOrDefaultAsync();
-        return user;
+        var user = await _userRepo.GetByIdAsync(id);
+        if (user == null || user.IsDeleted) return null;
+        return MapToDto(user);
     }
 
     public async Task<UserDto> CreateAsync(CreateUserRequest request)
@@ -164,26 +128,11 @@ public class UserService : IUserService
         if (user == null || user.IsDeleted)
             throw new DomainException("用户不存在");
 
-        var existingRoles = await _db.UserRoles.Where(ur => ur.UserId == id).ToListAsync();
-        _db.UserRoles.RemoveRange(existingRoles);
-
-        foreach (var roleName in roles)
-        {
-            var role = await _db.Roles.FirstOrDefaultAsync(r => r.Name == roleName && !r.IsDeleted);
-            if (role != null)
-            {
-                _db.UserRoles.Add(new UserRole { UserId = id, RoleId = role.Id });
-            }
-        }
-
-        await _db.SaveChangesAsync();
+        await _userRepo.AssignRolesAsync(id, roles);
     }
 
     public async Task<bool> ExistsAsync(string username, long? excludeId = null)
     {
-        var query = _db.Users.Where(u => u.Username == username && !u.IsDeleted);
-        if (excludeId.HasValue)
-            query = query.Where(u => u.Id != excludeId.Value);
-        return await query.AnyAsync();
+        return await _userRepo.ExistsByUsernameAsync(username, excludeId);
     }
 }

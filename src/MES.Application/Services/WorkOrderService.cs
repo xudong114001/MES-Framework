@@ -120,7 +120,7 @@ public class WorkOrderService : IWorkOrderService
             sourceType: request.SourceType,
             materialId: request.MaterialId,
             plannedQty: new Quantity(request.PlannedQty),
-            priority: request.Priority,
+            priority: (Priority)request.Priority,
             routingId: request.RoutingId,
             sourceRef: request.SourceRef,
             planStartTime: request.PlanStartTime,
@@ -145,12 +145,13 @@ public class WorkOrderService : IWorkOrderService
             throw new DomainException("工单不存在");
 
         existing.UpdatePlannedTimes(request.PlanStartTime, request.PlanEndTime);
-        existing.Priority = request.Priority;
-        existing.Assignee = request.Assignee;
-        existing.Remark = request.Remark;
-        existing.FactoryId = request.FactoryId;
-        existing.WorkshopId = request.WorkshopId;
-        existing.LineId = request.LineId;
+        existing.UpdateBasicInfo(
+            priority: (Priority)request.Priority,
+            assignee: request.Assignee,
+            remark: request.Remark,
+            factoryId: request.FactoryId,
+            workshopId: request.WorkshopId,
+            lineId: request.LineId);
 
         await _workOrderRepo.UpdateAsync(existing);
     }
@@ -186,7 +187,7 @@ public class WorkOrderService : IWorkOrderService
                 var component = await _materialRepo.GetByIdAsync(bomItem.MaterialId);
                 if (component == null) continue;
 
-                var requiredQty = bomItem.Quantity * workOrder.PlannedQty;
+                var requiredQty = bomItem.Quantity.Value * workOrder.PlannedQty.Value;
                 if (component.StockQty < requiredQty)
                 {
                     throw new DomainException(

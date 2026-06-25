@@ -6,6 +6,7 @@ using MES.Domain.Entities;
 using MES.Domain.Enums;
 using MES.Domain.Exceptions;
 using MES.Domain.Repositories;
+using MES.Domain.ValueObjects;
 
 namespace MES.Application.Services;
 
@@ -258,7 +259,7 @@ public class QcService : IQcService
         if (wo == null) return;
 
         // 使用领域方法增加报废数量
-        wo.AddScrap(1); // 增加一个单位的报废数量
+        wo.AddScrap(new Quantity(1)); // 增加一个单位的报废数量
         await _workOrderRepo1.UpdateAsync(wo);
     }
 

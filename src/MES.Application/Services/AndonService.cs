@@ -1,6 +1,6 @@
-using Microsoft.EntityFrameworkCore;
 using MES.Application.Interfaces;
 using MES.Domain.Entities;
+using MES.Domain.Enums;
 using MES.Domain.Repositories;
 
 namespace MES.Application.Services;
@@ -35,7 +35,7 @@ public class AndonService : IAndonService
         int page = 1,
         int pageSize = 20,
         bool? isResolved = null,
-        Domain.Entities.AndonEventType? eventType = null)
+        AndonEventType? eventType = null)
     {
         var all = await _repository.FindAsync(e => true);
 
@@ -65,8 +65,8 @@ public class AndonService : IAndonService
 
     /// <summary>触发一个新的异常事件</summary>
     public async Task<AndonEvent> TriggerEventAsync(
-        Domain.Entities.AndonEventType eventType,
-        Domain.Entities.AndonEventLevel level,
+        AndonEventType eventType,
+        AndonEventLevel level,
         string title,
         string? description = null,
         long? workstationId = null,
@@ -132,7 +132,7 @@ public class AndonService : IAndonService
     }
 
     /// <summary>按类型统计未解决事件数量</summary>
-    public async Task<Dictionary<Domain.Entities.AndonEventType, int>> GetActiveCountByTypeAsync()
+    public async Task<Dictionary<AndonEventType, int>> GetActiveCountByTypeAsync()
     {
         var events = await _repository.FindAsync(e => e.ResolvedAt == null);
         return events

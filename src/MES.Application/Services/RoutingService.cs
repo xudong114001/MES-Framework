@@ -1,4 +1,3 @@
-using Microsoft.EntityFrameworkCore;
 using MES.Application.Dtos;
 using MES.Application.Interfaces;
 using MES.Domain.Entities;
@@ -8,9 +7,9 @@ namespace MES.Application.Services;
 
 public class RoutingService : IRoutingService
 {
-    private readonly IRepository<Routing> _repo;
+    private readonly IRoutingRepository _repo;
 
-    public RoutingService(IRepository<Routing> repo) => _repo = repo;
+    public RoutingService(IRoutingRepository repo) => _repo = repo;
 
     private static RoutingDto MapToDto(Routing entity) => new()
     {
@@ -50,23 +49,20 @@ public class RoutingService : IRoutingService
 
     public async Task<IEnumerable<RoutingDetailDto>> GetAllAsync()
     {
-        var list = await _repo.Query().Include(r => r.Steps).ToListAsync();
+        var list = await _repo.GetAllWithStepsAsync();
         return list.Select(MapToDetailDto);
     }
 
     public async Task<RoutingDetailDto?> GetByIdAsync(long id)
     {
-        var entity = await _repo.Query().Include(r => r.Steps).FirstOrDefaultAsync(r => r.Id == id);
+        var entity = await _repo.GetByIdWithStepsAsync(id);
         if (entity == null) return null;
         return MapToDetailDto(entity);
     }
 
     public async Task<IEnumerable<RoutingDetailDto>> GetByMaterialIdAsync(long materialId)
     {
-        var list = await _repo.Query()
-            .Include(r => r.Steps)
-            .Where(r => r.MaterialId == materialId)
-            .ToListAsync();
+        var list = await _repo.GetByMaterialIdWithStepsAsync(materialId);
         return list.Select(MapToDetailDto);
     }
 

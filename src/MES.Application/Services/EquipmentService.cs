@@ -4,7 +4,6 @@ using MES.Domain.Entities;
 using MES.Domain.Enums;
 using MES.Domain.Exceptions;
 using MES.Domain.Repositories;
-using Microsoft.EntityFrameworkCore;
 
 namespace MES.Application.Services;
 
@@ -64,7 +63,7 @@ public class EquipmentService : IEquipmentService
             plannedRunTime: dto.PlannedRunTime);
     }
 
-    /// <summary>获取所有设备</summary>
+    /// <summary>获取所有设���</summary>
     public async Task<IEnumerable<EquipmentDto>> GetAllAsync()
     {
         var list = await _equipmentRepo.GetAllAsync();
@@ -311,15 +310,18 @@ public class EquipmentService : IEquipmentService
     public async Task<List<MaintenancePlan>> GetAllMaintenancePlansAsync(
         string? equipmentName = null, string? status = null)
     {
-        var query = _maintenancePlanRepo.Query();
+        // 获取所有保养计划
+        var allPlans = await _maintenancePlanRepo.GetAllAsync();
+        var plans = allPlans.ToList();
 
+        // 按状态筛选
         if (!string.IsNullOrEmpty(status))
         {
             if (Enum.TryParse<MaintenancePlanStatus>(status, out var statusEnum))
-                query = query.Where(p => p.Status == statusEnum);
+            {
+                plans = plans.Where(p => p.Status == statusEnum).ToList();
+            }
         }
-
-        var plans = await query.ToListAsync();
 
         // 加载设备信息用于筛选和显示
         var equipmentIds = plans.Select(p => p.EquipmentId).Distinct().ToList();

@@ -349,6 +349,25 @@ public class WorkOrder : BaseEntity, IAggregateRoot
     }
 
     /// <summary>
+    /// 更新基本信息（优先级、指派人、备注、工厂/车间/产线）
+    /// </summary>
+    public void UpdateBasicInfo(
+        Priority priority,
+        long? assignee = null,
+        string? remark = null,
+        long? factoryId = null,
+        long? workshopId = null,
+        long? lineId = null)
+    {
+        Priority = priority;
+        Assignee = assignee;
+        Remark = remark;
+        FactoryId = factoryId;
+        WorkshopId = workshopId;
+        LineId = lineId;
+    }
+
+    /// <summary>
     /// 增加报废数量（质检专用，不检查状态）
     /// </summary>
     public void AddScrap(Quantity scrapQty)

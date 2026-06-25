@@ -40,7 +40,7 @@ public class CreateWorkOrderRequest
     public long? FactoryId { get; set; }
     public long? WorkshopId { get; set; }
     public long? LineId { get; set; }
-    public string? Assignee { get; set; }
+    public long? Assignee { get; set; }
     public string? Remark { get; set; }
 }
 
@@ -53,7 +53,7 @@ public class UpdateWorkOrderRequest
     public long? FactoryId { get; set; }
     public long? WorkshopId { get; set; }
     public long? LineId { get; set; }
-    public string? Assignee { get; set; }
+    public long? Assignee { get; set; }
     public string? Remark { get; set; }
 }
 

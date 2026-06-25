@@ -5,9 +5,9 @@ using MES.Application.Integration.Events;
 using MES.Domain.Entities;
 using MES.Domain.Enums;
 using MES.Domain.Exceptions;
+using MES.Domain.Interfaces;
 using MES.Domain.Repositories;
 using MES.Domain.ValueObjects;
-using StackExchange.Redis;
 
 namespace MES.Application.Services;
 
@@ -20,7 +20,7 @@ public class WorkReportService : IWorkReportService
     private readonly IRepository<User> _userRepo;
     private readonly IRepository<QcCheckpoint> _checkpointRepo;
     private readonly IRepository<QcInspection> _inspectionRepo;
-    private readonly IDatabase _redis;
+    private readonly ICacheService _cache;
     private readonly IEventBus? _eventBus;
     private readonly InMemoryEventLogService? _eventLog;
     private readonly ILogger<WorkReportService>? _logger;
@@ -33,7 +33,7 @@ public class WorkReportService : IWorkReportService
         IRepository<User> userRepo,
         IRepository<QcCheckpoint> checkpointRepo,
         IRepository<QcInspection> inspectionRepo,
-        IConnectionMultiplexer redisConn,
+        ICacheService cache,
         IEventBus? eventBus = null,
         InMemoryEventLogService? eventLog = null,
         ILogger<WorkReportService>? logger = null)
@@ -45,7 +45,7 @@ public class WorkReportService : IWorkReportService
         _userRepo = userRepo;
         _checkpointRepo = checkpointRepo;
         _inspectionRepo = inspectionRepo;
-        _redis = redisConn.GetDatabase();
+        _cache = cache;
         _eventBus = eventBus;
         _eventLog = eventLog;
         _logger = logger;
@@ -155,13 +155,13 @@ public class WorkReportService : IWorkReportService
     }
 
     /// <summary>
-    /// 提交报工（含 Redis 防重复提交 + 批次号自动生成 + 质检校验）
+    /// 提交报工（含缓存防重复提交 + 批次号自动生成 + 质检校验）
     /// </summary>
     public async Task<WorkReport> SubmitReportAsync(WorkReport report)
     {
-        // ==================== Redis 防重复提交 ====================
+        // ==================== 缓存防重复提交 ====================
         var dedupKey = $"report:dup:{report.WorkOrderId}:{report.StepId}:{report.OperatorId}:{DateTimeOffset.UtcNow.ToUnixTimeSeconds() / 5}";
-        var locked = await _redis.StringSetAsync(dedupKey, "1", TimeSpan.FromSeconds(10), When.NotExists);
+        var locked = await _cache.SetIfNotExistsAsync(dedupKey, TimeSpan.FromSeconds(10));
         if (!locked)
             throw new DomainException("请勿重复提交");
 
@@ -176,10 +176,10 @@ public class WorkReportService : IWorkReportService
         {
             var today = DateTime.Now.ToString("yyyyMMdd");
             var seqKey = $"batch:seq:{today}";
-            var seq = await _redis.StringIncrementAsync(seqKey);
+            var seq = await _cache.IncrementAsync(seqKey);
             // 设置 key 有效期到第二天，避免 key 永久存在
             if (seq == 1)
-                await _redis.KeyExpireAsync(seqKey, TimeSpan.FromDays(2));
+                await _cache.SetExpiryAsync(seqKey, TimeSpan.FromDays(2));
             report.BatchNo = $"BAT{today}-{seq:D4}";
         }
 
@@ -301,7 +301,7 @@ public class WorkReportService : IWorkReportService
         if (operatorUser == null)
             throw new DomainException($"未找到操作工: {request.OperatorCode}");
 
-        // 4. 根据工单ID + 工序名称 匹�� WorkOrderStep
+        // 4. 根据工单ID + 工序名称 匹配 WorkOrderStep
         WorkOrderStep? matchedStep = null;
         var steps = await _stepRepo.FindAsync(s => s.WorkOrderId == wo.Id && s.StepName == request.StepName);
         matchedStep = steps.FirstOrDefault();
