@@ -10,7 +10,7 @@
 
 | 层级 | 技术选型 |
 |------|----------|
-| 后端 | .NET 10 + C# 12 + Entity Framework Core 10 |
+| 后端 | .NET 10 + C# 14 + Entity Framework Core 10 |
 | 前端 | Vue 3 + TypeScript + Element Plus |
 | 数据库 | PostgreSQL 16 + Redis + RabbitMQ |
 | 架构 | Clean Architecture (DDD) + CQRS |
