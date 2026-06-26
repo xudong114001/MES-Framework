@@ -16,6 +16,7 @@ public interface IWorkReportService
     Task UpdateAsync(long id, UpdateWorkReportRequest request);
 
     Task<WorkReportDto> PdaScanReportAsync(PdaScanReportRequest request);
+    Task DeleteAsync(long id);
 }
 
 public class SubmitWorkReportRequest

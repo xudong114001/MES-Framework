@@ -8,6 +8,7 @@ public class RolePermissionConfiguration : IEntityTypeConfiguration<RolePermissi
 {
     public void Configure(EntityTypeBuilder<RolePermission> builder)
     {
+        builder.HasQueryFilter(e => !e.IsDeleted);
         builder.ToTable("mes_role_permission");
         builder.HasKey(e => e.Id);
         builder.Property(e => e.Permission).HasMaxLength(200).IsRequired();

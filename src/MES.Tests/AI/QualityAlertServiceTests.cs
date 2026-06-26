@@ -15,6 +15,7 @@ public class QualityAlertServiceTests
     private readonly Mock<IRepository<WorkReport>> _workReportRepo;
     private readonly Mock<IRepository<MaterialTrace>> _materialTraceRepo;
     private readonly Mock<IRepository<AlertRecord>> _alertRepo;
+    private readonly Mock<IRepository<AlertRule>> _ruleRepo;
     private readonly Mock<ILogger<QualityAlertService>> _logger;
     private readonly QualityAlertService _service;
 
@@ -24,13 +25,19 @@ public class QualityAlertServiceTests
         _workReportRepo = new Mock<IRepository<WorkReport>>();
         _materialTraceRepo = new Mock<IRepository<MaterialTrace>>();
         _alertRepo = new Mock<IRepository<AlertRecord>>();
+        _ruleRepo = new Mock<IRepository<AlertRule>>();
         _logger = new Mock<ILogger<QualityAlertService>>();
+
+        // 数据库中无规则时使用内置默认规则
+        _ruleRepo.Setup(r => r.FindAsync(It.IsAny<System.Linq.Expressions.Expression<Func<AlertRule, bool>>>()))
+            .ReturnsAsync(new List<AlertRule>());
 
         _service = new QualityAlertService(
             _workOrderRepo.Object,
             _workReportRepo.Object,
             _materialTraceRepo.Object,
             _alertRepo.Object,
+            _ruleRepo.Object,
             _logger.Object);
     }
 

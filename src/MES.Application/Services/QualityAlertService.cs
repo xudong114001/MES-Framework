@@ -12,51 +12,36 @@ public class QualityAlertService : IQualityAlertService
     private readonly IRepository<WorkReport> _workReportRepo;
     private readonly IRepository<MaterialTrace> _materialTraceRepo;
     private readonly IRepository<AlertRecord> _alertRepo;
+    private readonly IRepository<AlertRule> _ruleRepo;
     private readonly ILogger<QualityAlertService>? _logger;
-
-    private static readonly List<AlertRule> _rules =
-    [
-        new AlertRule
-        {
-            Name = "产线连续不良率飙升",
-            Description = "连续3个工单报废率 > 5%",
-            Condition = "consecutive_scrap_rate > 0.05",
-            Level = AlertLevel.High
-        },
-        new AlertRule
-        {
-            Name = "物料批次异常",
-            Description = "某批次物料在多个工单中不良率 > 3%",
-            Condition = "batch_defect_rate > 0.03",
-            Level = AlertLevel.Critical
-        },
-        new AlertRule
-        {
-            Name = "工位连续返工",
-            Description = "某工位连续5次报工返工",
-            Condition = "consecutive_rework >= 5",
-            Level = AlertLevel.Medium
-        }
-    ];
 
     public QualityAlertService(
         IRepository<WorkOrder> workOrderRepo,
         IRepository<WorkReport> workReportRepo,
         IRepository<MaterialTrace> materialTraceRepo,
         IRepository<AlertRecord> alertRepo,
+        IRepository<AlertRule> ruleRepo,
         ILogger<QualityAlertService>? logger = null)
     {
         _workOrderRepo = workOrderRepo;
         _workReportRepo = workReportRepo;
         _materialTraceRepo = materialTraceRepo;
         _alertRepo = alertRepo;
+        _ruleRepo = ruleRepo;
         _logger = logger;
     }
 
     public async Task<List<AlertRecord>> AnalyzeAsync(long? workOrderId = null)
     {
         var alerts = new List<AlertRecord>();
-        var enabledRules = _rules.Where(r => r.IsEnabled).ToList();
+        var allRules = await _ruleRepo.FindAsync(r => r.IsEnabled);
+        var enabledRules = allRules.ToList();
+
+        // 如果数据库中没有规则，使用内置默认规则
+        if (enabledRules.Count == 0)
+        {
+            enabledRules = GetDefaultRules();
+        }
 
         foreach (var rule in enabledRules)
         {
@@ -120,6 +105,37 @@ public class QualityAlertService : IQualityAlertService
             await _alertRepo.SaveChangesAsync();
         }
     }
+
+    /// <summary>
+    /// 内置默认规则（当数据库中无规则时使用）
+    /// </summary>
+    private static List<AlertRule> GetDefaultRules() =>
+    [
+        new AlertRule
+        {
+            Name = "产线连续不良率飙升",
+            Description = "连续3个工单报废率 > 5%",
+            Condition = "consecutive_scrap_rate > 0.05",
+            Level = AlertLevel.High,
+            IsEnabled = true
+        },
+        new AlertRule
+        {
+            Name = "物料批次异常",
+            Description = "某批次物料在多个工单中不良率 > 3%",
+            Condition = "batch_defect_rate > 0.03",
+            Level = AlertLevel.Critical,
+            IsEnabled = true
+        },
+        new AlertRule
+        {
+            Name = "工位连续返工",
+            Description = "某工位连续5次报工返工",
+            Condition = "consecutive_rework >= 5",
+            Level = AlertLevel.Medium,
+            IsEnabled = true
+        }
+    ];
 
     private async Task<List<AlertRecord>> CheckConsecutiveScrapRate(long? workOrderId)
     {

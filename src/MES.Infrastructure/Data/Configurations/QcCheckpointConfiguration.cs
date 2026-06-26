@@ -8,6 +8,7 @@ public class QcCheckpointConfiguration : IEntityTypeConfiguration<QcCheckpoint>
 {
     public void Configure(EntityTypeBuilder<QcCheckpoint> builder)
     {
+        builder.HasQueryFilter(e => !e.IsDeleted);
         builder.ToTable("mes_qc_checkpoint");
         builder.HasKey(e => e.Id);
         builder.Property(e => e.CheckType).HasConversion<int>().IsRequired();

@@ -14,7 +14,7 @@ namespace MES.Api.Controllers;
 /// </summary>
 [ApiController]
 [Route("api/v1/integration")]
-[Authorize(Roles = "admin")]
+[Authorize(Roles = "Admin")]
 public class IntegrationController : ControllerBase
 {
     private readonly IERPAdapter _erpAdapter;
@@ -72,7 +72,6 @@ public class IntegrationController : ControllerBase
     /// 测试指定适配器（兼容前端）
     /// </summary>
     [HttpPost("adapters/{name}/test")]
-    [AllowAnonymous]
     public async Task<IActionResult> TestAdapter(string name)
     {
         var result = name.ToLower() switch
@@ -142,7 +141,6 @@ public class IntegrationController : ControllerBase
     /// 测试 ERP 连接
     /// </summary>
     [HttpGet("erp/test")]
-    [AllowAnonymous]
     public async Task<IActionResult> TestErpConnection()
     {
         var result = await _erpAdapter.TestConnectionAsync();
@@ -193,7 +191,6 @@ public class IntegrationController : ControllerBase
     /// 测试 WMS 连接
     /// </summary>
     [HttpGet("wms/test")]
-    [AllowAnonymous]
     public async Task<IActionResult> TestWmsConnection()
     {
         var result = await _wmsAdapter.TestConnectionAsync();

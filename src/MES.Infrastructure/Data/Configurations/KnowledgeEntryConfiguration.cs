@@ -8,6 +8,7 @@ public class KnowledgeEntryConfiguration : IEntityTypeConfiguration<KnowledgeEnt
 {
     public void Configure(EntityTypeBuilder<KnowledgeEntry> builder)
     {
+        builder.HasQueryFilter(e => !e.IsDeleted);
         builder.ToTable("mes_knowledge_entry");
         builder.HasKey(e => e.Id);
         builder.Property(e => e.Title).HasMaxLength(500).IsRequired();

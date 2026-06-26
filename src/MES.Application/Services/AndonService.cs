@@ -101,9 +101,7 @@ public class AndonService : IAndonService
         var evt = await _repository.GetByIdAsync(eventId);
         if (evt == null) return false;
 
-        evt.ResolvedById = resolverId;
-        evt.ResolvedByName = resolverName;
-        evt.ResolvedAt = DateTime.UtcNow;
+        evt.Resolve(resolverId, resolverName);
 
         await _repository.UpdateAsync(evt);
         return true;
@@ -121,7 +119,8 @@ public class AndonService : IAndonService
         var evt = await _repository.GetByIdAsync(id);
         if (evt == null) return false;
 
-        await _repository.DeleteAsync(evt);
+        evt.MarkAsDeleted();
+        await _repository.UpdateAsync(evt);
         return true;
     }
 

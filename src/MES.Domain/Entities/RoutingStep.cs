@@ -111,4 +111,23 @@ public class RoutingStep : BaseEntity
     {
         IsScrapPoint = isScrapPoint;
     }
+
+    /// <summary>
+    /// 更新工序信息
+    /// </summary>
+    public void UpdateInfo(string stepName, string? workstationType, int stepNo, decimal standardTime, bool isQcPoint, bool isScrapPoint)
+    {
+        if (string.IsNullOrWhiteSpace(stepName))
+            throw new DomainException("工序名称不能为空");
+
+        if (stepNo <= 0)
+            throw new DomainException("工序序号必须大于0");
+
+        StepName = stepName;
+        WorkstationType = workstationType;
+        StepNo = stepNo;
+        StandardTime = standardTime;
+        IsQcPoint = isQcPoint;
+        IsScrapPoint = isScrapPoint;
+    }
 }

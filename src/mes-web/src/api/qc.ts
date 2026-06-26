@@ -40,6 +40,7 @@ export const qcApi = {
   addItem(inspectionId: number, data: QcInspectionItem) { return http.post(`/qc/inspections/${inspectionId}/items`, data) },
   verify(inspectionId: number, result: string) { return http.post(`/qc/inspections/${inspectionId}/verify`, { result }) },
   handleNonconforming(inspectionId: number, action: string, remark?: string) { return http.post(`/qc/inspections/${inspectionId}/handle-nonconforming`, { action, remark }) },
+  deleteInspection(id: number) { return http.delete(`/qc/inspections/${id}`) },
   dashboardStats() { return http.get('/qc/dashboard/stats') },
   dashboardPending() { return http.get('/qc/dashboard/pending') },
   recentFailed() { return http.get('/qc/dashboard/recent-failed') }

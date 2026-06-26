@@ -655,21 +655,15 @@ public static class TestEntityFactory
         string? direction = null,
         decimal qty = 0)
     {
-        var ctor = typeof(MaterialTrace).GetConstructor(
-            BindingFlags.Instance | BindingFlags.NonPublic,
-            null,
-            Type.EmptyTypes,
-            null)!;
-
-        var trace = (MaterialTrace)ctor.Invoke(null);
+        var trace = new MaterialTrace();
 
         SetProperty(trace, "Id", id);
-        SetProperty(trace, "MaterialId", materialId);
-        SetProperty(trace, "BatchNo", batchNo);
-        SetProperty(trace, "WorkOrderId", workOrderId);
-        SetProperty(trace, "Direction", direction);
-        SetProperty(trace, "Qty", qty);
-        SetProperty(trace, "OperateTime", DateTime.UtcNow);
+        trace.MaterialId = materialId;
+        trace.BatchNo = batchNo;
+        trace.WorkOrderId = workOrderId;
+        trace.Direction = direction;
+        trace.Qty = qty;
+        trace.OperateTime = DateTime.UtcNow;
 
         return trace;
     }
@@ -715,19 +709,13 @@ public static class TestEntityFactory
         AlertLevel level = AlertLevel.Low,
         bool isProcessed = false)
     {
-        var ctor = typeof(AlertRecord).GetConstructor(
-            BindingFlags.Instance | BindingFlags.NonPublic,
-            null,
-            Type.EmptyTypes,
-            null)!;
-
-        var alert = (AlertRecord)ctor.Invoke(null);
+        var alert = new AlertRecord();
 
         SetProperty(alert, "Id", id);
-        SetProperty(alert, "Title", title);
-        SetProperty(alert, "Message", message);
-        SetProperty(alert, "Level", level);
-        SetProperty(alert, "IsProcessed", isProcessed);
+        alert.Title = title;
+        alert.Message = message;
+        alert.Level = level;
+        alert.IsProcessed = isProcessed;
 
         return alert;
     }

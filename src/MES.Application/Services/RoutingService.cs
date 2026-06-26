@@ -97,6 +97,61 @@ public class RoutingService : IRoutingService
         var entity = await _repo.GetByIdAsync(id);
         if (entity == null)
             throw new Domain.Exceptions.DomainException("工艺路线不存在");
-        await _repo.DeleteAsync(entity);
+        entity.MarkAsDeleted();
+        await _repo.UpdateAsync(entity);
+    }
+
+    /// <summary>添加工序步骤</summary>
+    public async Task<RoutingStepDto> AddStepAsync(long routingId, AddRoutingStepRequest request)
+    {
+        var routing = await _repo.GetByIdWithStepsAsync(routingId);
+        if (routing == null)
+            throw new Domain.Exceptions.DomainException("工艺路线不存在");
+
+        var step = RoutingStep.Create(
+            routingId: routingId,
+            stepName: request.StepName,
+            stepNo: request.StepNo,
+            standardTime: request.StandardTime,
+            workstationType: request.WorkstationType,
+            isQcPoint: request.IsQcPoint,
+            isScrapPoint: request.IsScrapPoint);
+
+        routing.AddStep(step);
+        await _repo.UpdateAsync(routing);
+        return MapStepToDto(step);
+    }
+
+    /// <summary>更新工序步骤</summary>
+    public async Task UpdateStepAsync(long routingId, long stepId, UpdateRoutingStepRequest request)
+    {
+        var routing = await _repo.GetByIdWithStepsAsync(routingId);
+        if (routing == null)
+            throw new Domain.Exceptions.DomainException("工艺路线不存在");
+
+        var step = routing.Steps.FirstOrDefault(s => s.Id == stepId);
+        if (step == null)
+            throw new Domain.Exceptions.DomainException("工序步骤不存在");
+
+        step.UpdateInfo(
+            stepName: request.StepName,
+            workstationType: request.WorkstationType,
+            stepNo: request.StepNo,
+            standardTime: request.StandardTime,
+            isQcPoint: request.IsQcPoint,
+            isScrapPoint: request.IsScrapPoint);
+
+        await _repo.UpdateAsync(routing);
+    }
+
+    /// <summary>删除工序步骤</summary>
+    public async Task DeleteStepAsync(long routingId, long stepId)
+    {
+        var routing = await _repo.GetByIdWithStepsAsync(routingId);
+        if (routing == null)
+            throw new Domain.Exceptions.DomainException("工艺路线不存在");
+
+        routing.RemoveStep(stepId);
+        await _repo.UpdateAsync(routing);
     }
 }

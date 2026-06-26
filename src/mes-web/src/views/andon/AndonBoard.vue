@@ -69,14 +69,14 @@
       <el-form :model="triggerForm" label-width="100px">
         <el-form-item label="事件类型" required>
           <el-select v-model="triggerForm.eventType" placeholder="选择异常类型" style="width: 100%">
-            <el-option label="质量异常" value="QUALITY_ALARM" />
-            <el-option label="设备故障" value="EQUIPMENT_FAULT" />
-            <el-option label="物料短缺" value="MATERIAL_SHORTAGE" />
-            <el-option label="其他异常" value="OTHER" />
+            <el-option label="质量异常" :value="0" />
+            <el-option label="设备故障" :value="1" />
+            <el-option label="物料短缺" :value="2" />
+            <el-option label="其他异常" :value="3" />
           </el-select>
         </el-form-item>
         <el-form-item label="工位">
-          <el-input v-model="triggerForm.workstation" placeholder="输入工位名称" />
+          <el-input v-model="triggerForm.workstationName" placeholder="输入工位名称" />
         </el-form-item>
         <el-form-item label="描述">
           <el-input
@@ -121,31 +121,31 @@ const showResolveDialog = ref(false)
 const triggering = ref(false)
 const resolving = ref(false)
 
-const triggerForm = ref({ eventType: '', workstation: '', description: '' })
+const triggerForm = ref({ eventType: 0, level: 0, workstationName: '', description: '' })
 const resolveForm = ref({ handler: '' })
 const resolvingId = ref(0)
 
 const autoRefreshInterval = 10000 // 10 seconds
 let timer: number | null = null
 
-const eventTagType = (type: string) => {
-  const map: Record<string, string> = {
-    QUALITY_ALARM: 'warning',
-    EQUIPMENT_FAULT: 'danger',
-    MATERIAL_SHORTAGE: 'info',
-    OTHER: 'default'
+const eventTagType = (type: number) => {
+  const map: Record<number, string> = {
+    0: 'warning',
+    1: 'danger',
+    2: 'info',
+    3: 'default'
   }
   return map[type] || 'default'
 }
 
-const eventTypeLabel = (type: string) => {
-  const map: Record<string, string> = {
-    QUALITY_ALARM: '质量异常',
-    EQUIPMENT_FAULT: '设备故障',
-    MATERIAL_SHORTAGE: '物料短缺',
-    OTHER: '其他异常'
+const eventTypeLabel = (type: number) => {
+  const map: Record<number, string> = {
+    0: '质量异常',
+    1: '设备故障',
+    2: '物料短缺',
+    3: '其他异常'
   }
-  return map[type] || type
+  return map[type] || '未知'
 }
 
 function formatTime(ts: string) {
@@ -168,7 +168,7 @@ async function loadData() {
 }
 
 async function submitTrigger() {
-  if (!triggerForm.value.eventType) {
+  if (triggerForm.value.eventType === 0 && !triggerForm.value.description) {
     ElMessage.warning('请选择事件类型')
     return
   }
@@ -177,7 +177,7 @@ async function submitTrigger() {
     await andonApi.trigger(triggerForm.value)
     ElMessage.success('异常事件已触发')
     showTriggerDialog.value = false
-    triggerForm.value = { eventType: '', workstation: '', description: '' }
+    triggerForm.value = { eventType: 0, level: 0, workstationName: '', description: '' }
     await loadData()
   } finally {
     triggering.value = false

@@ -1,4 +1,4 @@
-using MES.Application.Interfaces;
+using MES.Application.Dtos;
 using MES.Application.Services;
 using MES.Domain.Entities;
 using MES.Domain.Enums;
@@ -50,7 +50,7 @@ public class QcCheckpointServiceTests
     }
 
     [Fact]
-    public async Task GetCheckpointByIdAsync_ReturnsCheckpoint()
+    public async Task GetCheckpointByIdAsync_ReturnsDto()
     {
         var checkpoint = CreateCheckpoint(1, 10, QcInspectionType.FIRST);
         _checkpointRepo.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(checkpoint);
@@ -59,6 +59,7 @@ public class QcCheckpointServiceTests
 
         Assert.NotNull(result);
         Assert.Equal(1, result.Id);
+        Assert.Equal(10, result.StepId);
     }
 
     [Fact]
@@ -72,7 +73,7 @@ public class QcCheckpointServiceTests
     }
 
     [Fact]
-    public async Task GetCheckpointsByStepAsync_ReturnsMatchingCheckpoints()
+    public async Task GetCheckpointsByStepAsync_ReturnsMatchingDtos()
     {
         var stepId = 10L;
         var checkpoints = new List<QcCheckpoint>
@@ -94,42 +95,62 @@ public class QcCheckpointServiceTests
     [Fact]
     public async Task ConfigureCheckpointAsync_AddsNewCheckpoint()
     {
-        var checkpoint = CreateCheckpoint(0, 10, QcInspectionType.FIRST);
+        var request = new ConfigureQcCheckpointRequest
+        {
+            StepId = 10,
+            CheckType = QcInspectionType.FIRST,
+            IsMandatory = true,
+            Remark = "首件检"
+        };
 
         _checkpointRepo.Setup(r => r.FindAsync(It.IsAny<System.Linq.Expressions.Expression<Func<QcCheckpoint, bool>>>()))
             .ReturnsAsync(Enumerable.Empty<QcCheckpoint>());
         _checkpointRepo.Setup(r => r.AddAsync(It.IsAny<QcCheckpoint>()))
-            .ReturnsAsync((QcCheckpoint c) => c);
+            .ReturnsAsync((QcCheckpoint c) => { TestEntityFactory.SetProperty(c, "Id", 1); return c; });
 
-        var result = await _service.ConfigureCheckpointAsync(checkpoint);
+        var result = await _service.ConfigureCheckpointAsync(request);
 
         Assert.NotNull(result);
-        _checkpointRepo.Verify(r => r.AddAsync(checkpoint), Times.Once);
+        Assert.Equal(10, result.StepId);
+        _checkpointRepo.Verify(r => r.AddAsync(It.IsAny<QcCheckpoint>()), Times.Once);
     }
 
     [Fact]
     public async Task ConfigureCheckpointAsync_ThrowsWhenDuplicate()
     {
         var existing = CreateCheckpoint(1, 10, QcInspectionType.FIRST);
-        var newCheckpoint = CreateCheckpoint(0, 10, QcInspectionType.FIRST);
 
         _checkpointRepo.Setup(r => r.FindAsync(It.IsAny<System.Linq.Expressions.Expression<Func<QcCheckpoint, bool>>>()))
             .ReturnsAsync(new List<QcCheckpoint> { existing });
 
-        await Assert.ThrowsAsync<InvalidOperationException>(() =>
-            _service.ConfigureCheckpointAsync(newCheckpoint));
+        var request = new ConfigureQcCheckpointRequest
+        {
+            StepId = 10,
+            CheckType = QcInspectionType.FIRST,
+            IsMandatory = true
+        };
+
+        await Assert.ThrowsAsync<DomainException>(() =>
+            _service.ConfigureCheckpointAsync(request));
     }
 
     [Fact]
     public async Task UpdateCheckpointAsync_UpdatesExisting()
     {
         var existing = CreateCheckpoint(1, 10, QcInspectionType.FIRST, isMandatory: true);
-        var updated = CreateCheckpoint(1, 20, QcInspectionType.FINAL, isMandatory: false);
 
         _checkpointRepo.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(existing);
         _checkpointRepo.Setup(r => r.UpdateAsync(It.IsAny<QcCheckpoint>())).Returns(Task.CompletedTask);
 
-        await _service.UpdateCheckpointAsync(1, updated);
+        var request = new UpdateQcCheckpointRequest
+        {
+            StepId = 20,
+            CheckType = QcInspectionType.FINAL,
+            IsMandatory = false,
+            Remark = "终检"
+        };
+
+        await _service.UpdateCheckpointAsync(1, request);
 
         _checkpointRepo.Verify(r => r.UpdateAsync(It.Is<QcCheckpoint>(c =>
             c.StepId == 20 &&
@@ -140,25 +161,30 @@ public class QcCheckpointServiceTests
     [Fact]
     public async Task UpdateCheckpointAsync_ThrowsWhenNotFound()
     {
-        var checkpoint = CreateCheckpoint(999, 10, QcInspectionType.FIRST);
-
         _checkpointRepo.Setup(r => r.GetByIdAsync(999)).ReturnsAsync((QcCheckpoint?)null);
 
-        await Assert.ThrowsAsync<InvalidOperationException>(() =>
-            _service.UpdateCheckpointAsync(999, checkpoint));
+        var request = new UpdateQcCheckpointRequest
+        {
+            StepId = 10,
+            CheckType = QcInspectionType.FIRST,
+            IsMandatory = true
+        };
+
+        await Assert.ThrowsAsync<DomainException>(() =>
+            _service.UpdateCheckpointAsync(999, request));
     }
 
     [Fact]
-    public async Task RemoveCheckpointAsync_DeletesSuccessfully()
+    public async Task RemoveCheckpointAsync_SoftDeletesSuccessfully()
     {
         var checkpoint = CreateCheckpoint(1, 10, QcInspectionType.FIRST);
 
         _checkpointRepo.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(checkpoint);
-        _checkpointRepo.Setup(r => r.DeleteAsync(It.IsAny<QcCheckpoint>())).Returns(Task.CompletedTask);
+        _checkpointRepo.Setup(r => r.UpdateAsync(It.IsAny<QcCheckpoint>())).Returns(Task.CompletedTask);
 
         await _service.RemoveCheckpointAsync(1);
 
-        _checkpointRepo.Verify(r => r.DeleteAsync(checkpoint), Times.Once);
+        _checkpointRepo.Verify(r => r.UpdateAsync(It.Is<QcCheckpoint>(c => c.IsDeleted)), Times.Once);
     }
 
     [Fact]
@@ -166,7 +192,7 @@ public class QcCheckpointServiceTests
     {
         _checkpointRepo.Setup(r => r.GetByIdAsync(999)).ReturnsAsync((QcCheckpoint?)null);
 
-        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+        await Assert.ThrowsAsync<DomainException>(() =>
             _service.RemoveCheckpointAsync(999));
     }
 

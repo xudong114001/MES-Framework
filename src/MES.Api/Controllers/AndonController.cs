@@ -11,7 +11,7 @@ namespace MES.Api.Controllers;
 
 [ApiController]
 [Route("api/v1/andon")]
-[Authorize(Roles = "admin,supervisor,viewer")]
+[Authorize(Roles = "Admin,ProductionManager,QualityEngineer,Operator")]
 public class AndonController : ControllerBase
 {
     private readonly IAndonService _service;
@@ -114,7 +114,7 @@ public class AndonController : ControllerBase
 
     /// <summary>删除异常事件（软删除）</summary>
     [HttpDelete("{id:long}")]
-    [Authorize(Roles = "admin")]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Delete(long id)
     {
         var success = await _service.DeleteEventAsync(id);

@@ -14,11 +14,13 @@ public static class SeedData
 
     public static void ConfigureSeedData(ModelBuilder modelBuilder)
     {
-        // 角色
+        // 角色（与 AGENTS.md RBAC 定义对齐）
         modelBuilder.Entity<Role>().HasData(
-            new { Id = 1L, Name = "admin", Description = "系统管理员", CreatedAt = SeedTime, CreatedBy = 0L, UpdatedAt = SeedTime, UpdatedBy = (long?)null, IsDeleted = false },
-            new { Id = 2L, Name = "supervisor", Description = "主管", CreatedAt = SeedTime, CreatedBy = 0L, UpdatedAt = SeedTime, UpdatedBy = (long?)null, IsDeleted = false },
-            new { Id = 3L, Name = "operator", Description = "操作员", CreatedAt = SeedTime, CreatedBy = 0L, UpdatedAt = SeedTime, UpdatedBy = (long?)null, IsDeleted = false }
+            new { Id = 1L, Name = "Admin", Description = "系统管理员", CreatedAt = SeedTime, CreatedBy = 0L, UpdatedAt = SeedTime, UpdatedBy = (long?)null, IsDeleted = false },
+            new { Id = 2L, Name = "ProductionManager", Description = "生产经理", CreatedAt = SeedTime, CreatedBy = 0L, UpdatedAt = SeedTime, UpdatedBy = (long?)null, IsDeleted = false },
+            new { Id = 3L, Name = "QualityEngineer", Description = "质量工程师", CreatedAt = SeedTime, CreatedBy = 0L, UpdatedAt = SeedTime, UpdatedBy = (long?)null, IsDeleted = false },
+            new { Id = 4L, Name = "EquipmentEngineer", Description = "设备工程师", CreatedAt = SeedTime, CreatedBy = 0L, UpdatedAt = SeedTime, UpdatedBy = (long?)null, IsDeleted = false },
+            new { Id = 5L, Name = "Operator", Description = "操作员", CreatedAt = SeedTime, CreatedBy = 0L, UpdatedAt = SeedTime, UpdatedBy = (long?)null, IsDeleted = false }
         );
 
         // 工厂
@@ -50,9 +52,24 @@ public static class SeedData
             new { Id = 3L, Code = "MAT-003", Name = "螺丝 M6", Spec = "M6*20", Unit = "PCS", Category = "配件", BomLevel = (int?)null, StockQty = 10000m, Status = true, CreatedAt = SeedTime, CreatedBy = 0L, UpdatedAt = SeedTime, UpdatedBy = (long?)null, IsDeleted = false }
         );
 
-        // 用户 (密码: Admin@2026!)
+        // 告警规则
+        modelBuilder.Entity<AlertRule>().HasData(
+            new { Id = 1L, Name = "产线连续不良率飙升", Description = "连续3个工单报废率 > 5%", Condition = "consecutive_scrap_rate > 0.05", Level = AlertLevel.High, IsEnabled = true, CreatedAt = SeedTime, CreatedBy = 0L, UpdatedAt = SeedTime, UpdatedBy = (long?)null, IsDeleted = false },
+            new { Id = 2L, Name = "物料批次异常", Description = "某批次物料在多个工单中不良率 > 3%", Condition = "batch_defect_rate > 0.03", Level = AlertLevel.Critical, IsEnabled = true, CreatedAt = SeedTime, CreatedBy = 0L, UpdatedAt = SeedTime, UpdatedBy = (long?)null, IsDeleted = false },
+            new { Id = 3L, Name = "工位连续返工", Description = "某工位连续5次报工返工", Condition = "consecutive_rework >= 5", Level = AlertLevel.Medium, IsEnabled = true, CreatedAt = SeedTime, CreatedBy = 0L, UpdatedAt = SeedTime, UpdatedBy = (long?)null, IsDeleted = false }
+        );
+
+        // 用户 (密码: Admin@2026! SHA256哈希)
+        var adminPasswordHash = Convert.ToHexString(
+            System.Security.Cryptography.SHA256.HashData(
+                System.Text.Encoding.UTF8.GetBytes("Admin@2026!"))).ToUpperInvariant();
         modelBuilder.Entity<User>().HasData(
-            new { Id = 1L, Username = "admin", PasswordHash = "admin123", DisplayName = "系统管理员", Email = "admin@mes.local", Phone = (string?)null, Status = true, LastLoginTime = (DateTime?)null, CreatedAt = SeedTime, CreatedBy = 0L, UpdatedAt = SeedTime, UpdatedBy = (long?)null, IsDeleted = false }
+            new { Id = 1L, Username = "admin", PasswordHash = adminPasswordHash, DisplayName = "系统管理员", Email = "admin@mes.local", Phone = (string?)null, Status = true, LastLoginTime = (DateTime?)null, CreatedAt = SeedTime, CreatedBy = 0L, UpdatedAt = SeedTime, UpdatedBy = (long?)null, IsDeleted = false }
+        );
+
+        // 用户-角色关联：admin 用户分配 Admin 角色
+        modelBuilder.Entity<UserRole>().HasData(
+            new { Id = 1L, UserId = 1L, RoleId = 1L, CreatedAt = SeedTime, CreatedBy = 0L, UpdatedAt = SeedTime, UpdatedBy = (long?)null, IsDeleted = false }
         );
     }
 }

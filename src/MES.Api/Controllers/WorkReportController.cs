@@ -9,7 +9,7 @@ namespace MES.Api.Controllers;
 
 [ApiController]
 [Route("api/v1/work-reports")]
-[Authorize(Roles = "admin,supervisor,operator")]
+[Authorize(Roles = "Admin,ProductionManager,Operator")]
 public class WorkReportController : ControllerBase
 {
     private readonly IWorkReportService _reportService;
@@ -65,10 +65,20 @@ public class WorkReportController : ControllerBase
     /// PDA 扫码报工
     /// </summary>
     [HttpPost("pda-scan")]
-    [AllowAnonymous]
     public async Task<IActionResult> PdaScan([FromBody] PdaScanReportRequest request)
     {
         var report = await _reportService.PdaScanReportAsync(request);
         return Ok(ApiResponse.Ok(report));
+    }
+
+    /// <summary>
+    /// 删除报工记录（软删除，仅 Admin）
+    /// </summary>
+    [HttpDelete("{id}")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> Delete(long id)
+    {
+        await _reportService.DeleteAsync(id);
+        return Ok(ApiResponse.Ok("删除成功"));
     }
 }

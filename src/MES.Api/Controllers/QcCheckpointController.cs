@@ -1,14 +1,14 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MES.Api.Middleware;
+using MES.Application.Dtos;
 using MES.Application.Interfaces;
-using MES.Domain.Entities;
 
 namespace MES.Api.Controllers;
 
 [ApiController]
 [Route("api/v1/qc-checkpoints")]
-[Authorize(Roles = "admin,supervisor,inspector")]
+[Authorize(Roles = "Admin,ProductionManager,QualityEngineer")]
 public class QcCheckpointController : ControllerBase
 {
     private readonly IQcCheckpointService _checkpointService;
@@ -19,7 +19,7 @@ public class QcCheckpointController : ControllerBase
     }
 
     /// <summary>
-    /// 获取所有质检点（兼容前端）
+    /// 获取所有质检点
     /// </summary>
     [HttpGet]
     public async Task<IActionResult> GetAll()
@@ -29,24 +29,24 @@ public class QcCheckpointController : ControllerBase
     }
 
     /// <summary>
-    /// 根据 ID 获取质检点（兼容前端）
+    /// 根据 ID 获取质检点
     /// </summary>
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(long id)
     {
         var checkpoint = await _checkpointService.GetCheckpointByIdAsync(id);
         if (checkpoint == null)
-            return Ok(ApiResponse.Fail("质检点不存在"));
+            return NotFound(ApiResponse.Fail("质检点不存在"));
         return Ok(ApiResponse.Ok(checkpoint));
     }
 
     /// <summary>
-    /// 更新质检点（兼容前端）
+    /// 更新质检点
     /// </summary>
     [HttpPut("{id}")]
-    public async Task<IActionResult> Update(long id, [FromBody] QcCheckpoint checkpoint)
+    public async Task<IActionResult> Update(long id, [FromBody] UpdateQcCheckpointRequest request)
     {
-        await _checkpointService.UpdateCheckpointAsync(id, checkpoint);
+        await _checkpointService.UpdateCheckpointAsync(id, request);
         return Ok(ApiResponse.Ok("更新成功"));
     }
 
@@ -64,9 +64,9 @@ public class QcCheckpointController : ControllerBase
     /// 配置质检点
     /// </summary>
     [HttpPost]
-    public async Task<IActionResult> Configure([FromBody] QcCheckpoint checkpoint)
+    public async Task<IActionResult> Configure([FromBody] ConfigureQcCheckpointRequest request)
     {
-        var created = await _checkpointService.ConfigureCheckpointAsync(checkpoint);
+        var created = await _checkpointService.ConfigureCheckpointAsync(request);
         return Ok(ApiResponse.Ok(created));
     }
 

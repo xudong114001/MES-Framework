@@ -42,21 +42,23 @@ public class WorkshopService : IWorkshopService
         return list.Select(MapToDto);
     }
 
-    public async Task<WorkshopDto> CreateAsync(Workshop entity)
+    public async Task<WorkshopDto> CreateAsync(CreateWorkshopRequest request)
     {
+        var entity = Workshop.Create(request.Code, request.Name, request.FactoryId);
+        entity.Status = request.Status;
         var created = await _repo.AddAsync(entity);
         return MapToDto(created);
     }
 
-    public async Task UpdateAsync(long id, Workshop entity)
+    public async Task UpdateAsync(long id, UpdateWorkshopRequest request)
     {
         var existing = await _repo.GetByIdAsync(id);
         if (existing == null)
             throw new Domain.Exceptions.DomainException("车间不存在");
-        existing.FactoryId = entity.FactoryId;
-        existing.Code = entity.Code;
-        existing.Name = entity.Name;
-        existing.Status = entity.Status;
+        existing.FactoryId = request.FactoryId;
+        existing.Code = request.Code;
+        existing.Name = request.Name;
+        existing.Status = request.Status;
         await _repo.UpdateAsync(existing);
     }
 
@@ -65,6 +67,7 @@ public class WorkshopService : IWorkshopService
         var entity = await _repo.GetByIdAsync(id);
         if (entity == null)
             throw new Domain.Exceptions.DomainException("车间不存在");
-        await _repo.DeleteAsync(entity);
+        entity.MarkAsDeleted();
+        await _repo.UpdateAsync(entity);
     }
 }

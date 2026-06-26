@@ -18,6 +18,10 @@ public static class ServiceCollectionExtensions
         services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IRoutingRepository, RoutingRepository>();
+        services.AddScoped<IEquipmentRepository, EquipmentRepository>();
+        services.AddScoped<IMaterialRepository, MaterialRepository>();
+        services.AddScoped<IQcInspectionRepository, QcInspectionRepository>();
+        services.AddScoped<IWorkOrderRepository, WorkOrderRepository>();
 
         return services;
     }

@@ -8,6 +8,7 @@ public class MaintenancePlanConfiguration : IEntityTypeConfiguration<Maintenance
 {
     public void Configure(EntityTypeBuilder<MaintenancePlan> builder)
     {
+        builder.HasQueryFilter(e => !e.IsDeleted);
         builder.ToTable("mes_maintenance_plan");
         builder.HasKey(e => e.Id);
         builder.Property(e => e.PlanName).HasMaxLength(200).IsRequired();

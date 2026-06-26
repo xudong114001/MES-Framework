@@ -113,3 +113,49 @@ public class WorkstationDto
     public DateTime UpdatedAt { get; set; }
     public long? UpdatedBy { get; set; }
 }
+
+/// <summary>
+/// 创建车间请求
+/// </summary>
+public class CreateWorkshopRequest
+{
+    public long FactoryId { get; set; }
+    public string Code { get; set; } = string.Empty;
+    public string Name { get; set; } = string.Empty;
+    public bool Status { get; set; } = true;
+}
+
+/// <summary>
+/// 更新车间请求
+/// </summary>
+public class UpdateWorkshopRequest
+{
+    public long FactoryId { get; set; }
+    public string Code { get; set; } = string.Empty;
+    public string Name { get; set; } = string.Empty;
+    public bool Status { get; set; } = true;
+}
+
+/// <summary>
+/// 创建工位请求
+/// </summary>
+public class CreateWorkstationRequest
+{
+    public long LineId { get; set; }
+    public string Code { get; set; } = string.Empty;
+    public string Name { get; set; } = string.Empty;
+    public int SeqNo { get; set; }
+    public bool Status { get; set; } = true;
+}
+
+/// <summary>
+/// 更新工位请求
+/// </summary>
+public class UpdateWorkstationRequest
+{
+    public long LineId { get; set; }
+    public string Code { get; set; } = string.Empty;
+    public string Name { get; set; } = string.Empty;
+    public int SeqNo { get; set; }
+    public bool Status { get; set; } = true;
+}

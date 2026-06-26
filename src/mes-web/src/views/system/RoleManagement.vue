@@ -70,7 +70,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import http from '../../api/index'
+import { roleApi } from '../../api/role'
 
 interface Role {
   id?: number
@@ -180,7 +180,7 @@ const dialogTitle = computed(() => (isEdit.value ? '编辑角色' : '新增角�
 async function loadData() {
   loading.value = true
   try {
-    const res: any = await http.get('/roles')
+    const res: any = await roleApi.list()
     list.value = res.data || []
   } finally {
     loading.value = false
@@ -198,7 +198,7 @@ async function openPermissionDialog(row: Role) {
   selectedPermissions.value = []
 
   try {
-    const res: any = await http.get(`/roles/${row.id}/permissions`)
+    const res: any = await roleApi.getPermissions(row.id!)
     selectedPermissions.value = res.data || []
   } catch (e) {
     // 如果获取失败，使用空列表
@@ -214,10 +214,10 @@ async function handleSubmit() {
   submitting.value = true
   try {
     if (isEdit.value) {
-      await http.put(`/roles/${form.value.id}`, form.value)
+      await roleApi.update(form.value.id!, form.value)
       ElMessage.success('更新成功')
     } else {
-      await http.post('/roles', form.value)
+      await roleApi.create(form.value)
       ElMessage.success('创建成功')
     }
     dialogVisible.value = false
@@ -229,7 +229,7 @@ async function handleSubmit() {
 
 async function handleDelete(row: Role) {
   await ElMessageBox.confirm('确定删除该角色吗？', '提示', { type: 'warning' })
-  await http.delete(`/roles/${row.id}`)
+  await roleApi.delete(row.id!)
   ElMessage.success('删除成功')
   await loadData()
 }
@@ -239,9 +239,7 @@ async function handlePermissionSubmit() {
 
   permissionSubmitting.value = true
   try {
-    await http.put(`/roles/${currentRole.value.id}/permissions`, {
-      permissions: selectedPermissions.value
-    })
+    await roleApi.assignPermissions(currentRole.value!.id!, selectedPermissions.value)
     ElMessage.success('权限分配成功')
     permissionDialogVisible.value = false
     await loadData()

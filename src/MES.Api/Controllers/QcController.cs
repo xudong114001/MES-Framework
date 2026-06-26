@@ -9,7 +9,7 @@ namespace MES.Api.Controllers;
 
 [ApiController]
 [Route("api/v1/qc")]
-[Authorize(Roles = "admin,supervisor,inspector")]
+[Authorize(Roles = "Admin,ProductionManager,QualityEngineer")]
 public class QcController : ControllerBase
 {
     private readonly IQcService _qcService;
@@ -87,6 +87,17 @@ public class QcController : ControllerBase
     {
         await _qcService.HandleNonconformingAsync(id, request.Action, request.Remark);
         return Ok(ApiResponse.Ok("处理成功"));
+    }
+
+    /// <summary>
+    /// 删除质检单（软删除）
+    /// </summary>
+    [HttpDelete("inspections/{id}")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> DeleteInspection(long id)
+    {
+        await _qcService.DeleteInspectionAsync(id);
+        return Ok(ApiResponse.Ok("删除成功"));
     }
 
     /// <summary>

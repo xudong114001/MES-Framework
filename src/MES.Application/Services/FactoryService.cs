@@ -66,6 +66,7 @@ public class FactoryService : IFactoryService
         var entity = await _repo.GetByIdAsync(id);
         if (entity == null)
             throw new Domain.Exceptions.DomainException("工厂不存在");
-        await _repo.DeleteAsync(entity);
+        entity.MarkAsDeleted();
+        await _repo.UpdateAsync(entity);
     }
 }

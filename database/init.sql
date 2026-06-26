@@ -126,14 +126,14 @@ CREATE TABLE mes_routing_step (
 CREATE TABLE mes_work_order (
     id BIGSERIAL PRIMARY KEY,
     order_no VARCHAR(50) NOT NULL UNIQUE,
-    source_type VARCHAR(20) DEFAULT 'MANUAL',
+    source_type INT DEFAULT 0,
     source_ref VARCHAR(100),
     material_id BIGINT NOT NULL REFERENCES mes_material(id),
     routing_id BIGINT REFERENCES mes_routing(id),
     planned_qty DECIMAL(18,2) NOT NULL,
     completed_qty DECIMAL(18,2) DEFAULT 0,
     scrap_qty DECIMAL(18,2) DEFAULT 0,
-    status VARCHAR(30) NOT NULL DEFAULT 'PENDING',
+    status INT NOT NULL DEFAULT 0,
     plan_start_time TIMESTAMPTZ,
     plan_end_time TIMESTAMPTZ,
     actual_start_time TIMESTAMPTZ,
@@ -160,7 +160,7 @@ CREATE TABLE mes_work_order_step (
     planned_qty DECIMAL(18,2) NOT NULL,
     completed_qty DECIMAL(18,2) DEFAULT 0,
     scrap_qty DECIMAL(18,2) DEFAULT 0,
-    status VARCHAR(30) DEFAULT 'PENDING',
+    status INT DEFAULT 0,
     plan_start_time TIMESTAMPTZ,
     plan_end_time TIMESTAMPTZ,
     created_at TIMESTAMPTZ DEFAULT NOW(),
@@ -176,7 +176,7 @@ CREATE TABLE mes_work_report (
     step_id BIGINT REFERENCES mes_work_order_step(id),
     workstation_id BIGINT REFERENCES mes_workstation(id),
     operator_id VARCHAR(100),
-    report_type VARCHAR(20) NOT NULL DEFAULT 'COMPLETE',
+    report_type INT NOT NULL DEFAULT 0,
     good_qty DECIMAL(18,2) DEFAULT 0,
     scrap_qty DECIMAL(18,2) DEFAULT 0,
     rework_qty DECIMAL(18,2) DEFAULT 0,
@@ -192,12 +192,12 @@ CREATE TABLE mes_work_report (
 CREATE TABLE mes_qc_inspection (
     id BIGSERIAL PRIMARY KEY,
     inspect_no VARCHAR(50) NOT NULL UNIQUE,
-    source_type VARCHAR(30) NOT NULL,
+    source_type INT NOT NULL,
     source_ref VARCHAR(100),
     work_order_id BIGINT REFERENCES mes_work_order(id),
     material_id BIGINT REFERENCES mes_material(id),
     inspector VARCHAR(100),
-    inspect_result VARCHAR(20) DEFAULT 'PENDING',
+    inspect_result INT DEFAULT 0,
     inspect_time TIMESTAMPTZ,
     created_at TIMESTAMPTZ DEFAULT NOW(),
     created_by BIGINT
@@ -209,7 +209,7 @@ CREATE TABLE mes_qc_inspection_item (
     item_name VARCHAR(200) NOT NULL,
     spec_value VARCHAR(200),
     actual_value VARCHAR(200),
-    result VARCHAR(20) DEFAULT 'PENDING',
+    result INT DEFAULT 0,
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
@@ -239,7 +239,7 @@ CREATE TABLE mes_material_trace (
     serial_no VARCHAR(100),
     work_order_id BIGINT REFERENCES mes_work_order(id),
     src_work_order_id BIGINT,
-    direction VARCHAR(10) NOT NULL,
+    direction INT NOT NULL,
     qty DECIMAL(18,2) NOT NULL,
     operator VARCHAR(100),
     operate_time TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -258,7 +258,7 @@ CREATE TABLE mes_equipment (
     workshop_id BIGINT,
     line_id BIGINT,
     install_date DATE,
-    status VARCHAR(30) DEFAULT 'IDLE',
+    status INT DEFAULT 0,
     last_maintain_date TIMESTAMPTZ,
     next_maintain_date TIMESTAMPTZ,
     maintain_cycle INT,
@@ -413,36 +413,36 @@ INSERT INTO mes_routing_step (routing_id, step_no, step_name, workstation_type, 
 
 -- ==================== 设备 种子数据 ====================
 INSERT INTO mes_equipment (code, name, model, factory_id, workshop_id, line_id, install_date, status, theoretical_cycle_time, planned_run_time, maintain_cycle) VALUES
-('EQ-SMT-01', 'SMT印刷机1号',   'DEK-03X',      1, 1, 1, '2024-03-15', 'RUNNING', 5.0,  20.0, 90),
-('EQ-SMT-02', 'SMT贴片机1号',   'SM481+Venus',  1, 1, 1, '2024-03-15', 'RUNNING', 3.0,  20.0, 60),
-('EQ-SMT-03', '回流焊炉1号',    'BTU-PYRAX',    1, 1, 1, '2024-03-15', 'RUNNING', 8.0,  20.0, 120),
-('EQ-SMT-04', 'AOI检测仪1号',   'OMRON-VT',     1, 1, 1, '2024-06-01', 'IDLE',    6.0,  20.0, 90),
-('EQ-ASSY-01', '组装工装台1号',  'CUSTOM-ASSY',  1, 2, 3, '2024-03-15', 'RUNNING', 15.0, 20.0, 180),
-('EQ-ASSY-02', '功能测试台1号',  'CUSTOM-FT',    1, 2, 3, '2024-03-15', 'RUNNING', 10.0, 20.0, 180),
-('EQ-PKG-01',  '包装机1号',      'SEMI-AUTO-PK', 1, 2, 3, '2024-03-15', 'IDLE',    5.0,  20.0, 120);
+('EQ-SMT-01', 'SMT印刷机1号',   'DEK-03X',      1, 1, 1, '2024-03-15', 1, 5.0,  20.0, 90),
+('EQ-SMT-02', 'SMT贴片机1号',   'SM481+Venus',  1, 1, 1, '2024-03-15', 1, 3.0,  20.0, 60),
+('EQ-SMT-03', '回流焊炉1号',    'BTU-PYRAX',    1, 1, 1, '2024-03-15', 1, 8.0,  20.0, 120),
+('EQ-SMT-04', 'AOI检测仪1号',   'OMRON-VT',     1, 1, 1, '2024-06-01', 0, 6.0,  20.0, 90),
+('EQ-ASSY-01', '组装工装台1号',  'CUSTOM-ASSY',  1, 2, 3, '2024-03-15', 1, 15.0, 20.0, 180),
+('EQ-ASSY-02', '功能测试台1号',  'CUSTOM-FT',    1, 2, 3, '2024-03-15', 1, 10.0, 20.0, 180),
+('EQ-PKG-01',  '包装机1号',      'SEMI-AUTO-PK', 1, 2, 3, '2024-03-15', 0, 5.0,  20.0, 120);
 
 -- ==================== 工单 种子数据 ====================
 -- 工单1：PENDING 状态，计划生产 100 件
 INSERT INTO mes_work_order (order_no, source_type, material_id, routing_id, planned_qty, completed_qty, scrap_qty, status, plan_start_time, plan_end_time, priority, factory_id, workshop_id, line_id, assignee, remark) VALUES
-('WO-2025-0001', 'MANUAL', 1, 1, 100, 0, 0, 'PENDING',
+('WO-2025-0001', 0, 1, 1, 100, 0, 0, 0,
  '2025-07-01 08:00:00+08', '2025-07-03 18:00:00+08',
  5, 1, 1, 1, 'zhangsan', '智能控制器首批试产');
 
 -- 工单2：IN_PROGRESS 状态，计划生产 500 件，已完成 200 件
 INSERT INTO mes_work_order (order_no, source_type, material_id, routing_id, planned_qty, completed_qty, scrap_qty, status, plan_start_time, plan_end_time, actual_start_time, priority, factory_id, workshop_id, line_id, assignee, remark) VALUES
-('WO-2025-0002', 'MANUAL', 1, 1, 500, 200, 5, 'IN_PROGRESS',
+('WO-2025-0002', 0, 1, 1, 500, 200, 5, 3,
  '2025-06-25 08:00:00+08', '2025-06-30 18:00:00+08', '2025-06-25 08:15:00+08',
  10, 1, 2, 3, 'lisi', '智能控制器量产订单');
 
 -- 工单2 的工序进度（已完成前4道工序，第5道进行中）
 INSERT INTO mes_work_order_step (work_order_id, step_no, step_name, workstation_id, planned_qty, completed_qty, scrap_qty, status, plan_start_time, plan_end_time) VALUES
-(2, 10, 'SMT印刷',  1, 500, 500, 0,  'COMPLETED', '2025-06-25 08:00:00+08', '2025-06-25 12:00:00+08'),
-(2, 20, 'SMT贴片',  2, 500, 500, 2,  'COMPLETED', '2025-06-25 13:00:00+08', '2025-06-26 10:00:00+08'),
-(2, 30, '回流焊',   3, 500, 500, 1,  'COMPLETED', '2025-06-26 11:00:00+08', '2025-06-26 18:00:00+08'),
-(2, 40, 'AOI检测',  4, 500, 500, 2,  'COMPLETED', '2025-06-27 08:00:00+08', '2025-06-27 17:00:00+08'),
-(2, 50, '总装',     7, 500, 200, 0,  'IN_PROGRESS', '2025-06-28 08:00:00+08', '2025-06-29 18:00:00+08'),
-(2, 60, '功能测试', 8, 500, 0,   0,  'PENDING', '2025-06-30 08:00:00+08', '2025-06-30 17:00:00+08'),
-(2, 70, '包装',     9, 500, 0,   0,  'PENDING', '2025-07-01 08:00:00+08', '2025-07-01 17:00:00+08');
+(2, 10, 'SMT印刷',  1, 500, 500, 0,  5, '2025-06-25 08:00:00+08', '2025-06-25 12:00:00+08'),
+(2, 20, 'SMT贴片',  2, 500, 500, 2,  5, '2025-06-25 13:00:00+08', '2025-06-26 10:00:00+08'),
+(2, 30, '回流焊',   3, 500, 500, 1,  5, '2025-06-26 11:00:00+08', '2025-06-26 18:00:00+08'),
+(2, 40, 'AOI检测',  4, 500, 500, 2,  5, '2025-06-27 08:00:00+08', '2025-06-27 17:00:00+08'),
+(2, 50, '总装',     7, 500, 200, 0,  3, '2025-06-28 08:00:00+08', '2025-06-29 18:00:00+08'),
+(2, 60, '功能测试', 8, 500, 0,   0,  0, '2025-06-30 08:00:00+08', '2025-06-30 17:00:00+08'),
+(2, 70, '包装',     9, 500, 0,   0,  0, '2025-07-01 08:00:00+08', '2025-07-01 17:00:00+08');
 
 -- ==================== AI 预警记录表 ====================
 CREATE TABLE IF NOT EXISTS mes_ai_alerts (
@@ -462,6 +462,24 @@ CREATE TABLE IF NOT EXISTS mes_ai_alerts (
 CREATE INDEX IF NOT EXISTS idx_ai_alerts_created_at ON mes_ai_alerts(created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_ai_alerts_is_processed ON mes_ai_alerts(is_processed);
 CREATE INDEX IF NOT EXISTS idx_ai_alerts_level ON mes_ai_alerts(level);
+
+-- ==================== 告警规则表 ====================
+CREATE TABLE IF NOT EXISTS mes_alert_rule (
+    id                      BIGSERIAL PRIMARY KEY,
+    name                    VARCHAR(100) NOT NULL,
+    description             VARCHAR(500),
+    condition               VARCHAR(500) NOT NULL,
+    level                   INT NOT NULL DEFAULT 0,
+    is_enabled              BOOLEAN DEFAULT TRUE,
+    created_at              TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    created_by              BIGINT,
+    updated_at              TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    updated_by              BIGINT,
+    is_deleted              SMALLINT DEFAULT 0
+);
+
+CREATE INDEX IF NOT EXISTS idx_alert_rule_level ON mes_alert_rule(level);
+CREATE INDEX IF NOT EXISTS idx_alert_rule_is_enabled ON mes_alert_rule(is_enabled);
 
 -- ==================== RBAC 权限管理 ====================
 
@@ -545,7 +563,7 @@ CREATE TABLE mes_andon_events (
     created_by BIGINT,
     updated_at TIMESTAMPTZ DEFAULT NOW(),
     updated_by BIGINT,
-    is_deleted SMALLINT DEFAULT 0
+    is_deleted BOOLEAN DEFAULT FALSE
 );
 
 CREATE INDEX IF NOT EXISTS idx_andon_event_work_order ON mes_andon_events(work_order_id);

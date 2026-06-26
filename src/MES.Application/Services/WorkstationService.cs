@@ -43,22 +43,23 @@ public class WorkstationService : IWorkstationService
         return list.Select(MapToDto);
     }
 
-    public async Task<WorkstationDto> CreateAsync(Workstation entity)
+    public async Task<WorkstationDto> CreateAsync(CreateWorkstationRequest request)
     {
+        var entity = Workstation.Create(request.LineId, request.Code, request.Name, request.SeqNo, request.Status);
         var created = await _repo.AddAsync(entity);
         return MapToDto(created);
     }
 
-    public async Task UpdateAsync(long id, Workstation entity)
+    public async Task UpdateAsync(long id, UpdateWorkstationRequest request)
     {
         var existing = await _repo.GetByIdAsync(id);
         if (existing == null)
             throw new Domain.Exceptions.DomainException("工位不存在");
-        existing.LineId = entity.LineId;
-        existing.Code = entity.Code;
-        existing.Name = entity.Name;
-        existing.SeqNo = entity.SeqNo;
-        existing.Status = entity.Status;
+        existing.LineId = request.LineId;
+        existing.Code = request.Code;
+        existing.Name = request.Name;
+        existing.SeqNo = request.SeqNo;
+        existing.Status = request.Status;
         await _repo.UpdateAsync(existing);
     }
 
@@ -67,6 +68,7 @@ public class WorkstationService : IWorkstationService
         var entity = await _repo.GetByIdAsync(id);
         if (entity == null)
             throw new Domain.Exceptions.DomainException("工位不存在");
-        await _repo.DeleteAsync(entity);
+        entity.MarkAsDeleted();
+        await _repo.UpdateAsync(entity);
     }
 }

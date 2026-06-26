@@ -9,7 +9,7 @@ namespace MES.Api.Controllers;
 
 [ApiController]
 [Route("api/v1/work-orders")]
-[Authorize(Roles = "admin,supervisor,operator")]
+[Authorize(Roles = "Admin,ProductionManager,Operator")]
 public class WorkOrderController : ControllerBase
 {
     private readonly IWorkOrderService _service;

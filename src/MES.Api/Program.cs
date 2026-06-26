@@ -7,15 +7,17 @@ using MES.Api.Hubs;
 using MES.Api.Middleware;
 using MES.Api.Services;
 using StackExchange.Redis;
-using MES.Application.Interfaces;
-using MES.Application.Services;
 using MES.Infrastructure.Data;
 using MES.Infrastructure.Extensions;
 using MES.Infrastructure.Services;
+using MES.Api.Extensions;
+using MES.Application.Interfaces;
 using MES.Integration;
 using MES.Integration.EventBus;
 using MES.Integration.Adapters;
 using Microsoft.OpenApi;
+using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.EntityFrameworkCore;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -113,33 +115,8 @@ builder.Services.AddAuthorization();
 // Infrastructure (EF Core + Repositories)
 builder.Services.AddMesInfrastructure(builder.Configuration);
 
-// Auth Service
-builder.Services.AddScoped<IAuthService, AuthService>();
-
-// Application Services
-builder.Services.AddScoped<IWorkReportService, WorkReportService>();
-builder.Services.AddScoped<IQcService, QcService>();
-builder.Services.AddScoped<IWorkOrderService, MES.Application.Services.WorkOrderService>();
-builder.Services.AddScoped<IQcCheckpointService, QcCheckpointService>();
-
-// P1 Scheduling & Dispatch Services
-builder.Services.AddScoped<ISchedulingService, MES.Application.Services.SchedulingService>();
-builder.Services.AddScoped<IDispatchService, MES.Application.Services.DispatchService>();
-
-// Equipment & Trace & Dashboard & Andon & Organization & Material Services
-builder.Services.AddScoped<IEquipmentService, EquipmentService>();
-builder.Services.AddScoped<ITraceService, TraceService>();
-builder.Services.AddScoped<IDashboardService, DashboardService>();
-builder.Services.AddScoped<IAndonService, AndonService>();
-builder.Services.AddScoped<IFactoryService, FactoryService>();
-builder.Services.AddScoped<IWorkshopService, WorkshopService>();
-builder.Services.AddScoped<IProductionLineService, ProductionLineService>();
-builder.Services.AddScoped<IWorkstationService, WorkstationService>();
-builder.Services.AddScoped<IMaterialService, MaterialService>();
-builder.Services.AddScoped<IBomService, BomService>();
-builder.Services.AddScoped<IRoutingService, RoutingService>();
-builder.Services.AddScoped<IRoleService, RoleService>();
-builder.Services.AddScoped<IUserService, UserService>();
+// Application Services (统一注册)
+builder.Services.AddApplicationServices();
 
 // Redis 连接（防重复提交 + 批次号生成 + 缓存）
 builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
@@ -149,35 +126,42 @@ builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
     return ConnectionMultiplexer.Connect(redisConnStr);
 });
 builder.Services.AddScoped<MES.Application.Interfaces.ICacheService, MES.Infrastructure.Services.CacheService>();
-builder.Services.AddScoped<CachedMaterialService>();
-builder.Services.AddScoped<CachedRoutingService>();
 builder.Services.AddScoped<IBatchNumberService, BatchNumberService>();
 
 // SignalR
 builder.Services.AddSignalR();
 
-// SignalR Notification Service
-builder.Services.AddScoped<HubNotificationService>();
+// ForwardedHeaders 配置（nginx 代理场景）
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedFor |
+                               Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedProto;
+    options.KnownIPNetworks.Clear();
+    options.KnownProxies.Clear();
+});
+
+// Health Checks
+builder.Services.AddHealthChecks();
 
 // P5 Integration Services
 builder.Services.AddEventBus();
 builder.Services.AddIntegrationAdapters(builder.Configuration);
-
-// P5 Event Log Service
-builder.Services.AddSingleton<MES.Application.Integration.Events.InMemoryEventLogService>();
-
-// AI Services
-builder.Services.AddScoped<IQualityAlertService, QualityAlertService>();
-builder.Services.AddScoped<ISchedulingRecommendationService, SchedulingRecommendationService>();
-builder.Services.AddScoped<IEquipmentHealthService, EquipmentHealthService>();
-builder.Services.AddScoped<IAlertPushService, AlertPushService>();
-builder.Services.AddScoped<IKnowledgeBaseService, KnowledgeBaseService>();
 
 var app = builder.Build();
 
 // Middleware pipeline
 app.UseMiddleware<ExceptionMiddleware>();
 app.UseMiddleware<RequestLoggingMiddleware>();
+
+// Forwarded Headers（nginx 代理后正确获取客户端 IP）
+app.UseForwardedHeaders();
+
+// HTTPS 重定向（生产环境）
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+    app.UseHsts();
+}
 
 // Swagger UI (development only)
 if (app.Environment.IsDevelopment())
@@ -191,12 +175,13 @@ app.UseAuthorization();
 app.UseCors("DevCors");
 app.MapControllers();
 app.MapHub<MesHub>("/hubs/mes");
+app.MapHealthChecks("/health");
 
-// 确保数据库已创建/迁移
+// 确保数据库已迁移
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<MesDbContext>();
-    db.Database.EnsureCreated();
+    db.Database.Migrate();
 
     // 种子数据：初始化 admin 用户
     if (!db.Users.Any())
@@ -204,14 +189,28 @@ using (var scope = app.Services.CreateScope())
         var adminPassword = Convert.ToHexString(
             System.Security.Cryptography.SHA256.HashData(
                 Encoding.UTF8.GetBytes("Admin@2026!")));
-        db.Users.Add(MES.Domain.Entities.User.Create(
+        var adminUser = MES.Domain.Entities.User.Create(
             username: "admin",
             displayName: "系统管理员",
             passwordHash: adminPassword,
             email: "admin@mes.local"
-        ));
+        );
+        db.Users.Add(adminUser);
         db.SaveChanges();
-        Log.Information("Seed data: admin user created");
+
+        // 确保 Admin 角色存在并分配给 admin 用户
+        var adminRole = db.Roles.FirstOrDefault(r => r.Name == "Admin");
+        if (adminRole != null)
+        {
+            db.UserRoles.Add(new MES.Domain.Entities.UserRole
+            {
+                UserId = adminUser.Id,
+                RoleId = adminRole.Id
+            });
+            db.SaveChanges();
+        }
+
+        Log.Information("Seed data: admin user created with Admin role");
     }
 }
 
