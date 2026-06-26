@@ -34,6 +34,8 @@ public class WorkReportServiceTests
         _checkpointRepo = new Mock<IRepository<QcCheckpoint>>();
         _inspectionRepo = new Mock<IRepository<QcInspection>>();
         _cacheService = new Mock<ICacheService>();
+        _cacheService.Setup(c => c.SetIfNotExistsAsync(It.IsAny<string>(), It.IsAny<TimeSpan>()))
+            .ReturnsAsync(true);
 
         _checkpointRepo.Setup(r => r.FindAsync(It.IsAny<System.Linq.Expressions.Expression<Func<QcCheckpoint, bool>>>()))
             .Returns((System.Linq.Expressions.Expression<Func<QcCheckpoint, bool>> expr) =>

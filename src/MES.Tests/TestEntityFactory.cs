@@ -474,13 +474,9 @@ public static class TestEntityFactory
         long? resolvedById = null,
         string? resolvedByName = null)
     {
-        var ctor = typeof(AndonEvent).GetConstructor(
-            BindingFlags.Instance | BindingFlags.NonPublic,
-            null,
-            Type.EmptyTypes,
-            null)!;
-
-        var evt = (AndonEvent)ctor.Invoke(null);
+        // AndonEvent 没有显式构造函数，隐式无参构造函数是 public，
+        // 不能用 NonPublic 反射查找，直接用 Activator 创建
+        var evt = Activator.CreateInstance<AndonEvent>();
 
         SetProperty(evt, "Id", id);
         SetProperty(evt, "EventType", eventType);
