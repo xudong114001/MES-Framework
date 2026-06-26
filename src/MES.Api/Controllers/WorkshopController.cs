@@ -1,13 +1,14 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MES.Api.Middleware;
+using MES.Application.Dtos;
 using MES.Application.Interfaces;
 
 namespace MES.Api.Controllers;
 
 [ApiController]
 [Route("api/v1/workshops")]
-[Authorize(Roles = "admin,supervisor")]
+[Authorize(Roles = "Admin,ProductionManager")]
 public class WorkshopController : ControllerBase
 {
     private readonly IWorkshopService _service;
@@ -36,16 +37,16 @@ public class WorkshopController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> Create([FromBody] MES.Domain.Entities.Workshop entity)
+    public async Task<IActionResult> Create([FromBody] CreateWorkshopRequest request)
     {
-        var created = await _service.CreateAsync(entity);
+        var created = await _service.CreateAsync(request);
         return Ok(ApiResponse.Ok(created));
     }
 
     [HttpPut("{id}")]
-    public async Task<IActionResult> Update(long id, [FromBody] MES.Domain.Entities.Workshop entity)
+    public async Task<IActionResult> Update(long id, [FromBody] UpdateWorkshopRequest request)
     {
-        await _service.UpdateAsync(id, entity);
+        await _service.UpdateAsync(id, request);
         return Ok(ApiResponse.Ok("更新成功"));
     }
 

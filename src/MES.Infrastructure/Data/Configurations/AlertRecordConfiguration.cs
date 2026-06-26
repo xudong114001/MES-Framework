@@ -8,6 +8,7 @@ public class AlertRecordConfiguration : IEntityTypeConfiguration<AlertRecord>
 {
     public void Configure(EntityTypeBuilder<AlertRecord> builder)
     {
+        builder.HasQueryFilter(e => !e.IsDeleted);
         builder.ToTable("mes_alert_record");
         builder.HasKey(e => e.Id);
         builder.Property(e => e.RuleName).HasMaxLength(200).IsRequired();

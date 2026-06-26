@@ -108,7 +108,8 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import http from '../../api/index'
+import { userApi } from '../../api/user'
+import { roleApi } from '../../api/role'
 
 interface User {
   id: number
@@ -175,7 +176,7 @@ const selectedRoles = ref<string[]>([])
 async function loadData() {
   loading.value = true
   try {
-    const res: any = await http.get('/users')
+    const res: any = await userApi.list()
     list.value = res.data || []
   } finally {
     loading.value = false
@@ -184,7 +185,7 @@ async function loadData() {
 
 async function loadRoles() {
   try {
-    const res: any = await http.get('/roles')
+    const res: any = await roleApi.list()
     allRoles.value = res.data || []
   } catch {
     // 角色列表加载失败不影响用户列表
@@ -223,7 +224,7 @@ async function handleSubmit() {
   submitting.value = true
   try {
     if (isEdit.value && editId.value) {
-      await http.put(`/users/${editId.value}`, {
+      await userApi.update(editId.value, {
         username: form.value.username,
         displayName: form.value.displayName,
         email: form.value.email || null,
@@ -232,7 +233,7 @@ async function handleSubmit() {
       })
       ElMessage.success('更新成功')
     } else {
-      await http.post('/users', {
+      await userApi.create({
         username: form.value.username,
         password: form.value.password,
         displayName: form.value.displayName,
@@ -251,7 +252,7 @@ async function handleSubmit() {
 
 async function handleDelete(row: User) {
   await ElMessageBox.confirm('确定删除该用户吗？', '提示', { type: 'warning' })
-  await http.delete(`/users/${row.id}`)
+  await userApi.delete(row.id)
   ElMessage.success('删除成功')
   await loadData()
 }
@@ -269,9 +270,7 @@ async function handleAssignRoles() {
   if (!currentUser.value) return
   roleSubmitting.value = true
   try {
-    await http.put(`/users/${currentUser.value.id}/roles`, {
-      roles: selectedRoles.value
-    })
+    await userApi.assignRoles(currentUser.value.id, selectedRoles.value)
     ElMessage.success('角色分配成功')
     roleDialogVisible.value = false
     await loadData()

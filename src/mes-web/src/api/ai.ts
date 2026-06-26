@@ -1,5 +1,15 @@
 import http from './index'
 
+export interface KnowledgeEntry {
+  id?: number
+  category: number
+  title: string
+  content: string
+  keywords?: string
+  materialId?: number
+  equipmentId?: number
+}
+
 export const aiApi = {
   // Quality Alerts
   getActiveAlerts() {
@@ -12,7 +22,7 @@ export const aiApi = {
     return http.post(`/ai/quality/alerts/${id}/process`, { processedBy })
   },
   getAlertHistory(page = 1, pageSize = 20) {
-    return http.get('/ai/quality/history', { params: { page, page_size: pageSize } })
+    return http.get('/ai/quality/history', { params: { page, pageSize } })
   },
 
   // Scheduling
@@ -39,7 +49,7 @@ export const knowledgeBaseApi = {
   list(params: { category?: number; page?: number; pageSize?: number }) {
     return http.get('/ai/knowledge/entries', { params })
   },
-  add(data: any) { return http.post('/ai/knowledge/entries', data) },
-  update(id: number, data: any) { return http.put(`/ai/knowledge/entries/${id}`, data) },
+  add(data: KnowledgeEntry) { return http.post('/ai/knowledge/entries', data) },
+  update(id: number, data: KnowledgeEntry) { return http.put(`/ai/knowledge/entries/${id}`, data) },
   delete(id: number) { return http.delete(`/ai/knowledge/entries/${id}`) }
 }

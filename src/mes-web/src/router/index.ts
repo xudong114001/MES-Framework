@@ -184,13 +184,13 @@ const router = createRouter({
           path: 'system/users',
           name: 'UserManagement',
           component: () => import('../views/system/UserManagement.vue'),
-          meta: { title: '用户管理', roles: ['admin'] }
+          meta: { title: '用户管理', roles: ['Admin'] }
         },
         {
           path: 'system/roles',
           name: 'RoleManagement',
           component: () => import('../views/system/RoleManagement.vue'),
-          meta: { title: '角色管理', roles: ['admin'] }
+          meta: { title: '角色管理', roles: ['Admin'] }
         },
         {
           path: 'integration',

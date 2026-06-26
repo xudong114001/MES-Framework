@@ -320,4 +320,16 @@ public class WorkReportService : IWorkReportService
 
         return MapToDto(await SubmitReportAsync(report));
     }
+
+    /// <summary>
+    /// 删除报工记录（软删除）
+    /// </summary>
+    public async Task DeleteAsync(long id)
+    {
+        var report = await _reportRepo.GetByIdAsync(id);
+        if (report == null)
+            throw new Domain.Exceptions.EntityNotFoundException("报工记录不存在");
+        report.MarkAsDeleted();
+        await _reportRepo.UpdateAsync(report);
+    }
 }

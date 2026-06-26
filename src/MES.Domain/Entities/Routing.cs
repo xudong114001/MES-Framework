@@ -70,6 +70,18 @@ public class Routing : BaseEntity, IAggregateRoot
     }
 
     /// <summary>
+    /// 移除工序
+    /// </summary>
+    public void RemoveStep(long stepId)
+    {
+        var step = _steps.FirstOrDefault(s => s.Id == stepId);
+        if (step == null)
+            throw new DomainException("工序步骤不存在");
+
+        _steps.Remove(step);
+    }
+
+    /// <summary>
     /// 重新排序工序
     /// </summary>
     public void ReorderSteps(IEnumerable<int> newOrder)

@@ -8,6 +8,7 @@ public class QcInspectionItemConfiguration : IEntityTypeConfiguration<QcInspecti
 {
     public void Configure(EntityTypeBuilder<QcInspectionItem> builder)
     {
+        builder.HasQueryFilter(e => !e.IsDeleted);
         builder.ToTable("mes_qc_inspection_item");
         builder.HasKey(e => e.Id);
         builder.Property(e => e.ItemName).HasMaxLength(200).IsRequired();

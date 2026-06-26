@@ -8,7 +8,7 @@ namespace MES.Api.Controllers;
 
 [ApiController]
 [Route("api/v1/factories")]
-[Authorize(Roles = "admin,supervisor")]
+[Authorize(Roles = "Admin,ProductionManager")]
 public class FactoryController : ControllerBase
 {
     private readonly IFactoryService _service;

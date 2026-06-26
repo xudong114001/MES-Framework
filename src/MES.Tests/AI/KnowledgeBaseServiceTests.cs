@@ -368,7 +368,7 @@ public class KnowledgeBaseServiceTests : IDisposable
 
         Assert.True(result);
 
-        var entity = await _db.Set<KnowledgeEntry>().FirstOrDefaultAsync(e => e.Id == 3);
+        var entity = await _db.Set<KnowledgeEntry>().IgnoreQueryFilters().FirstOrDefaultAsync(e => e.Id == 3);
         Assert.NotNull(entity);
         Assert.True(entity.IsDeleted);
     }

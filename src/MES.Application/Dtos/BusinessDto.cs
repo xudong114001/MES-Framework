@@ -138,6 +138,32 @@ public class RoutingStepDto
 }
 
 /// <summary>
+/// 添加工序步骤请求
+/// </summary>
+public class AddRoutingStepRequest
+{
+    public int StepNo { get; set; }
+    public string StepName { get; set; } = string.Empty;
+    public string? WorkstationType { get; set; }
+    public decimal StandardTime { get; set; }
+    public bool IsQcPoint { get; set; }
+    public bool IsScrapPoint { get; set; }
+}
+
+/// <summary>
+/// 更新工序步骤请求
+/// </summary>
+public class UpdateRoutingStepRequest
+{
+    public int StepNo { get; set; }
+    public string StepName { get; set; } = string.Empty;
+    public string? WorkstationType { get; set; }
+    public decimal StandardTime { get; set; }
+    public bool IsQcPoint { get; set; }
+    public bool IsScrapPoint { get; set; }
+}
+
+/// <summary>
 /// BOM DTO
 /// </summary>
 public class BomDto
@@ -185,4 +211,40 @@ public class UpdateBomRequest
     public DateTime ValidFrom { get; set; }
     public DateTime? ValidTo { get; set; }
     public bool Status { get; set; } = true;
+}
+
+/// <summary>
+/// 质检点 DTO
+/// </summary>
+public class QcCheckpointDto
+{
+    public long Id { get; set; }
+    public long StepId { get; set; }
+    public QcInspectionType CheckType { get; set; }
+    public bool IsMandatory { get; set; }
+    public string? Remark { get; set; }
+    public DateTime CreatedAt { get; set; }
+    public DateTime UpdatedAt { get; set; }
+}
+
+/// <summary>
+/// 配置质检点请求
+/// </summary>
+public class ConfigureQcCheckpointRequest
+{
+    public long StepId { get; set; }
+    public QcInspectionType CheckType { get; set; }
+    public bool IsMandatory { get; set; }
+    public string? Remark { get; set; }
+}
+
+/// <summary>
+/// 更新质检点请求
+/// </summary>
+public class UpdateQcCheckpointRequest
+{
+    public long StepId { get; set; }
+    public QcInspectionType CheckType { get; set; }
+    public bool IsMandatory { get; set; }
+    public string? Remark { get; set; }
 }

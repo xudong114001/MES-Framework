@@ -25,6 +25,7 @@ public interface IQcService
 
     /// <summary>不合格品处理</summary>
     Task HandleNonconformingAsync(long inspectionId, InspectionResult action, string? remark);
+    Task DeleteInspectionAsync(long inspectionId);
 
     /// <summary>获取待检列表</summary>
     Task<IEnumerable<QcInspectionDto>> GetPendingInspectionsAsync();

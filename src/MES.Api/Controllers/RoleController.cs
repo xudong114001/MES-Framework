@@ -7,7 +7,7 @@ namespace MES.Api.Controllers;
 
 [ApiController]
 [Route("api/v1/[controller]")]
-[Authorize(Roles = "admin")]
+[Authorize(Roles = "Admin")]
 public class RoleController : ControllerBase
 {
     private readonly IRoleService _service;

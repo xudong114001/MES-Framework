@@ -7,7 +7,7 @@ namespace MES.Api.Controllers;
 
 [ApiController]
 [Route("api/v1/dashboard")]
-[Authorize]
+[Authorize(Roles = "Admin,ProductionManager,QualityEngineer,EquipmentEngineer,Operator")]
 public class DashboardController : ControllerBase
 {
     private readonly IDashboardService _service;

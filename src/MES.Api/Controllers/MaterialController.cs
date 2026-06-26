@@ -8,7 +8,7 @@ namespace MES.Api.Controllers;
 
 [ApiController]
 [Route("api/v1/materials")]
-[Authorize(Roles = "admin,supervisor")]
+[Authorize(Roles = "Admin,ProductionManager")]
 public class MaterialController : ControllerBase
 {
     private readonly IMaterialService _service;

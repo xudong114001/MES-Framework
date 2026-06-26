@@ -1,3 +1,4 @@
+using MES.Application.Dtos;
 using MES.Application.Interfaces;
 using MES.Domain.Entities;
 using MES.Domain.Enums;
@@ -11,78 +12,101 @@ namespace MES.Application.Services;
 /// </summary>
 public class QcCheckpointService : IQcCheckpointService
 {
-    private readonly IRepository<QcCheckpoint> _checkpointRepo0;
+    private readonly IRepository<QcCheckpoint> _checkpointRepo;
 
-    public QcCheckpointService(
-        IRepository<QcCheckpoint> checkpointRepo)
+    public QcCheckpointService(IRepository<QcCheckpoint> checkpointRepo)
     {
-        _checkpointRepo0 = checkpointRepo;
+        _checkpointRepo = checkpointRepo;
+    }
+
+    private static QcCheckpointDto MapToDto(QcCheckpoint entity) => new()
+    {
+        Id = entity.Id,
+        StepId = entity.StepId,
+        CheckType = entity.CheckType,
+        IsMandatory = entity.IsMandatory,
+        Remark = entity.Remark,
+        CreatedAt = entity.CreatedAt,
+        UpdatedAt = entity.UpdatedAt
+    };
+
+    /// <summary>
+    /// 获取所有质检点
+    /// </summary>
+    public async Task<IEnumerable<QcCheckpointDto>> GetAllCheckpointsAsync()
+    {
+        var list = await _checkpointRepo.GetAllAsync();
+        return list.Select(MapToDto);
     }
 
     /// <summary>
-    /// 获取所有质检点（兼容前端）
+    /// 根据 ID 获取质检点
     /// </summary>
-    public async Task<IEnumerable<QcCheckpoint>> GetAllCheckpointsAsync()
+    public async Task<QcCheckpointDto?> GetCheckpointByIdAsync(long id)
     {
-        return await _checkpointRepo0.GetAllAsync();
-    }
-
-    /// <summary>
-    /// 根据 ID 获取质检点（兼容前端）
-    /// </summary>
-    public async Task<QcCheckpoint?> GetCheckpointByIdAsync(long id)
-    {
-        return await _checkpointRepo0.GetByIdAsync(id);
+        var entity = await _checkpointRepo.GetByIdAsync(id);
+        return entity == null ? null : MapToDto(entity);
     }
 
     /// <summary>
     /// 查询某工序配置的质检点
     /// </summary>
-    public async Task<IEnumerable<QcCheckpoint>> GetCheckpointsByStepAsync(long stepId)
+    public async Task<IEnumerable<QcCheckpointDto>> GetCheckpointsByStepAsync(long stepId)
     {
-        return await _checkpointRepo0.FindAsync(c => c.StepId == stepId);
+        var list = await _checkpointRepo.FindAsync(c => c.StepId == stepId);
+        return list.Select(MapToDto);
     }
 
     /// <summary>
     /// 配置质检点
     /// </summary>
-    public async Task<QcCheckpoint> ConfigureCheckpointAsync(QcCheckpoint checkpoint)
+    public async Task<QcCheckpointDto> ConfigureCheckpointAsync(ConfigureQcCheckpointRequest request)
     {
-        var existing = await _checkpointRepo0.FindAsync(
-            c => c.StepId == checkpoint.StepId && c.CheckType == checkpoint.CheckType);
+        var existing = await _checkpointRepo.FindAsync(
+            c => c.StepId == request.StepId && c.CheckType == request.CheckType);
         if (existing.Any())
             throw new DomainException("该工序已配置相同类型的质检点");
 
-        return await _checkpointRepo0.AddAsync(checkpoint);
+        var checkpoint = new QcCheckpoint
+        {
+            StepId = request.StepId,
+            CheckType = request.CheckType,
+            IsMandatory = request.IsMandatory,
+            Remark = request.Remark
+        };
+
+        var created = await _checkpointRepo.AddAsync(checkpoint);
+        return MapToDto(created);
     }
 
     /// <summary>
-    /// 更新质检点（兼容前端）
+    /// 更新质检点
     /// </summary>
-    public async Task UpdateCheckpointAsync(long id, QcCheckpoint checkpoint)
+    public async Task UpdateCheckpointAsync(long id, UpdateQcCheckpointRequest request)
     {
-        var existing = await _checkpointRepo0.GetByIdAsync(id);
+        var existing = await _checkpointRepo.GetByIdAsync(id);
         if (existing == null)
             throw new DomainException("质检点配置不存在");
 
-        existing.StepId = checkpoint.StepId;
-        existing.CheckType = checkpoint.CheckType;
-        existing.IsMandatory = checkpoint.IsMandatory;
-        existing.Remark = checkpoint.Remark;
+        existing.StepId = request.StepId;
+        existing.CheckType = request.CheckType;
+        existing.IsMandatory = request.IsMandatory;
+        existing.Remark = request.Remark;
 
-        await _checkpointRepo0.UpdateAsync(existing);
+        await _checkpointRepo.UpdateAsync(existing);
     }
 
     /// <summary>
-    /// 取消配置质检点
+    /// 取消配置质检点（软删除）
     /// </summary>
     public async Task RemoveCheckpointAsync(long checkpointId)
     {
-        var checkpoint = await _checkpointRepo0.GetByIdAsync(checkpointId);
+        var checkpoint = await _checkpointRepo.GetByIdAsync(checkpointId);
         if (checkpoint == null)
             throw new DomainException("质检点配置不存在");
 
-        await _checkpointRepo0.DeleteAsync(checkpoint);
+        checkpoint.MarkAsDeleted();
+        await _checkpointRepo.UpdateAsync(checkpoint);
     }
 
     /// <summary>
@@ -90,7 +114,7 @@ public class QcCheckpointService : IQcCheckpointService
     /// </summary>
     public async Task<bool> HasPendingMandatoryCheckpointAsync(long stepId)
     {
-        var mandatoryCheckpoints = await _checkpointRepo0.FindAsync(
+        var mandatoryCheckpoints = await _checkpointRepo.FindAsync(
             c => c.StepId == stepId && c.IsMandatory);
 
         if (!mandatoryCheckpoints.Any())

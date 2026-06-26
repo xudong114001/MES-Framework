@@ -324,4 +324,16 @@ public class QcService : IQcService
 
         return new { total, passed, failed, pending };
     }
+
+    /// <summary>
+    /// 删除质检单（软删除）
+    /// </summary>
+    public async Task DeleteInspectionAsync(long inspectionId)
+    {
+        var inspection = await _inspectionRepo.GetByIdAsync(inspectionId);
+        if (inspection == null)
+            throw new Domain.Exceptions.EntityNotFoundException("质检单不存在");
+        inspection.MarkAsDeleted();
+        await _inspectionRepo.UpdateAsync(inspection);
+    }
 }

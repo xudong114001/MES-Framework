@@ -8,7 +8,7 @@ namespace MES.Api.Controllers;
 
 [ApiController]
 [Route("api/v1/routings")]
-[Authorize(Roles = "admin,supervisor")]
+[Authorize(Roles = "Admin,ProductionManager")]
 public class RoutingController : ControllerBase
 {
     private readonly IRoutingService _service;
@@ -34,6 +34,47 @@ public class RoutingController : ControllerBase
     {
         var list = await _service.GetByMaterialIdAsync(materialId);
         return Ok(ApiResponse.Ok(list));
+    }
+
+    /// <summary>
+    /// 获取工艺路线的工序步骤列表
+    /// </summary>
+    [HttpGet("{id}/steps")]
+    public async Task<IActionResult> GetSteps(long id)
+    {
+        var routing = await _service.GetByIdAsync(id);
+        if (routing == null) return NotFound(ApiResponse.Fail("工艺路线不存在"));
+        return Ok(ApiResponse.Ok(routing.Steps));
+    }
+
+    /// <summary>
+    /// 添加工序步骤
+    /// </summary>
+    [HttpPost("{id}/steps")]
+    public async Task<IActionResult> AddStep(long id, [FromBody] AddRoutingStepRequest request)
+    {
+        var created = await _service.AddStepAsync(id, request);
+        return Ok(ApiResponse.Ok(created));
+    }
+
+    /// <summary>
+    /// 更新工序步骤
+    /// </summary>
+    [HttpPut("{id}/steps/{stepId}")]
+    public async Task<IActionResult> UpdateStep(long id, long stepId, [FromBody] UpdateRoutingStepRequest request)
+    {
+        await _service.UpdateStepAsync(id, stepId, request);
+        return Ok(ApiResponse.Ok("更新成功"));
+    }
+
+    /// <summary>
+    /// 删除工序步骤
+    /// </summary>
+    [HttpDelete("{id}/steps/{stepId}")]
+    public async Task<IActionResult> DeleteStep(long id, long stepId)
+    {
+        await _service.DeleteStepAsync(id, stepId);
+        return Ok(ApiResponse.Ok("删除成功"));
     }
 
     [HttpPost]

@@ -85,6 +85,7 @@ public class BomService : IBomService
         var entity = await _repo.GetByIdAsync(id);
         if (entity == null)
             throw new Domain.Exceptions.DomainException("BOM明细不存在");
-        await _repo.DeleteAsync(entity);
+        entity.MarkAsDeleted();
+        await _repo.UpdateAsync(entity);
     }
 }

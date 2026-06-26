@@ -13,7 +13,7 @@ public class ProcessAlertRequest
 
 [ApiController]
 [Route("api/v1/ai")]
-[Authorize]
+[Authorize(Roles = "Admin,ProductionManager,QualityEngineer,EquipmentEngineer")]
 public class AiController : ControllerBase
 {
     private readonly IQualityAlertService _qualityAlertService;

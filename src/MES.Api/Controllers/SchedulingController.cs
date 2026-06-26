@@ -8,7 +8,7 @@ namespace MES.Api.Controllers;
 
 [ApiController]
 [Route("api/v1/scheduling")]
-[Authorize(Roles = "admin,supervisor")]
+[Authorize(Roles = "Admin,ProductionManager")]
 public class SchedulingController : ControllerBase
 {
     private readonly ISchedulingService _schedulingService;

@@ -8,6 +8,7 @@ public class MaterialTraceConfiguration : IEntityTypeConfiguration<MaterialTrace
 {
     public void Configure(EntityTypeBuilder<MaterialTrace> builder)
     {
+        builder.HasQueryFilter(e => !e.IsDeleted);
         builder.ToTable("mes_material_trace");
         builder.HasKey(e => e.Id);
         builder.Property(e => e.BatchNo).HasMaxLength(100);

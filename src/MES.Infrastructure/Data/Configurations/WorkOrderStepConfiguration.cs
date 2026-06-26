@@ -9,6 +9,7 @@ public class WorkOrderStepConfiguration : IEntityTypeConfiguration<WorkOrderStep
 {
     public void Configure(EntityTypeBuilder<WorkOrderStep> builder)
     {
+        builder.HasQueryFilter(e => !e.IsDeleted);
         builder.ToTable("mes_work_order_step");
         builder.HasKey(e => e.Id);
         builder.Property(e => e.StepName).HasMaxLength(200).IsRequired();

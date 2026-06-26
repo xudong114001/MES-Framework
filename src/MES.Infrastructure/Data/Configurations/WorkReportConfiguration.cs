@@ -10,6 +10,7 @@ public class WorkReportConfiguration : IEntityTypeConfiguration<WorkReport>
 {
     public void Configure(EntityTypeBuilder<WorkReport> builder)
     {
+        builder.HasQueryFilter(e => !e.IsDeleted);
         builder.ToTable("mes_work_report");
         builder.HasKey(e => e.Id);
         builder.Property(e => e.ReportNo).HasMaxLength(50).IsRequired();

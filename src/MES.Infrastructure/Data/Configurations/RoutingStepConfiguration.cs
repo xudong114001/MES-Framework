@@ -8,6 +8,7 @@ public class RoutingStepConfiguration : IEntityTypeConfiguration<RoutingStep>
 {
     public void Configure(EntityTypeBuilder<RoutingStep> builder)
     {
+        builder.HasQueryFilter(e => !e.IsDeleted);
         builder.ToTable("mes_routing_step");
         builder.HasKey(e => e.Id);
         builder.Property(e => e.StepName).HasMaxLength(200).IsRequired();

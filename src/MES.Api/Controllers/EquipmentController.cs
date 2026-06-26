@@ -9,7 +9,7 @@ namespace MES.Api.Controllers;
 
 [ApiController]
 [Route("api/v1/equipment")]
-[Authorize(Roles = "admin,supervisor")]
+[Authorize(Roles = "Admin,ProductionManager,EquipmentEngineer")]
 public class EquipmentController : ControllerBase
 {
     private readonly IEquipmentService _equipmentService;
