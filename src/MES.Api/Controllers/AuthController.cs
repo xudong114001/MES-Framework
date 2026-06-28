@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using MES.Api.Dtos;
 using MES.Api.Middleware;
-using MES.Api.Services;
+using MES.Application.Dtos;
+using MES.Application.Interfaces;
 
 namespace MES.Api.Controllers;
 

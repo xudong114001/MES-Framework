@@ -170,7 +170,7 @@ async function loadFailed() {
   }
 }
 
-function goToQc(id?: number) {
+function goToQc(_id?: number) {
   router.push('/qc')
 }
 

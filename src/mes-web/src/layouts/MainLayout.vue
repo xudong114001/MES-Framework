@@ -22,10 +22,10 @@
             <el-icon><Folder /></el-icon>
             <span>基础数据</span>
           </template>
-          <el-menu-item index="/factory" v-role="['admin', 'supervisor']">工厂管理</el-menu-item>
-          <el-menu-item index="/workshop" v-role="['admin', 'supervisor']">车间管理</el-menu-item>
-          <el-menu-item index="/production-line" v-role="['admin', 'supervisor']">产线管理</el-menu-item>
-          <el-menu-item index="/workstation" v-role="['admin', 'supervisor']">工位管理</el-menu-item>
+          <el-menu-item index="/factory" v-role="['Admin', 'ProductionManager']">工厂管理</el-menu-item>
+          <el-menu-item index="/workshop" v-role="['Admin', 'ProductionManager']">车间管理</el-menu-item>
+          <el-menu-item index="/production-line" v-role="['Admin', 'ProductionManager']">产线管理</el-menu-item>
+          <el-menu-item index="/workstation" v-role="['Admin', 'ProductionManager']">工位管理</el-menu-item>
           <el-menu-item index="/material" v-permission="'material:view'">物料管理</el-menu-item>
           <el-menu-item index="/bom" v-permission="'material:view'">BOM 管理</el-menu-item>
           <el-menu-item index="/routing" v-permission="'material:view'">工艺路线</el-menu-item>
@@ -84,7 +84,7 @@
           <el-icon><Cpu /></el-icon>
           <span>AI智能分析</span>
         </el-menu-item>
-        <el-sub-menu index="system" v-role="'admin'">
+        <el-sub-menu index="system" v-role="'Admin'">
           <template #title>
             <el-icon><Setting /></el-icon>
             <span>系统设置</span>
@@ -131,8 +131,8 @@ import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 import {
-  Monitor, HomeFilled, Folder, List, Document, CircleCheck, CircleCheckFilled, Tools, Search, WarningFilled,
-  UserFilled, ArrowDown, TrendCharts, Grid, DataAnalysis, Setting, Link, Cpu, Close
+  Monitor, HomeFilled, Folder, List, Document, CircleCheck, CircleCheckFilled, Search, WarningFilled,
+  UserFilled, ArrowDown, TrendCharts, Grid, DataAnalysis, Setting, Link, Cpu
 } from '@element-plus/icons-vue'
 import AiFloatButton from '../components/AiFloatButton.vue'
 

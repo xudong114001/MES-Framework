@@ -106,7 +106,7 @@ public abstract class IntegrationTestBase : IAsyncLifetime
             "mes_bom",
             "mes_maintenance_plan", "mes_equipment",
             "mes_workstation", "mes_production_line", "mes_workshop", "mes_factory",
-            "mes_material", "mes_user"
+            "mes_material", "mes_role_permission", "mes_user_role", "mes_role", "mes_user"
         };
 
 #pragma warning disable EF1002

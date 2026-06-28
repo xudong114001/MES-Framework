@@ -1,27 +1,32 @@
 using System.Security.Cryptography;
 using System.Text;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
-using MES.Api.Dtos;
+using MES.Application.Dtos;
+using MES.Application.Interfaces;
+using MES.Application.Settings;
 using MES.Api.Services;
 using MES.Domain.Entities;
-using MES.Infrastructure.Data;
+using MES.Domain.Repositories;
+using Moq;
 using Xunit;
 
 namespace MES.Tests.Services;
 
-public class AuthServiceTests : IDisposable
+public class AuthServiceTests
 {
-    private readonly MesDbContext _db;
+    private readonly Mock<IRepository<User>> _userRepo;
+    private readonly Mock<IRepository<UserRole>> _userRoleRepo;
+    private readonly Mock<IRepository<Role>> _roleRepo;
+    private readonly Mock<IRepository<RolePermission>> _rolePermissionRepo;
     private readonly AuthService _service;
     private readonly JwtSettings _jwtSettings;
 
     public AuthServiceTests()
     {
-        var options = new DbContextOptionsBuilder<MesDbContext>()
-            .UseInMemoryDatabase(Guid.NewGuid().ToString())
-            .Options;
-        _db = new MesDbContext(options);
+        _userRepo = new Mock<IRepository<User>>();
+        _userRoleRepo = new Mock<IRepository<UserRole>>();
+        _roleRepo = new Mock<IRepository<Role>>();
+        _rolePermissionRepo = new Mock<IRepository<RolePermission>>();
 
         _jwtSettings = new JwtSettings
         {
@@ -31,12 +36,12 @@ public class AuthServiceTests : IDisposable
             ExpireHours = 1
         };
 
-        _service = new AuthService(_db, Options.Create(_jwtSettings));
-    }
-
-    public void Dispose()
-    {
-        _db.Dispose();
+        _service = new AuthService(
+            _userRepo.Object,
+            _userRoleRepo.Object,
+            _roleRepo.Object,
+            _rolePermissionRepo.Object,
+            Options.Create(_jwtSettings));
     }
 
     [Fact]
@@ -50,15 +55,21 @@ public class AuthServiceTests : IDisposable
             displayName: "Admin User",
             passwordHash: passwordHash
         );
-        _db.Users.Add(user);
-        _db.SaveChanges();
 
-        var role = new Role { Name = "admin" };
-        _db.Roles.Add(role);
-        _db.SaveChanges();
+        var role = new Role { Name = "Admin" };
+        TestEntityFactory.SetProperty(role, "Id", 1L);
 
-        _db.UserRoles.Add(new UserRole { UserId = user.Id, RoleId = role.Id });
-        _db.SaveChanges();
+        var userRole = new UserRole { UserId = user.Id, RoleId = role.Id };
+
+        _userRepo.Setup(r => r.FindAsync(It.IsAny<System.Linq.Expressions.Expression<Func<User, bool>>>()))
+            .ReturnsAsync(new List<User> { user }.AsEnumerable());
+        _userRoleRepo.Setup(r => r.FindAsync(It.IsAny<System.Linq.Expressions.Expression<Func<UserRole, bool>>>()))
+            .ReturnsAsync(new List<UserRole> { userRole }.AsEnumerable());
+        _roleRepo.Setup(r => r.FindAsync(It.IsAny<System.Linq.Expressions.Expression<Func<Role, bool>>>()))
+            .ReturnsAsync(new List<Role> { role }.AsEnumerable());
+        _rolePermissionRepo.Setup(r => r.FindAsync(It.IsAny<System.Linq.Expressions.Expression<Func<RolePermission, bool>>>()))
+            .ReturnsAsync(Enumerable.Empty<RolePermission>());
+        _userRepo.Setup(r => r.UpdateAsync(It.IsAny<User>())).Returns(Task.CompletedTask);
 
         var request = new LoginRequest { Username = "admin", Password = "Admin@2026!" };
 
@@ -72,7 +83,7 @@ public class AuthServiceTests : IDisposable
         Assert.NotNull(result.UserInfo);
         Assert.Equal("admin", result.UserInfo.Username);
         Assert.Equal("Admin User", result.UserInfo.DisplayName);
-        Assert.Contains("admin", result.UserInfo.Roles);
+        Assert.Contains("Admin", result.UserInfo.Roles);
     }
 
     [Fact]
@@ -86,8 +97,9 @@ public class AuthServiceTests : IDisposable
             displayName: "Admin User",
             passwordHash: passwordHash
         );
-        _db.Users.Add(user);
-        _db.SaveChanges();
+
+        _userRepo.Setup(r => r.FindAsync(It.IsAny<System.Linq.Expressions.Expression<Func<User, bool>>>()))
+            .ReturnsAsync(new List<User> { user }.AsEnumerable());
 
         var request = new LoginRequest { Username = "admin", Password = "WrongPassword!" };
 
@@ -102,6 +114,9 @@ public class AuthServiceTests : IDisposable
     public async Task LoginAsync_NonExistingUser_ReturnsNull()
     {
         // Arrange
+        _userRepo.Setup(r => r.FindAsync(It.IsAny<System.Linq.Expressions.Expression<Func<User, bool>>>()))
+            .ReturnsAsync(Enumerable.Empty<User>());
+
         var request = new LoginRequest { Username = "nonexistent", Password = "SomePassword!" };
 
         // Act
@@ -124,8 +139,9 @@ public class AuthServiceTests : IDisposable
         TestEntityFactory.SetProperty(user, "PasswordHash", passwordHash);
         user.MarkAsDeleted();
 
-        _db.Users.Add(user);
-        _db.SaveChanges();
+        // Deleted user should not be returned by the repository filter
+        _userRepo.Setup(r => r.FindAsync(It.IsAny<System.Linq.Expressions.Expression<Func<User, bool>>>()))
+            .ReturnsAsync(Enumerable.Empty<User>());
 
         var request = new LoginRequest { Username = "admin", Password = "Admin@2026!" };
 

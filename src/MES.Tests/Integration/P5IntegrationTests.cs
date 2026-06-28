@@ -1,4 +1,6 @@
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using MES.Application.Settings;
 using MES.Domain.Enums;
 using MES.Integration.Adapters;
 using MES.Integration.Dtos;
@@ -11,12 +13,14 @@ using Xunit.Abstractions;
 
 namespace MES.Tests.Integration;
 
+[Trait("Category", "Integration")]
 public class P5IntegrationTests : IDisposable
 {
     private readonly Mock<ILogger<MockERPAdapter>> _erpLogger = new();
     private readonly Mock<ILogger<MockWMSAdapter>> _wmsLogger = new();
     private readonly Mock<ILogger<MockPlcCollector>> _plcLogger = new();
     private readonly Mock<ILogger<RabbitMQEventBus>> _ebLogger = new();
+    private readonly IOptions<RabbitMQSettings> _rabbitMQOptions = Options.Create(new RabbitMQSettings());
 
     public P5IntegrationTests(ITestOutputHelper output)
     {
@@ -224,7 +228,7 @@ public class P5IntegrationTests : IDisposable
     [Fact]
     public async Task EventBus_PublishAsync_DoesNotThrow()
     {
-        var eventBus = new RabbitMQEventBus(_ebLogger.Object);
+        var eventBus = new RabbitMQEventBus(_ebLogger.Object, _rabbitMQOptions);
 
         var testEvent = new TestIntegrationEvent
         {
@@ -239,7 +243,7 @@ public class P5IntegrationTests : IDisposable
     [Fact]
     public async Task EventBus_SubscribeAsync_DoesNotThrow()
     {
-        var eventBus = new RabbitMQEventBus(_ebLogger.Object);
+        var eventBus = new RabbitMQEventBus(_ebLogger.Object, _rabbitMQOptions);
 
         await eventBus.SubscribeAsync<TestIntegrationEvent>(async e =>
         {

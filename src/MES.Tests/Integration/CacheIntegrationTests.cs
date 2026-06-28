@@ -7,6 +7,7 @@ using Assert = Xunit.Assert;
 
 namespace MES.Tests.Integration;
 
+[Trait("Category", "Integration")]
 public class CacheIntegrationTests : IntegrationTestBase
 {
     private readonly ITestOutputHelper _output;

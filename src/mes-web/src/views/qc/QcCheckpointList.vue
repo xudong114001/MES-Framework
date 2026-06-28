@@ -4,7 +4,7 @@
       <template #header>
         <div class="card-header">
           <span>质检检查点</span>
-          <el-button type="primary" @click="dialogVisible = true">新增检查点</el-button>
+          <el-button type="primary" @click="openCreate">新增检查点</el-button>
         </div>
       </template>
 
@@ -39,8 +39,9 @@
           </template>
         </el-table-column>
         <el-table-column prop="remark" label="备注" min-width="200" show-overflow-tooltip />
-        <el-table-column label="操作" width="120" fixed="right">
+        <el-table-column label="操作" width="160" fixed="right">
           <template #default="{ row }">
+            <el-button size="small" type="primary" @click="openEdit(row)">编辑</el-button>
             <el-button size="small" type="danger" @click="handleDelete(row)">删除</el-button>
           </template>
         </el-table-column>
@@ -52,12 +53,12 @@
     <el-dialog v-model="dialogVisible" :title="isEditing ? '编辑检查点' : '新增检查点'" width="500px" :close-on-click-modal="false">
       <el-form ref="formRef" :model="form" :rules="formRules" label-width="110px">
         <el-form-item label="工艺路线" prop="routingId">
-          <el-select v-model="form.routingId" placeholder="选择工艺路线" style="width:100%" @change="onFormRoutingChange">
+          <el-select v-model="form.routingId" placeholder="选择工艺路线" style="width:100%" @change="onFormRoutingChange" :disabled="isEditing">
             <el-option v-for="r in routings" :key="r.id" :label="r.name" :value="r.id" />
           </el-select>
         </el-form-item>
         <el-form-item label="工序" prop="stepId">
-          <el-select v-model="form.stepId" placeholder="请选择工序" style="width:100%">
+          <el-select v-model="form.stepId" placeholder="请选择工序" style="width:100%" :disabled="isEditing">
             <el-option v-for="s in formSteps" :key="s.id" :label="s.stepName" :value="s.id" />
           </el-select>
         </el-form-item>
@@ -95,6 +96,7 @@ const list = ref<any[]>([])
 const dialogVisible = ref(false)
 const submitting = ref(false)
 const isEditing = ref(false)
+const editingId = ref<number | undefined>(undefined)
 
 // 工艺路线和工序
 const routings = ref<any[]>([])
@@ -142,9 +144,9 @@ async function loadRoutings() {
   } catch {}
 }
 
-async function loadStepsByRouting(routingId: number): Promise<any[]> {
+async function loadStepsByRouting(rid: number): Promise<any[]> {
   try {
-    const res: any = await routingApi.getSteps(routingId)
+    const res: any = await routingApi.getSteps(rid)
     return res.data || []
   } catch {
     return []
@@ -184,23 +186,55 @@ async function fetchList() {
   }
 }
 
+function openCreate() {
+  isEditing.value = false
+  editingId.value = undefined
+  resetForm()
+  dialogVisible.value = true
+}
+
+async function openEdit(row: any) {
+  isEditing.value = true
+  editingId.value = row.id
+  form.routingId = row.routingId
+  form.stepId = row.stepId
+  form.checkType = row.checkType
+  form.isMandatory = row.isMandatory
+  form.remark = row.remark || ''
+  // 加载对应工艺路线的工序
+  if (row.routingId) {
+    formSteps.value = await loadStepsByRouting(row.routingId)
+  }
+  dialogVisible.value = true
+}
+
 async function handleSubmit() {
   const valid = await formRef.value?.validate().catch(() => false)
   if (!valid) return
   submitting.value = true
   try {
-    await qcCheckpointApi.create({
-      stepId: form.stepId!,
-      checkType: form.checkType,
-      isMandatory: form.isMandatory,
-      remark: form.remark
-    })
-    ElMessage.success('检查点创建成功')
+    if (isEditing.value && editingId.value) {
+      await qcCheckpointApi.update(editingId.value, {
+        stepId: form.stepId!,
+        checkType: form.checkType,
+        isMandatory: form.isMandatory,
+        remark: form.remark
+      })
+      ElMessage.success('检查点更新成功')
+    } else {
+      await qcCheckpointApi.create({
+        stepId: form.stepId!,
+        checkType: form.checkType,
+        isMandatory: form.isMandatory,
+        remark: form.remark
+      })
+      ElMessage.success('检查点创建成功')
+    }
     dialogVisible.value = false
     resetForm()
     await fetchList()
   } catch (e: any) {
-    ElMessage.error(e.message || '创建失败')
+    ElMessage.error(e.message || (isEditing.value ? '更新失败' : '创建失败'))
   } finally {
     submitting.value = false
   }
@@ -213,6 +247,7 @@ function resetForm() {
   form.isMandatory = false
   form.remark = ''
   formSteps.value = []
+  editingId.value = undefined
 }
 
 async function handleDelete(row: any) {

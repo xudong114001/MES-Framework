@@ -6,6 +6,7 @@ using Xunit;
 
 namespace MES.Tests.Infrastructure;
 
+[Trait("Category", "Integration")]
 public class MesDbContextConfigurationTests
 {
     [Fact]

@@ -113,7 +113,6 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { useRouter } from 'vue-router'
 import { schedulingApi, dispatchApi } from '../../api/scheduling'
 import { productionLineApi } from '../../api/production-line'
-import { workOrderApi } from '../../api/work-order'
 import { workstationApi } from '../../api/workstation'
 
 const router = useRouter()

@@ -142,7 +142,14 @@ function formatTime(t?: string): string {
 async function fetchData() {
   loading.value = true
   try {
-    const res: any = await workOrderApi.list()
+    const params: Record<string, any> = {}
+    if (filters.value.status) params.status = filters.value.status
+    if (filters.value.materialId) params.materialId = filters.value.materialId
+    if (filters.value.dateRange?.length === 2) {
+      params.startDate = filters.value.dateRange[0]
+      params.endDate = filters.value.dateRange[1]
+    }
+    const res: any = await workOrderApi.list(params)
     list.value = (res.data || []).map((item: any) => ({
       ...item,
       materialName: item.materialName || `物料#${item.materialId}`
@@ -165,7 +172,9 @@ async function loadMaterials() {
 }
 
 function searchMaterial(query: string) {
-  // Client-side filtering on loaded materials
+  // 客户端过滤已加载的物料列表（远程搜索由 el-select filterable 处理）
+  if (!query) return
+  loadMaterials()
 }
 
 function resetFilters() {

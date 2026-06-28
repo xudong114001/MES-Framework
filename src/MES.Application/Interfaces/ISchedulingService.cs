@@ -1,4 +1,4 @@
-using MES.Domain.Entities;
+using MES.Application.Dtos;
 
 namespace MES.Application.Interfaces;
 
@@ -8,7 +8,7 @@ namespace MES.Application.Interfaces;
 public interface ISchedulingService
 {
     /// <summary>获取所有已下达且未排产的工单</summary>
-    Task<IEnumerable<WorkOrder>> GetUnscheduledOrdersAsync();
+    Task<IEnumerable<WorkOrderDto>> GetUnscheduledOrdersAsync();
 
     /// <summary>排产：将工单分配到指定产线，状态从 RELEASED → SCHEDULED</summary>
     Task ScheduleOrderAsync(long workOrderId, long lineId);
@@ -23,7 +23,7 @@ public interface ISchedulingService
     Task SwapSchedulingOrderAsync(long orderId1, long orderId2);
 
     /// <summary>获取指定产线的所有已排产工单（含工序）</summary>
-    Task<IEnumerable<WorkOrder>> GetScheduledOrdersByLineAsync(long lineIdcounter);
+    Task<IEnumerable<WorkOrderDto>> GetScheduledOrdersByLineAsync(long lineId);
 
     /// <summary>取消排产：工单从 SCHEDULED 回到 RELEASED</summary>
     Task UnscheduleOrderAsync(long workOrderId);

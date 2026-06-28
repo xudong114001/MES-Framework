@@ -36,6 +36,8 @@ csharp_style_var_elsewhere = false:suggestion
 
 # 花括号
 csharp_prefer_braces = true:suggestion
+# Allman 花括号风格（大括号另起一行）
+dotnet_style_braces_layout = allman:suggestion
 
 # 表达式级别
 csharp_style_expression_bodied_methods = when_on_single_line:suggestion

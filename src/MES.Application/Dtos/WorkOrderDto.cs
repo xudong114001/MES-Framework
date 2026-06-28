@@ -29,10 +29,32 @@ public class WorkOrderDto
     public string? Remark { get; set; }
     public long? ReworkFromId { get; set; }
 
+    public List<WorkOrderStepDto> Steps { get; set; } = new();
+
     public DateTime CreatedAt { get; set; }
     public long? CreatedBy { get; set; }
     public DateTime UpdatedAt { get; set; }
     public long? UpdatedBy { get; set; }
+}
+
+/// <summary>
+/// 工单工序步骤 DTO
+/// </summary>
+public class WorkOrderStepDto
+{
+    public long Id { get; set; }
+    public long WorkOrderId { get; set; }
+    public int StepNo { get; set; }
+    public string StepName { get; set; } = string.Empty;
+    public long? WorkstationId { get; set; }
+    public decimal PlannedQty { get; set; }
+    public decimal CompletedQty { get; set; }
+    public decimal ScrapQty { get; set; }
+    public WorkOrderStatus Status { get; set; }
+    public DateTime? PlanStartTime { get; set; }
+    public DateTime? PlanEndTime { get; set; }
+    public DateTime CreatedAt { get; set; }
+    public DateTime UpdatedAt { get; set; }
 }
 
 /// <summary>

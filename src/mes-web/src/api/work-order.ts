@@ -37,7 +37,7 @@ export type WorkOrderStep = {
 }
 
 export const workOrderApi = {
-  list() { return http.get('/work-orders') },
+  list(params?: Record<string, any>) { return http.get('/work-orders', { params }) },
   getById(id: number) { return http.get(`/work-orders/${id}`) },
   create(data: WorkOrder) { return http.post('/work-orders', data) },
   update(id: number, data: WorkOrder) { return http.put(`/work-orders/${id}`, data) },

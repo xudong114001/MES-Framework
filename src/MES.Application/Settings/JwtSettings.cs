@@ -1,4 +1,4 @@
-namespace MES.Api.Services;
+namespace MES.Application.Settings;
 
 public class JwtSettings
 {

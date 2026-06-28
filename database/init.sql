@@ -10,7 +10,7 @@ CREATE TABLE mes_factory (
     created_by BIGINT,
     updated_at TIMESTAMPTZ DEFAULT NOW(),
     updated_by BIGINT,
-    is_deleted SMALLINT DEFAULT 0
+    is_deleted BOOLEAN DEFAULT FALSE
 );
 
 CREATE TABLE mes_workshop (
@@ -23,7 +23,7 @@ CREATE TABLE mes_workshop (
     created_by BIGINT,
     updated_at TIMESTAMPTZ DEFAULT NOW(),
     updated_by BIGINT,
-    is_deleted SMALLINT DEFAULT 0,
+    is_deleted BOOLEAN DEFAULT FALSE,
     UNIQUE(factory_id, code)
 );
 
@@ -38,7 +38,7 @@ CREATE TABLE mes_production_line (
     created_by BIGINT,
     updated_at TIMESTAMPTZ DEFAULT NOW(),
     updated_by BIGINT,
-    is_deleted SMALLINT DEFAULT 0,
+    is_deleted BOOLEAN DEFAULT FALSE,
     UNIQUE(workshop_id, code)
 );
 
@@ -53,7 +53,7 @@ CREATE TABLE mes_workstation (
     created_by BIGINT,
     updated_at TIMESTAMPTZ DEFAULT NOW(),
     updated_by BIGINT,
-    is_deleted SMALLINT DEFAULT 0,
+    is_deleted BOOLEAN DEFAULT FALSE,
     UNIQUE(line_id, code)
 );
 
@@ -72,7 +72,7 @@ CREATE TABLE mes_material (
     created_by BIGINT,
     updated_at TIMESTAMPTZ DEFAULT NOW(),
     updated_by BIGINT,
-    is_deleted SMALLINT DEFAULT 0
+    is_deleted BOOLEAN DEFAULT FALSE
 );
 
 CREATE TABLE mes_bom (
@@ -89,7 +89,7 @@ CREATE TABLE mes_bom (
     created_by BIGINT,
     updated_at TIMESTAMPTZ DEFAULT NOW(),
     updated_by BIGINT,
-    is_deleted SMALLINT DEFAULT 0
+    is_deleted BOOLEAN DEFAULT FALSE
 );
 
 -- ==================== 工艺路线 ====================
@@ -105,7 +105,7 @@ CREATE TABLE mes_routing (
     created_by BIGINT,
     updated_at TIMESTAMPTZ DEFAULT NOW(),
     updated_by BIGINT,
-    is_deleted SMALLINT DEFAULT 0
+    is_deleted BOOLEAN DEFAULT FALSE
 );
 
 CREATE TABLE mes_routing_step (
@@ -148,7 +148,7 @@ CREATE TABLE mes_work_order (
     created_by BIGINT,
     updated_at TIMESTAMPTZ DEFAULT NOW(),
     updated_by BIGINT,
-    is_deleted SMALLINT DEFAULT 0
+    is_deleted BOOLEAN DEFAULT FALSE
 );
 
 CREATE TABLE mes_work_order_step (
@@ -268,7 +268,7 @@ CREATE TABLE mes_equipment (
     created_by BIGINT,
     updated_at TIMESTAMPTZ DEFAULT NOW(),
     updated_by BIGINT,
-    is_deleted SMALLINT DEFAULT 0
+    is_deleted BOOLEAN DEFAULT FALSE
 );
 
 -- ==================== 保养计划 ====================
@@ -286,7 +286,7 @@ CREATE TABLE mes_maintenance_plan (
     created_by BIGINT,
     updated_at TIMESTAMPTZ DEFAULT NOW(),
     updated_by BIGINT,
-    is_deleted SMALLINT DEFAULT 0
+    is_deleted BOOLEAN DEFAULT FALSE
 );
 
 CREATE INDEX idx_maintenance_plan_equipment ON mes_maintenance_plan(equipment_id);
@@ -306,7 +306,7 @@ CREATE TABLE mes_user (
     created_by BIGINT,
     updated_at TIMESTAMPTZ DEFAULT NOW(),
     updated_by BIGINT,
-    is_deleted SMALLINT DEFAULT 0
+    is_deleted BOOLEAN DEFAULT FALSE
 );
 
 -- ==================== 索引 ====================
@@ -445,8 +445,8 @@ INSERT INTO mes_work_order_step (work_order_id, step_no, step_name, workstation_
 (2, 70, '包装',     9, 500, 0,   0,  0, '2025-07-01 08:00:00+08', '2025-07-01 17:00:00+08');
 
 -- ==================== AI 预警记录表 ====================
-CREATE TABLE IF NOT EXISTS mes_ai_alerts (
-    id                      BIGINT PRIMARY KEY,
+CREATE TABLE IF NOT EXISTS mes_alert_record (
+    id                      BIGSERIAL PRIMARY KEY,
     rule_name               VARCHAR(100) NOT NULL,
     title                   VARCHAR(200) NOT NULL,
     message                 TEXT,
@@ -456,12 +456,16 @@ CREATE TABLE IF NOT EXISTS mes_ai_alerts (
     is_processed            BOOLEAN DEFAULT FALSE,
     processed_by            VARCHAR(50),
     processed_at            TIMESTAMPTZ,
-    created_at              TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+    created_at              TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    created_by              BIGINT,
+    updated_at              TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    updated_by              BIGINT,
+    is_deleted              BOOLEAN DEFAULT FALSE
 );
 
-CREATE INDEX IF NOT EXISTS idx_ai_alerts_created_at ON mes_ai_alerts(created_at DESC);
-CREATE INDEX IF NOT EXISTS idx_ai_alerts_is_processed ON mes_ai_alerts(is_processed);
-CREATE INDEX IF NOT EXISTS idx_ai_alerts_level ON mes_ai_alerts(level);
+CREATE INDEX IF NOT EXISTS idx_alert_record_created_at ON mes_alert_record(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_alert_record_is_processed ON mes_alert_record(is_processed);
+CREATE INDEX IF NOT EXISTS idx_alert_record_level ON mes_alert_record(level);
 
 -- ==================== 告警规则表 ====================
 CREATE TABLE IF NOT EXISTS mes_alert_rule (
@@ -491,7 +495,7 @@ CREATE TABLE mes_role (
     created_by BIGINT,
     updated_at TIMESTAMPTZ DEFAULT NOW(),
     updated_by BIGINT,
-    is_deleted SMALLINT DEFAULT 0
+    is_deleted BOOLEAN DEFAULT FALSE
 );
 
 CREATE TABLE mes_user_role (
@@ -502,7 +506,7 @@ CREATE TABLE mes_user_role (
     created_by BIGINT,
     updated_at TIMESTAMPTZ DEFAULT NOW(),
     updated_by BIGINT,
-    is_deleted SMALLINT DEFAULT 0,
+    is_deleted BOOLEAN DEFAULT FALSE,
     UNIQUE(user_id, role_id)
 );
 
@@ -517,7 +521,7 @@ CREATE TABLE mes_role_permission (
     created_by BIGINT,
     updated_at TIMESTAMPTZ DEFAULT NOW(),
     updated_by BIGINT,
-    is_deleted SMALLINT DEFAULT 0,
+    is_deleted BOOLEAN DEFAULT FALSE,
     UNIQUE(role_id, permission)
 );
 
@@ -538,7 +542,7 @@ CREATE TABLE mes_knowledge_entry (
     created_by BIGINT,
     updated_at TIMESTAMPTZ DEFAULT NOW(),
     updated_by BIGINT,
-    is_deleted SMALLINT DEFAULT 0
+    is_deleted BOOLEAN DEFAULT FALSE
 );
 
 -- ==================== 安灯事件 ====================

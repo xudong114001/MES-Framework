@@ -235,6 +235,12 @@ const router = createRouter({
           ]
         }
       ]
+    },
+    {
+      path: '/:pathMatch(.*)*',
+      name: 'NotFound',
+      component: () => import('../views/login/LoginView.vue'),
+      meta: { requiresAuth: false, title: '页面不存在' }
     }
   ]
 })

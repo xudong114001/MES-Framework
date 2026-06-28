@@ -43,7 +43,6 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { ElMessage } from 'element-plus'
 import { Cpu, Close, CircleCheck } from '@element-plus/icons-vue'
 import { aiApi } from '@/api/ai'
 
@@ -82,7 +81,7 @@ const formatTime = (time: string) => {
   return `${Math.floor(minutes / 1440)}天前`
 }
 
-const viewDetail = (alert: any) => {
+const viewDetail = (_alert: any) => {
   router.push('/ai/dashboard')
 }
 

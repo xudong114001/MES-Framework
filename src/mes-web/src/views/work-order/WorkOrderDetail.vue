@@ -348,7 +348,7 @@ async function loadMaterials() {
   } catch {}
 }
 
-function materialSearch(query: string) {
+function materialSearch(_query: string) {
   // Client-side filter
 }
 

@@ -3,8 +3,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MES.Api.Middleware;
 using MES.Api.Services;
+using MES.Application.Dtos;
 using MES.Application.Interfaces;
-using MES.Domain.Entities;
 using MES.Domain.Enums;
 
 namespace MES.Api.Controllers;
@@ -134,21 +134,4 @@ public class AndonController : ControllerBase
     {
         return User.FindFirst(ClaimTypes.Name)?.Value;
     }
-}
-
-public class TriggerAndonRequest
-{
-    public AndonEventType EventType { get; set; }
-    public AndonEventLevel? Level { get; set; }
-    public string? Title { get; set; }
-    public string? Description { get; set; }
-    public long? WorkstationId { get; set; }
-    public string? WorkstationName { get; set; }
-    public long? WorkOrderId { get; set; }
-    public string? WorkOrderNo { get; set; }
-}
-
-public class ResolveAndonRequest
-{
-    public string? Handler { get; set; }
 }
