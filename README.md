@@ -1,7 +1,7 @@
 # MES Framework - 制造执行系统框架
 
 [![.NET](https://img.shields.io/badge/.NET-10.0-blue)](https://dotnet.microsoft.com/)
-[![Vue 3](https://img.shields.io/badge/Vue-3.4+-42b883)](https://vuejs.org/)
+[![Vue 3](https://img.shields.io/badge/Vue-3.5+-42b883)](https://vuejs.org/)
 [![License](https://img.shields.io/badge/license-Apache_2.0-blue.svg)](LICENSE)
 
 通用、可扩展的 MES 系统基础框架，面向中小型制造企业生产管理。
@@ -13,7 +13,7 @@
 | 后端 | .NET 10 + C# 14 + Entity Framework Core 10 |
 | 前端 | Vue 3 + TypeScript + Element Plus |
 | 数据库 | PostgreSQL 16 + Redis + RabbitMQ |
-| 架构 | Clean Architecture (DDD) + CQRS |
+| 架构 | Clean Architecture (DDD) |
 
 ## 目录结构
 
@@ -21,24 +21,27 @@
 MES-Framework/
 ├── README.md                   # 项目说明
 ├── AGENTS.md                   # Agent 开发指引
+├── CLAUDE.md                   # Claude Code 开发指引
 ├── docs/                       # 项目文档
 │   ├── 01-项目概述/             # 项目背景、目标、功能模块
 │   ├── 02-技术设计/             # 数据库设计、接口规范、架构设计
 │   ├── 03-项目管理/             # 开发计划、执行计划、里程碑
-│   └── 04-质量保障/             # 测试策略、用例与质量门禁
+│   ├── 04-质量保障/             # 测试策略、用例与质量门禁
+│   └── 05-AI融合/              # AI 融合方案
 ├── src/                        # 源代码
 │   ├── MES.Api/                # WebAPI 层（Controller）
-│   ├── MES.Application/        # 应用服务层（Service + DTO + Interface）
+│   ├── MES.Application/        # 应用服务层（Service + DTO + Interface + Settings）
 │   ├── MES.Domain/             # 领域层（Entity + Enum + ValueObject + DomainEvent）
-│   ├── MES.Infrastructure/     # 基础设施层（Repository + 外部服务）
-│   ├── MES.Integration/        # 集成层（ERP/WMS/MES 对接）
+│   ├── MES.Infrastructure/     # 基础设施层（Repository + 外部服务 + Data/Migrations）
+│   ├── MES.Integration/        # 集成层（ERP/WMS/MES 对接 + EventBus）
 │   ├── MES.AI.Application/     # AI 应用服务层
 │   ├── MES.AI.Domain/          # AI 领域层
 │   ├── MES.Tests/              # 单元测试 + 集成测试
 │   └── mes-web/                # Vue 3 前端
 ├── database/                   # 数据库脚本
-├── tests/                      # E2E 测试
-└── scripts/                    # 部署和运维脚本
+├── tests/                      # E2E 测试 + Postman 集合
+├── nginx/                      # Nginx 反向代理配置
+└── docker-compose.yml          # Docker 编排
 ```
 
 ## 架构设计
@@ -107,7 +110,7 @@ dotnet test src/MES.Tests
 | 项目 | 状态 |
 |------|------|
 | MES.Domain | ✅ 0 错误 0 警告 |
-| MES.Application | ✅ 0 错误 0 警��� |
+| MES.Application | ✅ 0 错误 0 警告 |
 | MES.Infrastructure | ✅ 0 错误 0 警告 |
 | MES.Api | ✅ 0 错误 0 警告 |
 | MES.Tests | ✅ 0 错误 0 警告 |
@@ -139,8 +142,8 @@ dotnet test src/MES.Tests
 
 | 组件 | 状态 | 说明 |
 |------|------|------|
-| Redis | ✅ 已集成 | 防重复报工、批次号生成、缓存服务 |
-| RabbitMQ | ✅ 已部署 | 消息队列已就绪，待应用集成 |
+| Redis | ✅ 已集成 | 防重复报工、批次号生成、分布式缓存 |
+| RabbitMQ | ✅ 已集成 | 事件总线（发布/订阅）、自动重连、离线降级 |
 | Docker Compose | ✅ 已编排 | PostgreSQL + Redis + RabbitMQ |
 | RBAC 权限 | ✅ 已集成 | 5 种预设角色 + JWT Claim + Controller 授权 |
 
@@ -148,11 +151,10 @@ dotnet test src/MES.Tests
 
 | 类型 | 状态 | 工具 |
 |------|------|------|
-| 单元测试 | ✅ 189 用例 | xUnit + Moq |
-| E2E 测试 | ✅ 28/29 通过 | PowerShell |
-| 集成测试 | ✅ 9 用例 | TestContainers |
-| UI 测试 | ✅ 11 用例 | Playwright |
-| 性能测试 | ✅ 3 场景 | k6 |
-| API 测试 | ✅ 60+ 用例 | Postman (newman) |
+| 单元测试 | ✅ 289 用例 | xUnit + Moq |
+| E2E 测试 | ✅ 58 步骤通过 | PowerShell |
+| 集成测试 | ✅ 42 用例 | WebApplicationFactory + TestContainers |
+| UI 测试 | ✅ 5 测试文件 | Playwright |
+| API 测试 | ✅ 17 用例 | Postman (newman) |
 
 
