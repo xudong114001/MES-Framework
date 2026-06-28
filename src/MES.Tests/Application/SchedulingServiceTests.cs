@@ -2,6 +2,7 @@ using MES.Application.Interfaces;
 using MES.Application.Services;
 using MES.Domain.Entities;
 using MES.Domain.Enums;
+using MES.Domain.Exceptions;
 using MES.Domain.Repositories;
 using Moq;
 using Xunit;
@@ -93,7 +94,7 @@ public class SchedulingServiceTests
     {
         _workOrderRepo.Setup(r => r.GetByIdAsync(999)).ReturnsAsync((WorkOrder?)null);
 
-        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+        await Assert.ThrowsAsync<DomainException>(() =>
             _service.ScheduleOrderAsync(999, 10));
     }
 
@@ -103,7 +104,7 @@ public class SchedulingServiceTests
         var wo = CreateWorkOrder(1, WorkOrderStatus.PENDING);
         _workOrderRepo.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(wo);
 
-        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+        await Assert.ThrowsAsync<DomainException>(() =>
             _service.ScheduleOrderAsync(1, 10));
     }
 
@@ -114,7 +115,7 @@ public class SchedulingServiceTests
         _workOrderRepo.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(wo);
         _lineRepo.Setup(r => r.GetByIdAsync(999)).ReturnsAsync((ProductionLine?)null);
 
-        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+        await Assert.ThrowsAsync<DomainException>(() =>
             _service.ScheduleOrderAsync(1, 999));
     }
 
@@ -202,7 +203,7 @@ public class SchedulingServiceTests
             .ReturnsAsync(orders);
         _lineRepo.Setup(r => r.FindAsync(l => l.Status)).ReturnsAsync(Enumerable.Empty<ProductionLine>());
 
-        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+        await Assert.ThrowsAsync<DomainException>(() =>
             _service.AutoScheduleAsync());
     }
 
@@ -227,7 +228,7 @@ public class SchedulingServiceTests
         var wo = CreateWorkOrder(1, WorkOrderStatus.RELEASED);
         _workOrderRepo.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(wo);
 
-        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+        await Assert.ThrowsAsync<DomainException>(() =>
             _service.UnscheduleOrderAsync(1));
     }
 
@@ -262,7 +263,7 @@ public class SchedulingServiceTests
             .ReturnsAsync(wo1)
             .ReturnsAsync(wo2);
 
-        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+        await Assert.ThrowsAsync<DomainException>(() =>
             _service.SwapSchedulingOrderAsync(1, 2));
     }
 

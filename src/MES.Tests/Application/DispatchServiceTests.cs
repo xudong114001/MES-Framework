@@ -1,6 +1,7 @@
 using MES.Application.Services;
 using MES.Domain.Entities;
 using MES.Domain.Enums;
+using MES.Domain.Exceptions;
 using MES.Domain.Repositories;
 using Moq;
 using Xunit;
@@ -86,7 +87,7 @@ public class DispatchServiceTests
     {
         _stepRepo.Setup(r => r.GetByIdAsync(999)).ReturnsAsync((WorkOrderStep?)null);
 
-        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+        await Assert.ThrowsAsync<DomainException>(() =>
             _service.DispatchStepAsync(999, 10));
     }
 
@@ -97,7 +98,7 @@ public class DispatchServiceTests
         _stepRepo.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(step);
         _workstationRepo.Setup(r => r.GetByIdAsync(999)).ReturnsAsync((Workstation?)null);
 
-        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+        await Assert.ThrowsAsync<DomainException>(() =>
             _service.DispatchStepAsync(1, 999));
     }
 
@@ -120,7 +121,7 @@ public class DispatchServiceTests
     {
         _stepRepo.Setup(r => r.GetByIdAsync(999)).ReturnsAsync((WorkOrderStep?)null);
 
-        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+        await Assert.ThrowsAsync<DomainException>(() =>
             _service.UndispatchStepAsync(999));
     }
 

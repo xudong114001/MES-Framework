@@ -201,12 +201,13 @@ public class AndonServiceTests
     {
         var evt = CreateEvent(1);
         _repository.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(evt);
-        _repository.Setup(r => r.DeleteAsync(It.IsAny<AndonEvent>())).Returns(Task.CompletedTask);
+        _repository.Setup(r => r.UpdateAsync(It.IsAny<AndonEvent>())).Returns(Task.CompletedTask);
 
         var result = await _service.DeleteEventAsync(1);
 
         Assert.True(result);
-        _repository.Verify(r => r.DeleteAsync(evt), Times.Once);
+        Assert.True(evt.IsDeleted);
+        _repository.Verify(r => r.UpdateAsync(evt), Times.Once);
     }
 
     [Fact]

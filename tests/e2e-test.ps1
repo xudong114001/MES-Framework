@@ -236,6 +236,161 @@ try {
     $r = Invoke-Api -Method Get -Uri "$baseUrl/api/v1/andon/active"
     Write-Log -Step "7c.ActiveEvents" -Status $r.Status -Body $r.Body
 
+    # ========== Equipment Tests ==========
+    Write-Host "`n=== STEP 8: EQUIPMENT ===" -ForegroundColor Cyan
+
+    # 8a GET list
+    $r = Invoke-Api -Method Get -Uri "$baseUrl/api/v1/equipment"
+    Write-Log -Step "8a.EquipmentList" -Status $r.Status -Body $r.Body
+    $equipList = if ($r.Status -eq 200) { ($r.Body | ConvertFrom-Json).data } else { @() }
+    $equipId = if ($equipList -and $equipList.Count -gt 0) { $equipList[0].id } else { $null }
+
+    # 8b GET by id
+    if ($equipId) {
+        $r = Invoke-Api -Method Get -Uri "$baseUrl/api/v1/equipment/$equipId"
+        Write-Log -Step "8b.EquipmentGetById" -Status $r.Status -Body $r.Body
+    } else { Write-Host "  [SKIP] No equipment for GetById test" -ForegroundColor Yellow }
+
+    # 8c POST create
+    $ts = [DateTimeOffset]::Now.ToUnixTimeSeconds()
+    $createEquipBody = "{`"code`":`"EQ-E2E-$ts`",`"name`":`"E2E Test Equipment`",`"model`":`"TEST-MODEL-01`",`"factoryId`":$factoryId,`"status`":0,`"maintainCycle`":30}"
+    $r = Invoke-Api -Method Post -Uri "$baseUrl/api/v1/equipment" -Body $createEquipBody
+    Write-Log -Step "8c.EquipmentCreate" -Status $r.Status -Body $r.Body
+    $newEquipId = if ($r.Status -eq 200) { ($r.Body | ConvertFrom-Json).data.id } else { $null }
+
+    # 8d PUT update
+    if ($newEquipId) {
+        $updateEquipBody = "{`"code`":`"EQ-E2E-$ts`",`"name`":`"E2E Test Equipment Updated`",`"model`":`"TEST-MODEL-01`",`"factoryId`":$factoryId,`"status`":1,`"maintainCycle`":60}"
+        $r = Invoke-Api -Method Put -Uri "$baseUrl/api/v1/equipment/$newEquipId" -Body $updateEquipBody
+        Write-Log -Step "8d.EquipmentUpdate" -Status $r.Status -Body $r.Body
+    } else { Write-Host "  [SKIP] No new equipment for Update test" -ForegroundColor Yellow }
+
+    # 8e DELETE
+    if ($newEquipId) {
+        $r = Invoke-Api -Method Delete -Uri "$baseUrl/api/v1/equipment/$newEquipId"
+        Write-Log -Step "8e.EquipmentDelete" -Status $r.Status -Body $r.Body
+    } else { Write-Host "  [SKIP] No new equipment for Delete test" -ForegroundColor Yellow }
+
+    # ========== User Tests ==========
+    Write-Host "`n=== STEP 9: USER ===" -ForegroundColor Cyan
+
+    # 9a GET list
+    $r = Invoke-Api -Method Get -Uri "$baseUrl/api/v1/user"
+    Write-Log -Step "9a.UserList" -Status $r.Status -Body $r.Body
+    $userList = if ($r.Status -eq 200) { ($r.Body | ConvertFrom-Json).data } else { @() }
+    $userId = if ($userList -and $userList.Count -gt 0) { $userList[0].id } else { $null }
+
+    # 9b GET by id
+    if ($userId) {
+        $r = Invoke-Api -Method Get -Uri "$baseUrl/api/v1/user/$userId"
+        Write-Log -Step "9b.UserGetById" -Status $r.Status -Body $r.Body
+    } else { Write-Host "  [SKIP] No user for GetById test" -ForegroundColor Yellow }
+
+    # 9c POST create
+    $ts = [DateTimeOffset]::Now.ToUnixTimeSeconds()
+    $createUserBody = "{`"username`":`"e2euser$ts`",`"password`":`"E2eUser@2026!`",`"displayName`":`"E2E Test User`",`"email`":`"e2e$ts@test.com`",`"phone`":`"13800001234`",`"status`":true}"
+    $r = Invoke-Api -Method Post -Uri "$baseUrl/api/v1/user" -Body $createUserBody
+    Write-Log -Step "9c.UserCreate" -Status $r.Status -Body $r.Body
+    $newUserId = if ($r.Status -eq 200) { ($r.Body | ConvertFrom-Json).data.id } else { $null }
+
+    # 9d PUT update
+    if ($newUserId) {
+        $updateUserBody = "{`"username`":`"e2euser$ts`",`"displayName`":`"E2E Test User Updated`",`"email`":`"e2e$ts@test.com`",`"phone`":`"13800005678`",`"status`":true}"
+        $r = Invoke-Api -Method Put -Uri "$baseUrl/api/v1/user/$newUserId" -Body $updateUserBody
+        Write-Log -Step "9d.UserUpdate" -Status $r.Status -Body $r.Body
+    } else { Write-Host "  [SKIP] No new user for Update test" -ForegroundColor Yellow }
+
+    # ========== Role Tests ==========
+    Write-Host "`n=== STEP 10: ROLE ===" -ForegroundColor Cyan
+
+    # 10a GET list
+    $r = Invoke-Api -Method Get -Uri "$baseUrl/api/v1/role"
+    Write-Log -Step "10a.RoleList" -Status $r.Status -Body $r.Body
+
+    # 10b POST create
+    $ts = [DateTimeOffset]::Now.ToUnixTimeSeconds()
+    $createRoleBody = "{`"name`":`"E2E-Test-Role-$ts`",`"description`":`"Role created by E2E test`"}"
+    $r = Invoke-Api -Method Post -Uri "$baseUrl/api/v1/role" -Body $createRoleBody
+    Write-Log -Step "10b.RoleCreate" -Status $r.Status -Body $r.Body
+    $newRoleId = if ($r.Status -eq 200) { ($r.Body | ConvertFrom-Json).data.id } else { $null }
+
+    # ========== QcCheckpoint Tests ==========
+    Write-Host "`n=== STEP 11: QC CHECKPOINT ===" -ForegroundColor Cyan
+
+    # 11a GET list
+    $r = Invoke-Api -Method Get -Uri "$baseUrl/api/v1/qc-checkpoints"
+    Write-Log -Step "11a.QcCheckpointList" -Status $r.Status -Body $r.Body
+
+    # 11b POST create (configure checkpoint on a routing step)
+    $r = Invoke-Api -Method Get -Uri "$baseUrl/api/v1/routings/$routingId/steps"
+    $routingSteps = if ($r.Status -eq 200) { ($r.Body | ConvertFrom-Json).data } else { @() }
+    $stepId = if ($routingSteps -and $routingSteps.Count -gt 0) { $routingSteps[0].id } else { $null }
+
+    if ($stepId) {
+        $createCheckpointBody = "{`"stepId`":$stepId,`"checkType`":0,`"isMandatory`":true,`"remark`":`"E2E test checkpoint`"}"
+        $r = Invoke-Api -Method Post -Uri "$baseUrl/api/v1/qc-checkpoints" -Body $createCheckpointBody
+        Write-Log -Step "11b.QcCheckpointCreate" -Status $r.Status -Body $r.Body
+    } else { Write-Host "  [SKIP] No routing step for QcCheckpoint create test" -ForegroundColor Yellow }
+
+    # ========== AI Tests ==========
+    Write-Host "`n=== STEP 12: AI ===" -ForegroundColor Cyan
+
+    # 12a GET quality alerts
+    $r = Invoke-Api -Method Get -Uri "$baseUrl/api/v1/ai/quality/alerts"
+    Write-Log -Step "12a.AiQualityAlerts" -Status $r.Status -Body $r.Body
+
+    # 12b GET equipment health
+    $r = Invoke-Api -Method Get -Uri "$baseUrl/api/v1/ai/equipment/health"
+    Write-Log -Step "12b.AiEquipmentHealth" -Status $r.Status -Body $r.Body
+
+    # 12c GET knowledge entries
+    $r = Invoke-Api -Method Get -Uri "$baseUrl/api/v1/ai/knowledge/entries"
+    Write-Log -Step "12c.AiKnowledgeEntries" -Status $r.Status -Body $r.Body
+
+    # ========== Integration Tests ==========
+    Write-Host "`n=== STEP 13: INTEGRATION ===" -ForegroundColor Cyan
+
+    # 13a GET adapter status
+    $r = Invoke-Api -Method Get -Uri "$baseUrl/api/v1/integration/adapters/status"
+    Write-Log -Step "13a.IntegrationAdapterStatus" -Status $r.Status -Body $r.Body
+
+    # 13b GET events
+    $r = Invoke-Api -Method Get -Uri "$baseUrl/api/v1/integration/events"
+    Write-Log -Step "13b.IntegrationEvents" -Status $r.Status -Body $r.Body
+
+    # ========== Dispatch Tests ==========
+    Write-Host "`n=== STEP 14: DISPATCH ===" -ForegroundColor Cyan
+
+    # 14a GET available workstations for line
+    $r = Invoke-Api -Method Get -Uri "$baseUrl/api/v1/dispatch/line/$lineId/workstations"
+    Write-Log -Step "14a.DispatchWorkstations" -Status $r.Status -Body $r.Body
+
+    # 14b GET today tasks for line
+    $r = Invoke-Api -Method Get -Uri "$baseUrl/api/v1/dispatch/line/$lineId/today-tasks"
+    Write-Log -Step "14b.DispatchTodayTasks" -Status $r.Status -Body $r.Body
+
+    # 14c POST dispatch step (find a WO step that is not yet dispatched)
+    $r = Invoke-Api -Method Get -Uri "$baseUrl/api/v1/work-orders"
+    $dispatchWos = ($r.Body | ConvertFrom-Json).data
+    $dispatchWO = $dispatchWos | Where-Object { $_.status -eq 1 -or $_.status -eq 3 } | Select-Object -First 1
+    $dispatchStepId = $null
+    if ($dispatchWO -and $dispatchWO.steps -and $dispatchWO.steps.Count -gt 0) {
+        $undispatchedStep = $dispatchWO.steps | Where-Object { $null -eq $_.workstationId } | Select-Object -First 1
+        if ($undispatchedStep) { $dispatchStepId = $undispatchedStep.id }
+    }
+    if ($dispatchStepId) {
+        $dispatchBody = "{`"workOrderStepId`":$dispatchStepId,`"workstationId`":$wsId}"
+        $r = Invoke-Api -Method Post -Uri "$baseUrl/api/v1/dispatch/dispatch-step" -Body $dispatchBody
+        Write-Log -Step "14c.DispatchStep" -Status $r.Status -Body $r.Body
+    } else { Write-Host "  [SKIP] No undispatched WO step for Dispatch test" -ForegroundColor Yellow }
+
+    # ========== Seed Tests ==========
+    Write-Host "`n=== STEP 15: SEED ===" -ForegroundColor Cyan
+
+    # 15a POST reset/initialize seed data
+    $r = Invoke-Api -Method Post -Uri "$baseUrl/api/v1/seed"
+    Write-Log -Step "15a.SeedInit" -Status $r.Status -Body $r.Body
+
     # REPORT
     Write-Host "`n`n============================================" -ForegroundColor Cyan
     Write-Host "  E2E TEST RESULTS SUMMARY" -ForegroundColor White
@@ -278,6 +433,14 @@ try {
     CatHealth "Dashboard" @("5a","5b","5c","5d","5e","5f")
     CatHealth "Scheduling" @("6a","6b")
     CatHealth "Andon" @("7a","7b","7c")
+    CatHealth "Equipment" @("8a","8b","8c","8d","8e")
+    CatHealth "User" @("9a","9b","9c","9d")
+    CatHealth "Role" @("10a","10b")
+    CatHealth "QcCheckpoint" @("11a","11b")
+    CatHealth "AI" @("12a","12b","12c")
+    CatHealth "Integration" @("13a","13b")
+    CatHealth "Dispatch" @("14a","14b","14c")
+    CatHealth "Seed" @("15a")
 
     Write-Host "`n============================================" -ForegroundColor Cyan
     Write-Host "  Test Summary:" -ForegroundColor White

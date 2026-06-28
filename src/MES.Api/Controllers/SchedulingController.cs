@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MES.Api.Middleware;
+using MES.Application.Dtos;
 using MES.Application.Interfaces;
-using MES.Domain.Entities;
 
 namespace MES.Api.Controllers;
 
@@ -87,18 +87,27 @@ public class SchedulingController : ControllerBase
     }
 }
 
+/// <summary>
+/// 排产请求
+/// </summary>
 public class ScheduleRequest
 {
     public long WorkOrderId { get; set; }
     public long LineId { get; set; }
 }
 
+/// <summary>
+/// 批量排产请求
+/// </summary>
 public class BatchScheduleRequest
 {
     public List<long> WorkOrderIds { get; set; } = new();
     public long LineId { get; set; }
 }
 
+/// <summary>
+/// 交换排产顺序请求
+/// </summary>
 public class SwapOrderRequest
 {
     public long OrderId1 { get; set; }

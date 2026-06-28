@@ -270,7 +270,7 @@ public class WebTestFactory : IAsyncLifetime
         if (!response.IsSuccessStatusCode)
         {
             // 如果用户不存在，先创建
-            await SeedUserAsync(username, password, new List<string> { "admin" });
+            await SeedUserAsync(username, password, new List<string> { "Admin" });
             response = await Client.PostAsJsonAsync("/api/v1/auth/login", loginRequest);
         }
 

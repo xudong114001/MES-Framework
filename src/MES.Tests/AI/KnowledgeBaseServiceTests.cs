@@ -12,6 +12,7 @@ using Xunit;
 
 namespace MES.Tests.AI;
 
+[Trait("Category", "Integration")]
 public class KnowledgeBaseServiceTests : IDisposable
 {
     private readonly MesDbContext _db;

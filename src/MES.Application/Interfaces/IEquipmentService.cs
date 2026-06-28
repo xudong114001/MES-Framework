@@ -1,5 +1,4 @@
 using MES.Application.Dtos;
-using MES.Domain.Entities;
 using MES.Domain.Enums;
 
 namespace MES.Application.Interfaces;
@@ -31,22 +30,22 @@ public interface IEquipmentService
     Task<OeeResult> CalculateOeeAsync(long equipmentId);
 
     /// <summary>创建保养计划</summary>
-    Task<MaintenancePlan> CreateMaintenancePlanAsync(long equipmentId, string planName, int cycleDays, string? description);
+    Task<MaintenancePlanDto> CreateMaintenancePlanAsync(long equipmentId, string planName, int cycleDays, string? description);
 
     /// <summary>获取保养计划列表</summary>
-    Task<List<MaintenancePlan>> GetMaintenancePlansAsync(long equipmentId);
+    Task<List<MaintenancePlanDto>> GetMaintenancePlansAsync(long equipmentId);
 
-    /// <summary>��成保养</summary>
+    /// <summary>完成保养</summary>
     Task CompleteMaintenanceAsync(long planId);
 
     /// <summary>获取所有保养计划（可筛选）</summary>
-    Task<List<MaintenancePlan>> GetAllMaintenancePlansAsync(string? equipmentName = null, MaintenancePlanStatus? status = null);
+    Task<List<MaintenancePlanDto>> GetAllMaintenancePlansAsync(string? equipmentName = null, MaintenancePlanStatus? status = null);
 
     /// <summary>获取所有设备（下拉列表用）</summary>
-    Task<List<Equipment>> GetAllEquipmentAsync();
+    Task<List<EquipmentDto>> GetAllEquipmentAsync();
 
     /// <summary>更新保养计划</summary>
-    Task<MaintenancePlan> UpdateMaintenancePlanAsync(long planId, string planName, int cycleDays, string? description);
+    Task<MaintenancePlanDto> UpdateMaintenancePlanAsync(long planId, string planName, int cycleDays, string? description);
 
     /// <summary>删除保养计划</summary>
     Task DeleteMaintenancePlanAsync(long planId);

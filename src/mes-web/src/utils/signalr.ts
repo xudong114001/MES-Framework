@@ -9,13 +9,23 @@ class SignalRService {
   private reconnectTimer: number | null = null
 
   /**
-   * 建立 SignalR 连接
+   * 获取当前 JWT Token
+   */
+  private getAccessToken(): string | null {
+    return localStorage.getItem('mes_token')
+  }
+
+  /**
+   * 建立 SignalR 连接（自动携带 JWT Token）
    */
   async connect(url: string = '/hubs/mes'): Promise<void> {
     if (this.connection && this.isConnected) return
 
+    const token = this.getAccessToken()
     this.connection = new signalR.HubConnectionBuilder()
-      .withUrl(url)
+      .withUrl(url, {
+        accessTokenFactory: () => token || ''
+      })
       .withAutomaticReconnect([0, 2000, 5000, 10000, 30000])
       .configureLogging(signalR.LogLevel.Warning)
       .build()

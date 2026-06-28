@@ -124,7 +124,7 @@ public class WorkOrderServiceTests
         var wo = CreateValidWorkOrder();
         _materialRepo.Setup(r => r.GetByIdAsync(wo.MaterialId)).ReturnsAsync((Material?)null);
 
-        await Assert.ThrowsAsync<InvalidOperationException>(() => _service.CreateWorkOrderAsync(wo));
+        await Assert.ThrowsAsync<DomainException>(() => _service.CreateWorkOrderAsync(wo));
     }
 
     [Fact]
@@ -141,7 +141,7 @@ public class WorkOrderServiceTests
             .ReturnsAsync(new[] { bomItem }.AsEnumerable());
         _materialRepo.Setup(r => r.GetByIdAsync(200)).ReturnsAsync(componentMaterial);
 
-        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => _service.CreateWorkOrderAsync(wo));
+        var ex = await Assert.ThrowsAsync<DomainException>(() => _service.CreateWorkOrderAsync(wo));
         Assert.Contains("库存不足", ex.Message);
     }
 
@@ -476,7 +476,7 @@ public class WorkOrderServiceTests
     {
         _workOrderRepo.Setup(r => r.GetByIdAsync(It.IsAny<long>())).ReturnsAsync((WorkOrder?)null);
 
-        await Assert.ThrowsAsync<InvalidOperationException>(() => _service.ReleaseWorkOrderAsync(999));
+        await Assert.ThrowsAsync<DomainException>(() => _service.ReleaseWorkOrderAsync(999));
     }
 
     [Fact]
@@ -484,7 +484,7 @@ public class WorkOrderServiceTests
     {
         _workOrderRepo.Setup(r => r.GetByIdAsync(It.IsAny<long>())).ReturnsAsync((WorkOrder?)null);
 
-        await Assert.ThrowsAsync<InvalidOperationException>(() => _service.HoldWorkOrderAsync(999));
+        await Assert.ThrowsAsync<DomainException>(() => _service.HoldWorkOrderAsync(999));
     }
 
     [Fact]

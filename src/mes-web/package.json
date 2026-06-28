@@ -5,8 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
-    "typecheck": "tsc --noEmit",
+    "build": "vue-tsc --noEmit && vite build",
+    "typecheck": "vue-tsc --noEmit",
     "preview": "vite preview",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
@@ -16,7 +16,8 @@
     "@playwright/test": "^1.60.0",
     "@vitejs/plugin-vue": "^6.0.6",
     "typescript": "~6.0.2",
-    "vite": "^8.0.10"
+    "vite": "^8.0.10",
+    "vue-tsc": "^3.3.5"
   },
   "dependencies": {
     "@element-plus/icons-vue": "^2.3.2",

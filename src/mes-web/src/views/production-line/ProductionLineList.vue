@@ -122,10 +122,30 @@ function openDialog(row?: ProductionLine) {
   form.value = row ? { ...row } : { code: '', name: '', workshopId: undefined, status: 1 }
   selectedFactory.value = undefined
   workshops.value = []
-  if (row?.workshopId) {
-    // Try to pre-select the factory - we'll load workshops on dialog open
-  }
   dialogVisible.value = true
+  // 编辑模式：回显工厂/车间级联选择
+  if (row?.workshopId) {
+    restoreFactoryAndWorkshop(row)
+  }
+}
+
+async function restoreFactoryAndWorkshop(row: ProductionLine) {
+  // 从车间列表反查所属工厂
+  try {
+    const factoryRes: any = await factoryApi.list()
+    const factoryList = factoryRes.data || []
+    for (const f of factoryList) {
+      const workshopRes: any = await workshopApi.listByFactory(f.id)
+      const ws = workshopRes.data || []
+      if (ws.some((w: any) => w.id === row.workshopId)) {
+        selectedFactory.value = f.id
+        workshops.value = ws
+        break
+      }
+    }
+  } catch {
+    // 回显失败不影响编辑
+  }
 }
 
 async function handleSubmit() {

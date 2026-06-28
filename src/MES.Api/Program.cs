@@ -10,6 +10,7 @@ using StackExchange.Redis;
 using MES.Infrastructure.Data;
 using MES.Infrastructure.Extensions;
 using MES.Infrastructure.Services;
+using MES.Application.Settings;
 using MES.Api.Extensions;
 using MES.Application.Interfaces;
 using MES.Integration;
@@ -107,7 +108,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateIssuerSigningKey = true,
             ValidIssuer = jwtSettings.Issuer,
             ValidAudience = jwtSettings.Audience,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.SecretKey))
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.SecretKey)),
+            RoleClaimType = System.Security.Claims.ClaimTypes.Role
         };
     });
 builder.Services.AddAuthorization();
@@ -144,6 +146,7 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
 builder.Services.AddHealthChecks();
 
 // P5 Integration Services
+builder.Services.Configure<RabbitMQSettings>(builder.Configuration.GetSection("RabbitMQ"));
 builder.Services.AddEventBus();
 builder.Services.AddIntegrationAdapters(builder.Configuration);
 
@@ -170,47 +173,52 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+// CORS 必须在 Authentication 之前，确保预检请求不被 Auth 拦截
+app.UseCors("DevCors");
+
 app.UseAuthentication();
 app.UseAuthorization();
-app.UseCors("DevCors");
 app.MapControllers();
 app.MapHub<MesHub>("/hubs/mes");
 app.MapHealthChecks("/health");
 
-// 确保数据库已迁移
-using (var scope = app.Services.CreateScope())
+// 确保数据库已迁移（测试环境跳过，由 WebTestFactory 负责）
+if (!app.Environment.IsEnvironment("Testing"))
 {
-    var db = scope.ServiceProvider.GetRequiredService<MesDbContext>();
-    db.Database.Migrate();
-
-    // 种子数据：初始化 admin 用户
-    if (!db.Users.Any())
+    using (var scope = app.Services.CreateScope())
     {
-        var adminPassword = Convert.ToHexString(
-            System.Security.Cryptography.SHA256.HashData(
-                Encoding.UTF8.GetBytes("Admin@2026!")));
-        var adminUser = MES.Domain.Entities.User.Create(
-            username: "admin",
-            displayName: "系统管理员",
-            passwordHash: adminPassword,
-            email: "admin@mes.local"
-        );
-        db.Users.Add(adminUser);
-        db.SaveChanges();
+        var db = scope.ServiceProvider.GetRequiredService<MesDbContext>();
+        db.Database.Migrate();
 
-        // 确保 Admin 角色存在并分配给 admin 用户
-        var adminRole = db.Roles.FirstOrDefault(r => r.Name == "Admin");
-        if (adminRole != null)
+        // 种子数据：初始化 admin 用户
+        if (!db.Users.Any())
         {
-            db.UserRoles.Add(new MES.Domain.Entities.UserRole
-            {
-                UserId = adminUser.Id,
-                RoleId = adminRole.Id
-            });
+            var adminPassword = Convert.ToHexString(
+                System.Security.Cryptography.SHA256.HashData(
+                    Encoding.UTF8.GetBytes("Admin@2026!")));
+            var adminUser = MES.Domain.Entities.User.Create(
+                username: "admin",
+                displayName: "系统管理员",
+                passwordHash: adminPassword,
+                email: "admin@mes.local"
+            );
+            db.Users.Add(adminUser);
             db.SaveChanges();
-        }
 
-        Log.Information("Seed data: admin user created with Admin role");
+            // 确保 Admin 角色存在并分配给 admin 用户
+            var adminRole = db.Roles.FirstOrDefault(r => r.Name == "Admin");
+            if (adminRole != null)
+            {
+                db.UserRoles.Add(new MES.Domain.Entities.UserRole
+                {
+                    UserId = adminUser.Id,
+                    RoleId = adminRole.Id
+                });
+                db.SaveChanges();
+            }
+
+            Log.Information("Seed data: admin user created with Admin role");
+        }
     }
 }
 

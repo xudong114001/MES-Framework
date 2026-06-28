@@ -14,6 +14,7 @@ using MES.Tests;
 
 namespace MES.Tests.Integration;
 
+[Trait("Category", "Integration")]
 public class DatabaseIntegrationTests : IntegrationTestBase
 {
     private readonly ITestOutputHelper _output;

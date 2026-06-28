@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Mvc;
 using MES.Api.Middleware;
 using MES.Application.Dtos;
 using MES.Application.Interfaces;
-using MES.Domain.Enums;
 
 namespace MES.Api.Controllers;
 
@@ -149,9 +148,15 @@ public class EquipmentController : ControllerBase
     [HttpGet("maintenance-plans")]
     public async Task<IActionResult> GetAllMaintenancePlans(
         [FromQuery] string? equipmentName,
-        [FromQuery] MaintenancePlanStatus? status)
+        [FromQuery] string? status)
     {
-        var result = await _equipmentService.GetAllMaintenancePlansAsync(equipmentName, status);
+        MES.Domain.Enums.MaintenancePlanStatus? statusEnum = null;
+        if (!string.IsNullOrEmpty(status) && Enum.TryParse<MES.Domain.Enums.MaintenancePlanStatus>(status, out var parsed))
+        {
+            statusEnum = parsed;
+        }
+
+        var result = await _equipmentService.GetAllMaintenancePlansAsync(equipmentName, statusEnum);
         return Ok(ApiResponse.Ok(result));
     }
 
@@ -174,18 +179,4 @@ public class EquipmentController : ControllerBase
         await _equipmentService.DeleteMaintenancePlanAsync(id);
         return Ok(ApiResponse.Ok("删除成功"));
     }
-}
-
-public class CreateMaintenancePlanRequest
-{
-    public string PlanName { get; set; } = string.Empty;
-    public int CycleDays { get; set; }
-    public string? Description { get; set; }
-}
-
-public class UpdateMaintenancePlanRequest
-{
-    public string PlanName { get; set; } = string.Empty;
-    public int CycleDays { get; set; }
-    public string? Description { get; set; }
 }

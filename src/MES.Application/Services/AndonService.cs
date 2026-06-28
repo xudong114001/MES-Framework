@@ -1,3 +1,4 @@
+using MES.Application.Dtos;
 using MES.Application.Interfaces;
 using MES.Domain.Entities;
 using MES.Domain.Enums;
@@ -17,21 +18,43 @@ public class AndonService : IAndonService
         _repository = repository;
     }
 
-    /// <summary>获取所有活跃的（未处理）异常事件</summary>
-    public async Task<IEnumerable<AndonEvent>> GetActiveEventsAsync()
+    private static AndonEventDto MapToDto(AndonEvent entity) => new()
     {
-        return await _repository.FindAsync(e => e.ResolvedAt == null);
+        Id = entity.Id,
+        EventType = entity.EventType,
+        Level = entity.Level,
+        Title = entity.Title,
+        Description = entity.Description,
+        WorkstationId = entity.WorkstationId,
+        WorkstationName = entity.WorkstationName,
+        WorkOrderId = entity.WorkOrderId,
+        WorkOrderNo = entity.WorkOrderNo,
+        TriggeredById = entity.TriggeredById,
+        TriggeredByName = entity.TriggeredByName,
+        TriggeredAt = entity.TriggeredAt,
+        ResolvedById = entity.ResolvedById,
+        ResolvedByName = entity.ResolvedByName,
+        ResolvedAt = entity.ResolvedAt,
+        CreatedAt = entity.CreatedAt,
+        UpdatedAt = entity.UpdatedAt
+    };
+
+    /// <summary>获取所有活跃的（未处理）异常事件</summary>
+    public async Task<IEnumerable<AndonEventDto>> GetActiveEventsAsync()
+    {
+        var events = await _repository.FindAsync(e => e.ResolvedAt == null);
+        return events.Select(MapToDto);
     }
 
     /// <summary>获取所有异常事件</summary>
-    public async Task<IEnumerable<AndonEvent>> GetAllEventsAsync()
+    public async Task<IEnumerable<AndonEventDto>> GetAllEventsAsync()
     {
         var all = await _repository.FindAsync(e => true);
-        return all.OrderByDescending(e => e.TriggeredAt);
+        return all.OrderByDescending(e => e.TriggeredAt).Select(MapToDto);
     }
 
     /// <summary>获取异常事件（分页）</summary>
-    public async Task<(IEnumerable<AndonEvent> Items, int Total)> GetEventsAsync(
+    public async Task<(IEnumerable<AndonEventDto> Items, int Total)> GetEventsAsync(
         int page = 1,
         int pageSize = 20,
         bool? isResolved = null,
@@ -58,13 +81,14 @@ public class AndonService : IAndonService
             .OrderByDescending(e => e.TriggeredAt)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
+            .Select(MapToDto)
             .ToList();
 
         return (items, total);
     }
 
     /// <summary>触发一个新的异常事件</summary>
-    public async Task<AndonEvent> TriggerEventAsync(
+    public async Task<AndonEventDto> TriggerEventAsync(
         AndonEventType eventType,
         AndonEventLevel level,
         string title,
@@ -92,7 +116,7 @@ public class AndonService : IAndonService
         };
 
         await _repository.AddAsync(evt);
-        return evt;
+        return MapToDto(evt);
     }
 
     /// <summary>处理/解决异常事件</summary>
@@ -108,9 +132,10 @@ public class AndonService : IAndonService
     }
 
     /// <summary>根据 ID 获取事件</summary>
-    public async Task<AndonEvent?> GetByIdAsync(long id)
+    public async Task<AndonEventDto?> GetByIdAsync(long id)
     {
-        return await _repository.GetByIdAsync(id);
+        var evt = await _repository.GetByIdAsync(id);
+        return evt == null ? null : MapToDto(evt);
     }
 
     /// <summary>删除异常事件（软删除）</summary>

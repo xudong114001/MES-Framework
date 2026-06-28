@@ -1,6 +1,6 @@
-using MES.Api.Dtos;
+using MES.Application.Dtos;
 
-namespace MES.Api.Services;
+namespace MES.Application.Interfaces;
 
 public interface IAuthService
 {

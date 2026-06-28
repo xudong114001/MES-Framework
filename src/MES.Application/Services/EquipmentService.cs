@@ -48,6 +48,23 @@ public class EquipmentService : IEquipmentService
         UpdatedBy = entity.UpdatedBy
     };
 
+    private static MaintenancePlanDto MapPlanToDto(MaintenancePlan entity, string? equipmentName = null) => new()
+    {
+        Id = entity.Id,
+        EquipmentId = entity.EquipmentId,
+        PlanName = entity.PlanName,
+        CycleDays = entity.CycleDays,
+        LastCompletedDate = entity.LastCompletedDate,
+        NextDueDate = entity.NextDueDate,
+        Description = entity.Description,
+        Status = entity.Status,
+        EquipmentName = equipmentName,
+        CreatedAt = entity.CreatedAt,
+        CreatedBy = entity.CreatedBy,
+        UpdatedAt = entity.UpdatedAt,
+        UpdatedBy = entity.UpdatedBy
+    };
+
     private static Equipment MapToEntity(EquipmentDto dto)
     {
         return Equipment.Create(
@@ -63,7 +80,7 @@ public class EquipmentService : IEquipmentService
             plannedRunTime: dto.PlannedRunTime);
     }
 
-    /// <summary>获取所有设���</summary>
+    /// <summary>获取所有设备</summary>
     public async Task<IEnumerable<EquipmentDto>> GetAllAsync()
     {
         var list = await _equipmentRepo.GetAllAsync();
@@ -263,7 +280,7 @@ public class EquipmentService : IEquipmentService
 
     // ======================== 保养计划管理 ========================
 
-    public async Task<MaintenancePlan> CreateMaintenancePlanAsync(
+    public async Task<MaintenancePlanDto> CreateMaintenancePlanAsync(
         long equipmentId, string planName, int cycleDays, string? description)
     {
         var eq = await _equipmentRepo.GetByIdAsync(equipmentId);
@@ -274,15 +291,21 @@ public class EquipmentService : IEquipmentService
         var plan = eq.AddMaintenancePlan(planName, cycleDays, description);
         await _equipmentRepo.UpdateAsync(eq);
 
-        return await _maintenancePlanRepo.AddAsync(plan);
+        var created = await _maintenancePlanRepo.AddAsync(plan);
+        return MapPlanToDto(created, eq.Name);
     }
 
-    public async Task<List<MaintenancePlan>> GetMaintenancePlansAsync(long equipmentId)
+    public async Task<List<MaintenancePlanDto>> GetMaintenancePlansAsync(long equipmentId)
     {
         var plans = await _maintenancePlanRepo
             .FindAsync(p => p.EquipmentId == equipmentId)
             .ContinueWith(t => t.Result.ToList());
-        return plans;
+
+        // 加载设备名称
+        var eq = await _equipmentRepo.GetByIdAsync(equipmentId);
+        var eqName = eq?.Name;
+
+        return plans.Select(p => MapPlanToDto(p, eqName)).ToList();
     }
 
     public async Task CompleteMaintenanceAsync(long planId)
@@ -307,7 +330,7 @@ public class EquipmentService : IEquipmentService
     /// <summary>
     /// 获取所有保养计划（支持按设备名称、状态筛选）
     /// </summary>
-    public async Task<List<MaintenancePlan>> GetAllMaintenancePlansAsync(
+    public async Task<List<MaintenancePlanDto>> GetAllMaintenancePlansAsync(
         string? equipmentName = null, MaintenancePlanStatus? status = null)
     {
         var allPlans = await _maintenancePlanRepo.GetAllAsync();
@@ -333,21 +356,22 @@ public class EquipmentService : IEquipmentService
                 .ToList();
         }
 
-        return plans;
+        return plans.Select(p => MapPlanToDto(p, equipmentDict.GetValueOrDefault(p.EquipmentId))).ToList();
     }
 
     /// <summary>
     /// 获取所有设备（下拉列表用）
     /// </summary>
-    public async Task<List<Equipment>> GetAllEquipmentAsync()
+    public async Task<List<EquipmentDto>> GetAllEquipmentAsync()
     {
-        return await _equipmentRepo.GetAllAsync().ContinueWith(t => t.Result.ToList());
+        var list = await _equipmentRepo.GetAllAsync();
+        return list.Select(MapToDto).ToList();
     }
 
     /// <summary>
     /// 更新保养计划
     /// </summary>
-    public async Task<MaintenancePlan> UpdateMaintenancePlanAsync(
+    public async Task<MaintenancePlanDto> UpdateMaintenancePlanAsync(
         long planId, string planName, int cycleDays, string? description)
     {
         var plan = await _maintenancePlanRepo.GetByIdAsync(planId);
@@ -364,7 +388,10 @@ public class EquipmentService : IEquipmentService
             plan.UpdateDescription(description);
 
         await _maintenancePlanRepo.UpdateAsync(plan);
-        return plan;
+
+        // 加载设备名称
+        var eq = await _equipmentRepo.GetByIdAsync(plan.EquipmentId);
+        return MapPlanToDto(plan, eq?.Name);
     }
 
     /// <summary>

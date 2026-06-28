@@ -1,3 +1,4 @@
+using MES.Application.Dtos;
 using MES.Application.Interfaces;
 using MES.Domain.Entities;
 using MES.Domain.Enums;
@@ -25,11 +26,59 @@ public class SchedulingService : ISchedulingService
         _stepRepo2 = stepRepo2;
     }
 
-    /// <summary>获取所有已下达(RELEASED)且未排产的工单</summary>
-    public async Task<IEnumerable<WorkOrder>> GetUnscheduledOrdersAsync()
+    private static WorkOrderDto MapToDto(WorkOrder entity) => new()
     {
-        return await _workOrderRepo.FindAsync(wo =>
+        Id = entity.Id,
+        OrderNo = entity.OrderNo,
+        SourceType = entity.SourceType,
+        SourceRef = entity.SourceRef,
+        MaterialId = entity.MaterialId,
+        RoutingId = entity.RoutingId,
+        PlannedQty = entity.PlannedQty,
+        CompletedQty = entity.CompletedQty,
+        ScrapQty = entity.ScrapQty,
+        Status = entity.Status,
+        PlanStartTime = entity.PlanStartTime,
+        PlanEndTime = entity.PlanEndTime,
+        ActualStartTime = entity.ActualStartTime,
+        ActualEndTime = entity.ActualEndTime,
+        Priority = entity.Priority,
+        FactoryId = entity.FactoryId,
+        WorkshopId = entity.WorkshopId,
+        LineId = entity.LineId,
+        Assignee = entity.Assignee,
+        Remark = entity.Remark,
+        ReworkFromId = entity.ReworkFromId,
+        Steps = entity.Steps?.Select(MapStepToDto).ToList() ?? new(),
+        CreatedAt = entity.CreatedAt,
+        CreatedBy = entity.CreatedBy,
+        UpdatedAt = entity.UpdatedAt,
+        UpdatedBy = entity.UpdatedBy
+    };
+
+    private static WorkOrderStepDto MapStepToDto(WorkOrderStep entity) => new()
+    {
+        Id = entity.Id,
+        WorkOrderId = entity.WorkOrderId,
+        StepNo = entity.StepNo,
+        StepName = entity.StepName,
+        WorkstationId = entity.WorkstationId,
+        PlannedQty = entity.PlannedQty,
+        CompletedQty = entity.CompletedQty,
+        ScrapQty = entity.ScrapQty,
+        Status = entity.Status,
+        PlanStartTime = entity.PlanStartTime,
+        PlanEndTime = entity.PlanEndTime,
+        CreatedAt = entity.CreatedAt,
+        UpdatedAt = entity.UpdatedAt
+    };
+
+    /// <summary>获取所有已下达(RELEASED)且未排产的工单</summary>
+    public async Task<IEnumerable<WorkOrderDto>> GetUnscheduledOrdersAsync()
+    {
+        var orders = await _workOrderRepo.FindAsync(wo =>
             wo.Status == WorkOrderStatus.RELEASED && wo.LineId == null);
+        return orders.Select(MapToDto);
     }
 
     /// <summary>排产：将单个工单分配到指定产线，状态 RELEASED → SCHEDULED</summary>
@@ -122,7 +171,7 @@ public class SchedulingService : ISchedulingService
     }
 
     /// <summary>获取指定产线的所有已排产工单（含工序）</summary>
-    public async Task<IEnumerable<WorkOrder>> GetScheduledOrdersByLineAsync(long lineId)
+    public async Task<IEnumerable<WorkOrderDto>> GetScheduledOrdersByLineAsync(long lineId)
     {
         var orders = (await _workOrderRepo.FindAsync(wo =>
             wo.LineId == lineId &&
@@ -137,7 +186,7 @@ public class SchedulingService : ISchedulingService
             wo.Steps = steps.ToList();
         }
 
-        return orders;
+        return orders.Select(MapToDto);
     }
 
     /// <summary>取消排产：SCHEDULED → RELEASED，清除 LineId</summary>

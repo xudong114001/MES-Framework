@@ -11,6 +11,7 @@ namespace MES.Tests.Infrastructure;
 /// 验证实体配置、审计字段自动设置、软删除查询过滤等核心行为。
 /// 使用 EF Core InMemory 数据库确保测试可独立运行。
 /// </summary>
+[Trait("Category", "Integration")]
 public class MesDbContextTests
 {
     /// <summary>

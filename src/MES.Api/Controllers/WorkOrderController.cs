@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Mvc;
 using MES.Api.Middleware;
 using MES.Application.Dtos;
 using MES.Application.Interfaces;
-using MES.Domain.Entities;
 
 namespace MES.Api.Controllers;
 
@@ -18,35 +17,6 @@ public class WorkOrderController : ControllerBase
     {
         _service = service;
     }
-
-    private static WorkOrderDto MapToDto(WorkOrder entity) => new()
-    {
-        Id = entity.Id,
-        OrderNo = entity.OrderNo,
-        SourceType = entity.SourceType,
-        SourceRef = entity.SourceRef,
-        MaterialId = entity.MaterialId,
-        RoutingId = entity.RoutingId,
-        PlannedQty = entity.PlannedQty,
-        CompletedQty = entity.CompletedQty,
-        ScrapQty = entity.ScrapQty,
-        Status = entity.Status,
-        PlanStartTime = entity.PlanStartTime,
-        PlanEndTime = entity.PlanEndTime,
-        ActualStartTime = entity.ActualStartTime,
-        ActualEndTime = entity.ActualEndTime,
-        Priority = entity.Priority,
-        FactoryId = entity.FactoryId,
-        WorkshopId = entity.WorkshopId,
-        LineId = entity.LineId,
-        Assignee = entity.Assignee,
-        Remark = entity.Remark,
-        ReworkFromId = entity.ReworkFromId,
-        CreatedAt = entity.CreatedAt,
-        CreatedBy = entity.CreatedBy,
-        UpdatedAt = entity.UpdatedAt,
-        UpdatedBy = entity.UpdatedBy
-    };
 
     /// <summary>
     /// 获取所有工单列表

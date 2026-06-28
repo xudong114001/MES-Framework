@@ -149,15 +149,6 @@ const equipColor = (s: string) => {
   return map[s] || '#909399'
 }
 
-const statusPercent = (count: number) => {
-  const total = statusDistribution.value.reduce((a, b) => a + b.count, 0)
-  return total > 0 ? Math.round((count / total) * 100) : 0
-}
-
-const equipPercent = (count: number) => {
-  const total = equipmentStatus.value.reduce((a, b) => a + b.count, 0)
-  return total > 0 ? Math.round((count / total) * 100) : 0
-}
 
 // ---- ECharts 图表配置 ----
 

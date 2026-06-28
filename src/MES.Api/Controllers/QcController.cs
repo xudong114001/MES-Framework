@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Mvc;
 using MES.Api.Middleware;
 using MES.Application.Dtos;
 using MES.Application.Interfaces;
-using MES.Domain.Enums;
 
 namespace MES.Api.Controllers;
 
@@ -129,34 +128,4 @@ public class QcController : ControllerBase
         var failedList = await _qcService.GetRecentFailedInspectionsAsync();
         return Ok(ApiResponse.Ok(failedList));
     }
-}
-
-public class VerifyRequest
-{
-    public QcResult Result { get; set; }
-}
-
-public class HandleNonconformingRequest
-{
-    /// <summary>处理动作: CONCESSION(让步接收), REWORK(返工), SCRAP(报废)</summary>
-    public InspectionResult Action { get; set; }
-    /// <summary>处理备注</summary>
-    public string? Remark { get; set; }
-}
-
-public class CreateInspectionRequest
-{
-    public string InspectNo { get; set; } = string.Empty;
-    public QcInspectionType SourceType { get; set; }
-    public long? WorkOrderId { get; set; }
-    public long? MaterialId { get; set; }
-    public long? Inspector { get; set; }
-    public string? SourceRef { get; set; }
-    public string? Remark { get; set; }
-}
-
-public class AddItemRequest
-{
-    public string ItemName { get; set; } = string.Empty;
-    public string? SpecValue { get; set; }
 }

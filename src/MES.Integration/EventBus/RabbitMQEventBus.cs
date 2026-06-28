@@ -2,6 +2,8 @@ using System.Collections.Concurrent;
 using System.Text;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using MES.Application.Settings;
 using RabbitMQ.Client;
 
 namespace MES.Integration.EventBus;
@@ -9,15 +11,17 @@ namespace MES.Integration.EventBus;
 public class RabbitMQEventBus : IEventBus, IDisposable
 {
     private readonly ILogger<RabbitMQEventBus> _logger;
+    private readonly RabbitMQSettings _settings;
     private readonly ConcurrentDictionary<string, List<Func<IEvent, Task>>> _handlers = new();
     private IConnection? _connection;
     private IChannel? _channel;
     private readonly string _exchangeName = "mes_event_bus";
     private bool _disposed;
 
-    public RabbitMQEventBus(ILogger<RabbitMQEventBus> logger)
+    public RabbitMQEventBus(ILogger<RabbitMQEventBus> logger, IOptions<RabbitMQSettings> settings)
     {
         _logger = logger;
+        _settings = settings.Value;
     }
 
     public async Task PublishAsync<TEvent>(TEvent @event) where TEvent : IEvent
@@ -70,18 +74,18 @@ public class RabbitMQEventBus : IEventBus, IDisposable
         {
             var factory = new ConnectionFactory
             {
-                HostName = "localhost",
-                Port = 5672,
-                UserName = "mes_user",
-                Password = "Mes@2026!",
-                VirtualHost = "/",
+                HostName = _settings.HostName,
+                Port = _settings.Port,
+                UserName = _settings.UserName,
+                Password = _settings.Password,
+                VirtualHost = _settings.VirtualHost,
                 AutomaticRecoveryEnabled = true
             };
 
             _connection = await factory.CreateConnectionAsync();
             _channel = await _connection.CreateChannelAsync();
             await _channel.ExchangeDeclareAsync(exchange: _exchangeName, type: ExchangeType.Direct, durable: true);
-            _logger.LogInformation("Connected to RabbitMQ");
+            _logger.LogInformation("Connected to RabbitMQ at {Host}:{Port}", _settings.HostName, _settings.Port);
         }
         catch (Exception ex)
         {

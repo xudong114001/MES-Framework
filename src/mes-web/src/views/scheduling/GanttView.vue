@@ -110,15 +110,6 @@ function generateDateHeaders() {
   }
 }
 
-function formatDateStr(year: number, month: number, day: number): string {
-  return `${String(month).padStart(2, '0')}/${String(day).padStart(2, '0')}`
-}
-
-function isWeekend(year: number, month: number, day: number): boolean {
-  const d = new Date(year, month - 1, day)
-  return d.getDay() === 0 || d.getDay() === 6
-}
-
 function getLineColor(lineId: number | null): string {
   if (lineId === null) return '#409eff'
   const key = String(lineId)

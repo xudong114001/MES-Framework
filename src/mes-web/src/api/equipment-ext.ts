@@ -2,7 +2,7 @@ import http from './index'
 
 export interface MaintenancePlan {
   id?: number
-  equipmentId: number
+  equipmentId?: number
   equipmentName?: string
   planName: string
   cycleDays: number

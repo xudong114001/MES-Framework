@@ -12,6 +12,7 @@ namespace MES.Tests.Infrastructure;
 /// 泛型仓储 Repository&lt;T&gt; 的集成测试。
 /// 使用 EF Core InMemory 数据库验证 CRUD 及条件查询操作的真实行为。
 /// </summary>
+[Trait("Category", "Integration")]
 public class RepositoryTests
 {
     /// <summary>

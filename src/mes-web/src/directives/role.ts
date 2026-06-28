@@ -2,14 +2,14 @@ import type { Directive, DirectiveBinding } from 'vue'
 import { useAuthStore } from '../stores/auth'
 
 /**
- * v-role 指令 — 基于角色控制元素显示/隐藏
+ * v-role 指令 — 基于角色控制元素显示/隐藏（大小写不敏感）
  *
  * 用法：
- *   <el-button v-role="'admin'">删除</el-button>
- *   <el-button v-role="['admin', 'supervisor']">管理</el-button>
+ *   <el-button v-role="'Admin'">删除</el-button>
+ *   <el-button v-role="['Admin', 'ProductionManager']">管理</el-button>
  *
  * 逻辑：用户拥有任一指定角色即显示（OR 逻辑），否则隐藏（display: none）
- * 未登录用户默认隐藏
+ * 未登录用户默认隐藏。角色名比较大小写不敏感。
  */
 export const vRole: Directive<HTMLElement, string | string[]> = {
   mounted(el: HTMLElement, binding: DirectiveBinding<string | string[]>) {
@@ -21,7 +21,7 @@ export const vRole: Directive<HTMLElement, string | string[]> = {
 }
 
 /**
- * v-permission 指令 — 基于细粒度权限控制元素显示/隐藏
+ * v-permission 指令 — 基于细粒度权限控制元素显示/隐藏（大小写不敏感）
  *
  * 用法：
  *   <el-button v-permission="'user:delete'">删除用户</el-button>
@@ -40,7 +40,7 @@ export const vPermission: Directive<HTMLElement, string | string[]> = {
 }
 
 /**
- * 统一更新元素可见性
+ * 统一更新元素可见性（角色/权限名大小写不敏感比较）
  */
 function updateVisibility(
   el: HTMLElement,
@@ -63,14 +63,16 @@ function updateVisibility(
     return
   }
 
-  // admin 角色始终拥有所有权限，直接放行
-  if (authStore.roles.includes('admin')) {
+  // Admin 角色始终拥有所有权限，直接放行（大小写不敏感）
+  if (authStore.roles.some(r => r.toLowerCase() === 'admin')) {
     el.style.display = ''
     return
   }
 
   const userValues = mode === 'role' ? authStore.roles : authStore.permissions
-  const hasAccess = required.some((item) => userValues.includes(item))
+  // 大小写不敏感比较
+  const userValuesLower = userValues.map(v => v.toLowerCase())
+  const hasAccess = required.some((item) => userValuesLower.includes(item.toLowerCase()))
 
   el.style.display = hasAccess ? '' : 'none'
 }
