@@ -34,8 +34,6 @@ MES-Framework/
 │   ├── MES.Domain/             # 领域层（Entity + Enum + ValueObject + DomainEvent）
 │   ├── MES.Infrastructure/     # 基础设施层（Repository + 外部服务 + Data/Migrations）
 │   ├── MES.Integration/        # 集成层（ERP/WMS/MES 对接 + EventBus）
-│   ├── MES.AI.Application/     # AI 应用服务层
-│   ├── MES.AI.Domain/          # AI 领域层
 │   ├── MES.Tests/              # 单元测试 + 集成测试
 │   └── mes-web/                # Vue 3 前端
 ├── database/                   # 数据库脚本
@@ -133,10 +131,9 @@ dotnet test src/MES.Tests
 | P4 | 看板 + Andon | ✅ 已完成 |
 | P5 | 接口集成 + 数据采集 | ✅ 已完成 |
 | P6 | 性能优化 + 上线部署 | ✅ 已完成 |
-| **AI-P1~P3** | **AI 质量预警/智能排程/设备预测** | **✅ 已完成** |
-| **扩展** | **RBAC 权限/PDA 离线/LLM 知识库** | **✅ 已完成** |
+| **扩展** | **RBAC 权限/PDA 离线/AI 知识库** | **✅ 已完成** |
 
-> P0-P6 + AI 融合 + 非核心扩展已全部完成。运行 `docker-compose up -d` 即可启动全套基础设施。
+> P0-P6 + 非核心扩展已全部完成。运行 `docker-compose up -d` 即可启动全套基础设施。
 
 ### 已实现的基础设施
 
