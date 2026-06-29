@@ -31,9 +31,10 @@ public class ProductionLineService : IProductionLineService
         return list.Select(MapToDto);
     }
 
-    public async Task<IEnumerable<ProductionLine>> GetAllLinesAsync()
+    public async Task<IEnumerable<ProductionLineDto>> GetAllLinesAsync()
     {
-        return await _repo.FindAsync(l => l.Status);
+        var list = await _repo.FindAsync(l => l.Status);
+        return list.Select(MapToDto);
     }
 
     public async Task<ProductionLineDto?> GetByIdAsync(long id)

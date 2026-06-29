@@ -15,10 +15,10 @@ public interface IQcService
     Task<InspectionWithItemsDto?> GetInspectionWithItemsAsync(long id);
 
     /// <summary>创建质检单</summary>
-    Task<Domain.Entities.QcInspection> CreateInspectionAsync(string inspectNo, Domain.Enums.QcInspectionType sourceType, long? workOrderId = null, long? materialId = null, long? inspector = null, string? sourceRef = null, string? remark = null);
+    Task<QcInspectionDto> CreateInspectionAsync(string inspectNo, Domain.Enums.QcInspectionType sourceType, long? workOrderId = null, long? materialId = null, long? inspector = null, string? sourceRef = null, string? remark = null);
 
     /// <summary>添加质检项</summary>
-    Task<Domain.Entities.QcInspectionItem> AddItemAsync(long inspectionId, string itemName, string? specValue = null);
+    Task<QcInspectionItemDto> AddItemAsync(long inspectionId, string itemName, string? specValue = null);
 
     /// <summary>判定质检结果</summary>
     Task VerifyInspectionAsync(long inspectionId, Domain.Enums.QcResult result);

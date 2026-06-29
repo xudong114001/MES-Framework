@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using MES.Api.Middleware;
 using MES.Application.Dtos;
 using MES.Application.Interfaces;
+using MES.Domain.Enums;
 
 namespace MES.Api.Controllers;
 
@@ -19,12 +20,12 @@ public class WorkOrderController : ControllerBase
     }
 
     /// <summary>
-    /// 获取所有工单列表
+    /// 获取所有工单列表（支持按状态和产线过滤）
     /// </summary>
     [HttpGet]
-    public async Task<IActionResult> GetAll()
+    public async Task<IActionResult> GetAll([FromQuery] WorkOrderStatus? status, [FromQuery] long? lineId)
     {
-        var list = await _service.GetAllAsync();
+        var list = await _service.GetAllAsync(status, lineId);
         return Ok(ApiResponse.Ok(list));
     }
 

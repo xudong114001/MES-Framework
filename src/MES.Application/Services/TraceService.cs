@@ -1,3 +1,4 @@
+using MES.Application.Dtos;
 using MES.Application.Interfaces;
 using MES.Domain.Entities;
 using MES.Domain.Repositories;
@@ -21,45 +22,106 @@ public class TraceService : ITraceService
     }
 
     // 按批次查询
-    public async Task<object> TraceByBatchAsync(string batchNo)
+    public async Task<TraceResultDto> TraceByBatchAsync(string batchNo)
     {
         var traces = await _traceRepo.FindAsync(t => t.BatchNo == batchNo);
         var list = traces.ToList();
-        return new
+
+        var material = list.FirstOrDefault() != null
+            ? await _materialRepo.GetByIdAsync(list.First().MaterialId)
+            : null;
+
+        return new TraceResultDto
         {
-            batchNo,
-            records = list.Select(t => new
+            TraceType = "Batch",
+            BatchNo = batchNo,
+            MaterialCode = material?.Code ?? string.Empty,
+            MaterialName = material?.Name ?? string.Empty,
+            Steps = list.Select(t => new TraceStepDto
             {
-                t.Id,
-                t.MaterialId,
-                t.Direction,
-                t.Qty,
-                t.Operator,
-                t.OperateTime,
-                t.WorkOrderId,
-                t.Remark
-            })
+                WorkOrderId = t.WorkOrderId ?? 0,
+                Direction = t.Direction ?? string.Empty,
+                Qty = t.Qty,
+                OperateTime = t.OperateTime
+            }).ToList()
         };
     }
 
     // 按序列号查询
-    public async Task<object> TraceBySerialAsync(string serialNo)
+    public async Task<TraceResultDto> TraceBySerialAsync(string serialNo)
     {
         var traces = await _traceRepo.FindAsync(t => t.SerialNo == serialNo);
-        return new { serialNo, records = traces.ToList() };
+        var list = traces.ToList();
+
+        var material = list.FirstOrDefault() != null
+            ? await _materialRepo.GetByIdAsync(list.First().MaterialId)
+            : null;
+
+        return new TraceResultDto
+        {
+            TraceType = "Serial",
+            SerialNo = serialNo,
+            BatchNo = list.FirstOrDefault()?.BatchNo ?? string.Empty,
+            MaterialCode = material?.Code ?? string.Empty,
+            MaterialName = material?.Name ?? string.Empty,
+            Steps = list.Select(t => new TraceStepDto
+            {
+                WorkOrderId = t.WorkOrderId ?? 0,
+                Direction = t.Direction ?? string.Empty,
+                Qty = t.Qty,
+                OperateTime = t.OperateTime
+            }).ToList()
+        };
     }
 
     // 正向追溯：原料批次 → 消耗到哪些工单 → 产出哪些成品
-    public async Task<object> TraceForwardAsync(long materialId, string batchNo)
+    public async Task<TraceResultDto> TraceForwardAsync(long materialId, string batchNo)
     {
         var traces = await _traceRepo.FindAsync(t => t.MaterialId == materialId && t.BatchNo == batchNo && t.Direction == "CONSUME");
-        return new { materialId, batchNo, consumeRecords = traces.ToList() };
+        var list = traces.ToList();
+
+        var material = await _materialRepo.GetByIdAsync(materialId);
+
+        return new TraceResultDto
+        {
+            TraceType = "Forward",
+            BatchNo = batchNo,
+            MaterialCode = material?.Code ?? string.Empty,
+            MaterialName = material?.Name ?? string.Empty,
+            Steps = list.Select(t => new TraceStepDto
+            {
+                WorkOrderId = t.WorkOrderId ?? 0,
+                Direction = t.Direction ?? string.Empty,
+                Qty = t.Qty,
+                OperateTime = t.OperateTime
+            }).ToList()
+        };
     }
 
     // 反向追溯：成品序列号 → 用了哪些原料批次
-    public async Task<object> TraceBackwardAsync(string serialNo)
+    public async Task<TraceResultDto> TraceBackwardAsync(string serialNo)
     {
         var traces = await _traceRepo.FindAsync(t => t.SerialNo == serialNo);
-        return new { serialNo, records = traces.ToList() };
+        var list = traces.ToList();
+
+        var material = list.FirstOrDefault() != null
+            ? await _materialRepo.GetByIdAsync(list.First().MaterialId)
+            : null;
+
+        return new TraceResultDto
+        {
+            TraceType = "Backward",
+            SerialNo = serialNo,
+            BatchNo = list.FirstOrDefault()?.BatchNo ?? string.Empty,
+            MaterialCode = material?.Code ?? string.Empty,
+            MaterialName = material?.Name ?? string.Empty,
+            Steps = list.Select(t => new TraceStepDto
+            {
+                WorkOrderId = t.WorkOrderId ?? 0,
+                Direction = t.Direction ?? string.Empty,
+                Qty = t.Qty,
+                OperateTime = t.OperateTime
+            }).ToList()
+        };
     }
 }

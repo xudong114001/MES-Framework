@@ -80,12 +80,20 @@ public class WorkOrderService : IWorkOrderService
     }
 
     /// <summary>
-    /// 获取所有工单
+    /// 获取所有工单（支持按状态和产线过滤）
     /// </summary>
-    public async Task<IEnumerable<WorkOrderDto>> GetAllAsync()
+    public async Task<IEnumerable<WorkOrderDto>> GetAllAsync(WorkOrderStatus? status = null, long? lineId = null)
     {
-        var entities = await _workOrderRepo.GetAllAsync();
-        return entities.Select(MapToDto);
+        var query = await _workOrderRepo.GetAllAsync();
+        var list = query.AsEnumerable();
+
+        if (status.HasValue)
+            list = list.Where(wo => wo.Status == status.Value);
+
+        if (lineId.HasValue)
+            list = list.Where(wo => wo.LineId == lineId.Value);
+
+        return list.Select(MapToDto);
     }
 
     /// <summary>
@@ -244,7 +252,7 @@ public class WorkOrderService : IWorkOrderService
                     PlannedQty = created.PlannedQty,
                     SourceRef = created.SourceRef
                 };
-                await _eventBus.Publish(evt);
+                await _eventBus.PublishAsync(evt);
                 _eventLog?.Log(evt, "Published");
             }
         }
@@ -313,7 +321,7 @@ public class WorkOrderService : IWorkOrderService
                     NewStatus = WorkOrderStatus.RELEASED,
                     ChangedAt = DateTime.UtcNow
                 };
-                await _eventBus.Publish(evt);
+                await _eventBus.PublishAsync(evt);
                 _eventLog?.Log(evt, "Published");
             }
         }

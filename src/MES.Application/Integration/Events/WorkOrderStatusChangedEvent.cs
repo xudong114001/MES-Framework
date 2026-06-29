@@ -7,6 +7,8 @@ public class WorkOrderStatusChangedEvent : IEvent
 {
     public Guid Id { get; set; } = Guid.NewGuid();
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public string EventId => Id.ToString();
+    public string EventType => nameof(WorkOrderStatusChangedEvent);
 
     public long WorkOrderId { get; set; }
     public string OrderNo { get; set; } = string.Empty;

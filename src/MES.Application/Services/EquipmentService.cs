@@ -161,7 +161,7 @@ public class EquipmentService : IEquipmentService
     /// 真实 OEE 计算
     /// OEE = 时间开动率 × 性能开动率 × 良品率
     /// </summary>
-    public async Task<OeeResult> CalculateOeeAsync(long equipmentId)
+    public async Task<OeeResultDto> CalculateOeeAsync(long equipmentId)
     {
         var eq = await _equipmentRepo.GetByIdAsync(equipmentId);
         if (eq == null)
@@ -179,7 +179,7 @@ public class EquipmentService : IEquipmentService
         // 如果没有报工数据，返回默认值
         if (reports.Count == 0)
         {
-            return new OeeResult
+            return new OeeResultDto
             {
                 EquipmentId = eq.Id,
                 EquipmentName = eq.Name,
@@ -257,7 +257,7 @@ public class EquipmentService : IEquipmentService
         // 计算 OEE
         var oeeValue = availability * performance * quality;
 
-        return new OeeResult
+        return new OeeResultDto
         {
             EquipmentId = eq.Id,
             EquipmentName = eq.Name,

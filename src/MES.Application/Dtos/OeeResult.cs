@@ -2,7 +2,7 @@ using MES.Domain.Enums;
 
 namespace MES.Application.Dtos;
 
-public class OeeResult
+public class OeeResultDto
 {
     public long EquipmentId { get; set; }
     public string EquipmentName { get; set; } = string.Empty;

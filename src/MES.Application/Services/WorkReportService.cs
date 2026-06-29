@@ -228,7 +228,7 @@ public class WorkReportService : IWorkReportService
                     ReportType = created.ReportType,
                     BatchNo = created.BatchNo
                 };
-                await _eventBus.Publish(evt);
+                await _eventBus.PublishAsync(evt);
                 _eventLog?.Log(evt, "Published");
             }
         }

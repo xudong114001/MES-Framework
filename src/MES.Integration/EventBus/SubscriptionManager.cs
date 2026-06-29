@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using MES.Application.Interfaces;
 
 namespace MES.Integration.EventBus;
 

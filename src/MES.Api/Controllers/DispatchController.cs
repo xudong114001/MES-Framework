@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MES.Api.Middleware;
+using MES.Application.Dtos;
 using MES.Application.Interfaces;
 
 namespace MES.Api.Controllers;
@@ -48,10 +49,4 @@ public class DispatchController : ControllerBase
         var list = await _dispatchService.GetAvailableWorkstationsAsync(lineId);
         return Ok(ApiResponse.Ok(list));
     }
-}
-
-public class DispatchStepRequest
-{
-    public long WorkOrderStepId { get; set; }
-    public long WorkstationId { get; set; }
 }

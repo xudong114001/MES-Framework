@@ -1,9 +1,10 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MES.Api.Middleware;
+using MES.Application.Interfaces;
 using MES.Application.Integration.Events;
 using MES.Integration.Adapters;
-using MES.Integration.EventBus;
+using MES.Integration.Dtos;
 using MES.Integration.Models;
 using MES.Integration.Plc;
 
@@ -151,7 +152,7 @@ public class IntegrationController : ControllerBase
     /// 从 ERP 拉取工单
     /// </summary>
     [HttpPost("erp/sync-work-orders")]
-    public async Task<IActionResult> SyncWorkOrders([FromBody] SyncRequest? request)
+    public async Task<IActionResult> SyncWorkOrders([FromBody] IntegrationSyncRequest? request)
     {
         var result = await _erpAdapter.PullWorkOrdersAsync(request?.Since);
         return Ok(ApiResponse.Ok(result));
@@ -161,7 +162,7 @@ public class IntegrationController : ControllerBase
     /// 从 ERP 拉取物料
     /// </summary>
     [HttpPost("erp/sync-materials")]
-    public async Task<IActionResult> SyncMaterials([FromBody] SyncRequest? request)
+    public async Task<IActionResult> SyncMaterials([FromBody] IntegrationSyncRequest? request)
     {
         var result = await _erpAdapter.PullMaterialsAsync(request?.Since);
         return Ok(ApiResponse.Ok(result));
@@ -171,7 +172,7 @@ public class IntegrationController : ControllerBase
     /// 从 ERP 拉取BOM
     /// </summary>
     [HttpPost("erp/sync-boms")]
-    public async Task<IActionResult> SyncBoms([FromBody] SyncRequest? request)
+    public async Task<IActionResult> SyncBoms([FromBody] IntegrationSyncRequest? request)
     {
         var result = await _erpAdapter.PullBomsAsync(request?.Since);
         return Ok(ApiResponse.Ok(result));
@@ -201,7 +202,7 @@ public class IntegrationController : ControllerBase
     /// 从 WMS 拉取库存
     /// </summary>
     [HttpPost("wms/sync-inventory")]
-    public async Task<IActionResult> SyncInventory([FromBody] SyncRequest? request)
+    public async Task<IActionResult> SyncInventory([FromBody] IntegrationSyncRequest? request)
     {
         var result = await _wmsAdapter.PullInventoryAsync(request?.MaterialCode);
         return Ok(ApiResponse.Ok(result));
@@ -272,16 +273,4 @@ public class IntegrationController : ControllerBase
     /// </summary>
     [HttpDelete("event-logs")]
     public IActionResult ClearEventLogs() => ClearEvents();
-}
-
-public class SyncAdapterRequest
-{
-    public string? Direction { get; set; }
-    public DateTime? Since { get; set; }
-}
-
-public class SyncRequest
-{
-    public DateTime? Since { get; set; }
-    public string? MaterialCode { get; set; }
 }

@@ -1,3 +1,4 @@
+using MES.Application.Dtos;
 using MES.Application.Interfaces;
 using MES.Domain.Entities;
 using MES.Domain.Enums;
@@ -31,7 +32,22 @@ public class QualityAlertService : IQualityAlertService
         _logger = logger;
     }
 
-    public async Task<List<AlertRecord>> AnalyzeAsync(long? workOrderId = null)
+    private static AlertRecordDto MapToDto(AlertRecord entity) => new()
+    {
+        Id = entity.Id,
+        RuleName = entity.RuleName,
+        Title = entity.Title,
+        Message = entity.Message,
+        Level = (int)entity.Level,
+        RelatedEntityType = entity.RelatedEntityType,
+        RelatedEntityId = entity.RelatedEntityId,
+        IsProcessed = entity.IsProcessed,
+        ProcessedBy = entity.ProcessedBy,
+        ProcessedAt = entity.ProcessedAt,
+        CreatedAt = entity.CreatedAt
+    };
+
+    public async Task<List<AlertRecordDto>> AnalyzeAsync(long? workOrderId = null)
     {
         var alerts = new List<AlertRecord>();
         var allRules = await _ruleRepo.FindAsync(r => r.IsEnabled);
@@ -75,22 +91,23 @@ public class QualityAlertService : IQualityAlertService
             await _alertRepo.SaveChangesAsync();
         }
 
-        return alerts;
+        return alerts.Select(MapToDto).ToList();
     }
 
-    public async Task<List<AlertRecord>> GetActiveAlertsAsync()
+    public async Task<List<AlertRecordDto>> GetActiveAlertsAsync()
     {
         var result = await _alertRepo.FindAsync(a => !a.IsProcessed);
-        return result.ToList();
+        return result.Select(MapToDto).ToList();
     }
 
-    public async Task<List<AlertRecord>> GetAlertHistoryAsync(int page = 1, int pageSize = 20)
+    public async Task<List<AlertRecordDto>> GetAlertHistoryAsync(int page = 1, int pageSize = 20)
     {
         var all = await _alertRepo.FindAsync(a => true);
         return all
             .OrderByDescending(a => a.CreatedAt)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
+            .Select(MapToDto)
             .ToList();
     }
 

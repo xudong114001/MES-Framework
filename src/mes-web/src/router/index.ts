@@ -239,7 +239,7 @@ const router = createRouter({
     {
       path: '/:pathMatch(.*)*',
       name: 'NotFound',
-      component: () => import('../views/login/LoginView.vue'),
+      component: () => import('../views/NotFoundView.vue'),
       meta: { requiresAuth: false, title: '页面不存在' }
     }
   ]
