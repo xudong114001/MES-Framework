@@ -27,7 +27,10 @@ public interface IEquipmentService
     Task ReportFaultAsync(long equipmentId);
 
     /// <summary>计算 OEE</summary>
-    Task<OeeResult> CalculateOeeAsync(long equipmentId);
+    Task<OeeResultDto> CalculateOeeAsync(long equipmentId);
+
+    /// <summary>计算所有设备的 OEE</summary>
+    Task<List<OeeResultDto>> CalculateAllOeeAsync();
 
     /// <summary>创建保养计划</summary>
     Task<MaintenancePlanDto> CreateMaintenancePlanAsync(long equipmentId, string planName, int cycleDays, string? description);

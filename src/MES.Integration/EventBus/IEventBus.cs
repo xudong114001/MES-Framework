@@ -1,26 +1,11 @@
 namespace MES.Integration.EventBus;
 
-public interface IEvent
+/// <summary>
+/// 事件订阅管理器，跟踪事件与处理器的映射关系。
+/// 注意：IEvent 和 IEventBus 的规范定义在 MES.Application.Interfaces 中，
+/// Integration 层通过实现 Application 层的接口来适配。
+/// </summary>
+public interface IIntegrationEventBus : MES.Application.Interfaces.IEventBus
 {
-    string EventId { get; }
-    DateTime OccurredAt { get; }
-    string EventType { get; }
-}
-
-public abstract class EventBase : IEvent
-{
-    public string EventId { get; } = Guid.NewGuid().ToString();
-    public DateTime OccurredAt { get; } = DateTime.UtcNow;
-    public abstract string EventType { get; }
-}
-
-public interface IEventBus
-{
-    Task PublishAsync<TEvent>(TEvent @event) where TEvent : IEvent;
-    Task SubscribeAsync<TEvent>(Func<TEvent, Task> handler) where TEvent : IEvent;
-}
-
-public interface IEventHandler<TEvent> where TEvent : IEvent
-{
-    Task HandleAsync(TEvent @event);
+    // 可在此扩展集成层特有方法（如订阅等）
 }

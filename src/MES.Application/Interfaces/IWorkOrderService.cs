@@ -6,7 +6,7 @@ namespace MES.Application.Interfaces;
 
 public interface IWorkOrderService
 {
-    Task<IEnumerable<WorkOrderDto>> GetAllAsync();
+    Task<IEnumerable<WorkOrderDto>> GetAllAsync(WorkOrderStatus? status = null, long? lineId = null);
     Task<WorkOrderDto?> GetByIdAsync(long id);
 
     /// <summary>创建工单（DTO版本）</summary>

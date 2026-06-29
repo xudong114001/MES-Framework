@@ -6,11 +6,6 @@ using MES.Api.Middleware;
 
 namespace MES.Api.Controllers;
 
-public class ProcessAlertRequest
-{
-    public string ProcessedBy { get; set; } = string.Empty;
-}
-
 [ApiController]
 [Route("api/v1/ai")]
 [Authorize(Roles = "Admin,ProductionManager,QualityEngineer,EquipmentEngineer")]

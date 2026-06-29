@@ -7,6 +7,8 @@ public class WorkReportSubmittedEvent : IEvent
 {
     public Guid Id { get; set; } = Guid.NewGuid();
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public string EventId => Id.ToString();
+    public string EventType => nameof(WorkReportSubmittedEvent);
 
     public long WorkReportId { get; set; }
     public string ReportNo { get; set; } = string.Empty;

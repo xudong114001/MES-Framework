@@ -1,5 +1,38 @@
 import http from './index'
 
+export interface QualityAlert {
+  id: number
+  ruleName: string
+  title: string
+  message: string | null
+  level: number
+  relatedEntityType: string | null
+  relatedEntityId: number | null
+  isProcessed: boolean
+  processedBy: string | null
+  processedAt: string | null
+  createdAt: string
+}
+
+export interface EquipmentHealth {
+  equipmentId: number
+  equipmentName: string
+  status: number
+  healthScore: number
+  lastMaintainDate: string | null
+  nextMaintainDate: string | null
+  recommendations: string[]
+}
+
+export interface SchedulingRecommendation {
+  workOrderId: number
+  orderNo: string
+  suggestedLineId: number | null
+  suggestedLineName: string | null
+  priority: number
+  estimatedDuration: number
+}
+
 export interface KnowledgeEntry {
   id?: number
   category: number

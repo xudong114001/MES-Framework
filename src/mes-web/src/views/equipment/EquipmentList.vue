@@ -284,16 +284,22 @@ async function loadData() {
   try {
     const res: any = await equipmentApi.list()
     const devices = res.data || []
-    // 并行加载 OEE
-    const oeePromises = devices.map(async (dev: any) => {
-      try {
-        const oeeRes: any = await equipmentExtApi.oee(dev.id)
-        dev._oee = oeeRes.data?.oeeValue || 0
-      } catch {
-        dev._oee = 0
+
+    // 批量获取 OEE 数据
+    try {
+      const oeeRes: any = await equipmentExtApi.oeeBatch()
+      const oeeMap = new Map<number, any>()
+      if (oeeRes.data && Array.isArray(oeeRes.data)) {
+        oeeRes.data.forEach((item: any) => oeeMap.set(item.equipmentId, item))
       }
-    })
-    await Promise.all(oeePromises)
+      devices.forEach((dev: any) => {
+        const oee = oeeMap.get(dev.id)
+        dev._oee = oee?.oeeValue || 0
+      })
+    } catch {
+      devices.forEach((dev: any) => { dev._oee = 0 })
+    }
+
     list.value = devices
   } finally {
     loading.value = false

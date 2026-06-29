@@ -1,9 +1,11 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using MES.Application.Interfaces;
 using MES.Domain.Repositories;
 using MES.Infrastructure.Data;
 using MES.Infrastructure.Repositories;
+using MES.Infrastructure.Services;
 
 namespace MES.Infrastructure.Extensions;
 
@@ -22,6 +24,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IMaterialRepository, MaterialRepository>();
         services.AddScoped<IQcInspectionRepository, QcInspectionRepository>();
         services.AddScoped<IWorkOrderRepository, WorkOrderRepository>();
+        services.AddScoped<ISeedService, SeedService>();
 
         return services;
     }

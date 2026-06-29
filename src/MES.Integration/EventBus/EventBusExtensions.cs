@@ -1,6 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using MES.Application.Interfaces;
 using MES.Integration.Adapters;
 using MES.Integration.EventBus;
 using MES.Integration.Plc;

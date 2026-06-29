@@ -142,7 +142,7 @@ CREATE TABLE mes_work_order (
     factory_id BIGINT,
     workshop_id BIGINT,
     line_id BIGINT,
-    assignee VARCHAR(100),
+    assignee BIGINT,
     remark TEXT,
     created_at TIMESTAMPTZ DEFAULT NOW(),
     created_by BIGINT,
@@ -150,6 +150,9 @@ CREATE TABLE mes_work_order (
     updated_by BIGINT,
     is_deleted BOOLEAN DEFAULT FALSE
 );
+
+-- rework_from_id: 返工工单来源
+ALTER TABLE mes_work_order ADD COLUMN IF NOT EXISTS rework_from_id BIGINT;
 
 CREATE TABLE mes_work_order_step (
     id BIGSERIAL PRIMARY KEY,
@@ -175,16 +178,20 @@ CREATE TABLE mes_work_report (
     work_order_id BIGINT NOT NULL REFERENCES mes_work_order(id),
     step_id BIGINT REFERENCES mes_work_order_step(id),
     workstation_id BIGINT REFERENCES mes_workstation(id),
-    operator_id VARCHAR(100),
+    operator_id BIGINT,
     report_type INT NOT NULL DEFAULT 0,
     good_qty DECIMAL(18,2) DEFAULT 0,
     scrap_qty DECIMAL(18,2) DEFAULT 0,
     rework_qty DECIMAL(18,2) DEFAULT 0,
+    batch_no VARCHAR(100),
     duration_min INT,
     report_time TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     remark TEXT,
     created_at TIMESTAMPTZ DEFAULT NOW(),
-    created_by BIGINT
+    created_by BIGINT,
+    updated_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_by BIGINT,
+    is_deleted BOOLEAN DEFAULT FALSE
 );
 
 -- ==================== 质检 ====================
@@ -196,11 +203,18 @@ CREATE TABLE mes_qc_inspection (
     source_ref VARCHAR(100),
     work_order_id BIGINT REFERENCES mes_work_order(id),
     material_id BIGINT REFERENCES mes_material(id),
-    inspector VARCHAR(100),
+    inspector BIGINT,
     inspect_result INT DEFAULT 0,
     inspect_time TIMESTAMPTZ,
+    remark TEXT,
+    handling_action INT,
+    handling_remark VARCHAR(500),
+    handled_at TIMESTAMPTZ,
     created_at TIMESTAMPTZ DEFAULT NOW(),
-    created_by BIGINT
+    created_by BIGINT,
+    updated_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_by BIGINT,
+    is_deleted BOOLEAN DEFAULT FALSE
 );
 
 CREATE TABLE mes_qc_inspection_item (
@@ -239,12 +253,16 @@ CREATE TABLE mes_material_trace (
     serial_no VARCHAR(100),
     work_order_id BIGINT REFERENCES mes_work_order(id),
     src_work_order_id BIGINT,
-    direction INT NOT NULL,
+    direction VARCHAR(20) NOT NULL,
     qty DECIMAL(18,2) NOT NULL,
-    operator VARCHAR(100),
+    operator BIGINT,
     operate_time TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     remark TEXT,
-    created_at TIMESTAMPTZ DEFAULT NOW()
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    created_by BIGINT,
+    updated_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_by BIGINT,
+    is_deleted BOOLEAN DEFAULT FALSE
 );
 
 -- ==================== 设备 ====================
@@ -392,9 +410,9 @@ INSERT INTO mes_material (code, name, spec, unit, category, bom_level) VALUES
 -- FG-A001（智能控制器成品）的 BOM：关联子件 RM-B001, RM-B002, RM-B003
 -- product_id=1 (FG-A001), material_id 引用子件物料
 INSERT INTO mes_bom (product_id, material_id, quantity, scrap_rate, seq_no, valid_from, valid_to, status) VALUES
-(1, 2, 1.000000, 1.00, 10, '2025-01-01', '2025-12-31', 1),  -- FG-A001 包含 1块 PCB主板
-(1, 3, 2.000000, 0.50, 20, '2025-01-01', '2025-12-31', 1),  -- FG-A001 包含 2个 芯片组
-(1, 4, 1.000000, 2.00, 30, '2025-01-01', '2025-12-31', 1);  -- FG-A001 包含 1套 外壳套件
+(1, 2, 1.000000, 1.00, 10, '2025-01-01', '2026-12-31', 1),  -- FG-A001 包含 1块 PCB主板
+(1, 3, 2.000000, 0.50, 20, '2025-01-01', '2026-12-31', 1),  -- FG-A001 包含 2个 芯片组
+(1, 4, 1.000000, 2.00, 30, '2025-01-01', '2026-12-31', 1);  -- FG-A001 包含 1套 外壳套件
 
 -- ==================== 工艺路线 种子数据 ====================
 -- FG-A001（智能控制器成品）的工艺路线
@@ -424,25 +442,25 @@ INSERT INTO mes_equipment (code, name, model, factory_id, workshop_id, line_id, 
 -- ==================== 工单 种子数据 ====================
 -- 工单1：PENDING 状态，计划生产 100 件
 INSERT INTO mes_work_order (order_no, source_type, material_id, routing_id, planned_qty, completed_qty, scrap_qty, status, plan_start_time, plan_end_time, priority, factory_id, workshop_id, line_id, assignee, remark) VALUES
-('WO-2025-0001', 0, 1, 1, 100, 0, 0, 0,
- '2025-07-01 08:00:00+08', '2025-07-03 18:00:00+08',
- 5, 1, 1, 1, 'zhangsan', '智能控制器首批试产');
+('WO-2026-0001', 0, 1, 1, 100, 0, 0, 0,
+ '2026-07-01 08:00:00+08', '2026-07-03 18:00:00+08',
+ 5, 1, 1, 1, 1, '智能控制器首批试产');
 
 -- 工单2：IN_PROGRESS 状态，计划生产 500 件，已完成 200 件
 INSERT INTO mes_work_order (order_no, source_type, material_id, routing_id, planned_qty, completed_qty, scrap_qty, status, plan_start_time, plan_end_time, actual_start_time, priority, factory_id, workshop_id, line_id, assignee, remark) VALUES
-('WO-2025-0002', 0, 1, 1, 500, 200, 5, 3,
- '2025-06-25 08:00:00+08', '2025-06-30 18:00:00+08', '2025-06-25 08:15:00+08',
- 10, 1, 2, 3, 'lisi', '智能控制器量产订单');
+('WO-2026-0002', 0, 1, 1, 500, 200, 5, 3,
+ '2026-06-25 08:00:00+08', '2026-06-30 18:00:00+08', '2026-06-25 08:15:00+08',
+ 10, 1, 2, 3, 1, '智能控制器量产订单');
 
 -- 工单2 的工序进度（已完成前4道工序，第5道进行中）
 INSERT INTO mes_work_order_step (work_order_id, step_no, step_name, workstation_id, planned_qty, completed_qty, scrap_qty, status, plan_start_time, plan_end_time) VALUES
-(2, 10, 'SMT印刷',  1, 500, 500, 0,  5, '2025-06-25 08:00:00+08', '2025-06-25 12:00:00+08'),
-(2, 20, 'SMT贴片',  2, 500, 500, 2,  5, '2025-06-25 13:00:00+08', '2025-06-26 10:00:00+08'),
-(2, 30, '回流焊',   3, 500, 500, 1,  5, '2025-06-26 11:00:00+08', '2025-06-26 18:00:00+08'),
-(2, 40, 'AOI检测',  4, 500, 500, 2,  5, '2025-06-27 08:00:00+08', '2025-06-27 17:00:00+08'),
-(2, 50, '总装',     7, 500, 200, 0,  3, '2025-06-28 08:00:00+08', '2025-06-29 18:00:00+08'),
-(2, 60, '功能测试', 8, 500, 0,   0,  0, '2025-06-30 08:00:00+08', '2025-06-30 17:00:00+08'),
-(2, 70, '包装',     9, 500, 0,   0,  0, '2025-07-01 08:00:00+08', '2025-07-01 17:00:00+08');
+(2, 10, 'SMT印刷',  1, 500, 500, 0,  5, '2026-06-25 08:00:00+08', '2026-06-25 12:00:00+08'),
+(2, 20, 'SMT贴片',  2, 500, 500, 2,  5, '2026-06-25 13:00:00+08', '2026-06-26 10:00:00+08'),
+(2, 30, '回流焊',   3, 500, 500, 1,  5, '2026-06-26 11:00:00+08', '2026-06-26 18:00:00+08'),
+(2, 40, 'AOI检测',  4, 500, 500, 2,  5, '2026-06-27 08:00:00+08', '2026-06-27 17:00:00+08'),
+(2, 50, '总装',     7, 500, 200, 0,  3, '2026-06-28 08:00:00+08', '2026-06-29 18:00:00+08'),
+(2, 60, '功能测试', 8, 500, 0,   0,  0, '2026-06-30 08:00:00+08', '2026-06-30 17:00:00+08'),
+(2, 70, '包装',     9, 500, 0,   0,  0, '2026-07-01 08:00:00+08', '2026-07-01 17:00:00+08');
 
 -- ==================== AI 预警记录表 ====================
 CREATE TABLE IF NOT EXISTS mes_alert_record (
@@ -479,7 +497,7 @@ CREATE TABLE IF NOT EXISTS mes_alert_rule (
     created_by              BIGINT,
     updated_at              TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     updated_by              BIGINT,
-    is_deleted              SMALLINT DEFAULT 0
+    is_deleted              BOOLEAN DEFAULT FALSE
 );
 
 CREATE INDEX IF NOT EXISTS idx_alert_rule_level ON mes_alert_rule(level);

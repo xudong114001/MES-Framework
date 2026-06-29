@@ -3,6 +3,7 @@ using System.Text;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using MES.Application.Interfaces;
 using MES.Application.Settings;
 using RabbitMQ.Client;
 
@@ -12,7 +13,6 @@ public class RabbitMQEventBus : IEventBus, IDisposable
 {
     private readonly ILogger<RabbitMQEventBus> _logger;
     private readonly RabbitMQSettings _settings;
-    private readonly ConcurrentDictionary<string, List<Func<IEvent, Task>>> _handlers = new();
     private IConnection? _connection;
     private IChannel? _channel;
     private readonly string _exchangeName = "mes_event_bus";
@@ -24,10 +24,10 @@ public class RabbitMQEventBus : IEventBus, IDisposable
         _settings = settings.Value;
     }
 
-    public async Task PublishAsync<TEvent>(TEvent @event) where TEvent : IEvent
+    public async Task PublishAsync<T>(T eventData) where T : IEvent
     {
-        var eventName = typeof(TEvent).Name;
-        var json = JsonSerializer.Serialize(@event, @event.GetType());
+        var eventName = typeof(T).Name;
+        var json = JsonSerializer.Serialize(eventData, eventData.GetType());
         var body = Encoding.UTF8.GetBytes(json);
 
         try
@@ -35,34 +35,19 @@ public class RabbitMQEventBus : IEventBus, IDisposable
             await EnsureConnectedAsync();
             if (_channel is null)
             {
-                _logger.LogWarning("RabbitMQ channel not available, storing event locally");
+                _logger.LogWarning("RabbitMQ channel not available, skipping event publish");
                 return;
             }
             await _channel.BasicPublishAsync(
                 exchange: _exchangeName,
                 routingKey: eventName,
                 body: body);
-            _logger.LogInformation("Published event: {EventName} | {EventId}", eventName, @event.EventId);
+            _logger.LogInformation("Published event: {EventName} | {EventId}", eventName, eventData.EventId);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to publish event: {EventName}", eventName);
         }
-    }
-
-    public async Task SubscribeAsync<TEvent>(Func<TEvent, Task> handler) where TEvent : IEvent
-    {
-        var eventName = typeof(TEvent).Name;
-        _handlers.AddOrUpdate(eventName,
-            _ => new List<Func<IEvent, Task>> { e => handler((TEvent)e) },
-            (_, existing) =>
-            {
-                existing.Add(e => handler((TEvent)e));
-                return existing;
-            });
-
-        _logger.LogInformation("Subscribed to event: {EventName}", eventName);
-        await Task.CompletedTask;
     }
 
     private async Task EnsureConnectedAsync()

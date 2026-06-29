@@ -30,11 +30,13 @@ services:
     restart: unless-stopped
     ports:
       - "6379:6379"
-    command: ["redis-server", "--appendonly", "yes"]
+    command: ["redis-server", "--appendonly", "yes", "--requirepass", "MesRedis@2026!"]
+    environment:
+      REDIS_PASSWORD: MesRedis@2026!
     volumes:
       - redis-data:/data
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: ["CMD", "redis-cli", "-a", "MesRedis@2026!", "ping"]
       interval: 10s
       timeout: 3s
       retries: 5
@@ -72,7 +74,7 @@ services:
       - "5180:5180"
     environment:
       - ConnectionStrings__MesDb=Host=mes-postgres;Database=mes_db;Username=mes_user;Password=Mes@2026!
-      - ConnectionStrings__Redis=mes-redis:6379
+      - ConnectionStrings__Redis=mes-redis:6379,password=MesRedis@2026!
       - ConnectionStrings__RabbitMQ=host=mes-rabbitmq;username=mes_user;password=Mes@2026!
     depends_on:
       mes-postgres:

@@ -1,4 +1,4 @@
-using MES.Domain.Entities;
+using MES.Application.Dtos;
 
 namespace MES.Application.Interfaces;
 
@@ -14,8 +14,8 @@ public interface IDispatchService
     Task UndispatchStepAsync(long workOrderStepId);
 
     /// <summary>按产线查询今日派工任务</summary>
-    Task<IEnumerable<WorkOrder>> GetTodayDispatchedOrdersByLineAsync(long lineId);
+    Task<IEnumerable<WorkOrderDto>> GetTodayDispatchedOrdersByLineAsync(long lineId);
 
     /// <summary>获取某工序可选工位（所属产线下的所有工位）</summary>
-    Task<IEnumerable<Workstation>> GetAvailableWorkstationsAsync(long lineId);
+    Task<IEnumerable<WorkstationDto>> GetAvailableWorkstationsAsync(long lineId);
 }

@@ -114,16 +114,17 @@ public class QcService : IQcService
     /// <summary>
     /// 创建质检单
     /// </summary>
-    public async Task<QcInspection> CreateInspectionAsync(string inspectNo, QcInspectionType sourceType, long? workOrderId = null, long? materialId = null, long? inspector = null, string? sourceRef = null, string? remark = null)
+    public async Task<QcInspectionDto> CreateInspectionAsync(string inspectNo, QcInspectionType sourceType, long? workOrderId = null, long? materialId = null, long? inspector = null, string? sourceRef = null, string? remark = null)
     {
         var inspection = QcInspection.Create(inspectNo, sourceType, workOrderId, materialId, inspector, sourceRef, remark);
-        return await _inspectionRepo.AddAsync(inspection);
+        var created = await _inspectionRepo.AddAsync(inspection);
+        return MapToDto(created);
     }
 
     /// <summary>
     /// 添加质检项
     /// </summary>
-    public async Task<QcInspectionItem> AddItemAsync(long inspectionId, string itemName, string? specValue = null)
+    public async Task<QcInspectionItemDto> AddItemAsync(long inspectionId, string itemName, string? specValue = null)
     {
         var inspection = await _inspectionRepo.GetByIdAsync(inspectionId);
         if (inspection == null)
@@ -133,7 +134,7 @@ public class QcService : IQcService
         inspection.AddItem(item);
         await _inspectionRepo.UpdateAsync(inspection);
 
-        return item;
+        return MapItemToDto(item);
     }
 
     /// <summary>
@@ -164,7 +165,7 @@ public class QcService : IQcService
                     HandlingAction = inspection.HandlingAction,
                     HandledAt = inspection.HandledAt
                 };
-                await _eventBus.Publish(evt);
+                await _eventBus.PublishAsync(evt);
                 _eventLog?.Log(evt, "Published");
             }
         }

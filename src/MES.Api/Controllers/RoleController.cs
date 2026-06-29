@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MES.Api.Middleware;
+using MES.Application.Dtos;
 using MES.Application.Interfaces;
 
 namespace MES.Api.Controllers;
@@ -62,21 +63,4 @@ public class RoleController : ControllerBase
         await _service.DeleteAsync(id);
         return Ok(ApiResponse.Ok("删除成功"));
     }
-}
-
-public class CreateRoleRequest
-{
-    public string Name { get; set; } = string.Empty;
-    public string? Description { get; set; }
-}
-
-public class UpdateRoleRequest
-{
-    public string Name { get; set; } = string.Empty;
-    public string? Description { get; set; }
-}
-
-public class AssignPermissionsRequest
-{
-    public List<string> Permissions { get; set; } = [];
 }

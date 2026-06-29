@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using MES.Application.Interfaces;
 using MES.Application.Settings;
 using MES.Domain.Enums;
 using MES.Integration.Adapters;
@@ -240,22 +241,12 @@ public class P5IntegrationTests : IDisposable
         Assert.True(true);
     }
 
-    [Fact]
-    public async Task EventBus_SubscribeAsync_DoesNotThrow()
+    private class TestIntegrationEvent : IEvent
     {
-        var eventBus = new RabbitMQEventBus(_ebLogger.Object, _rabbitMQOptions);
-
-        await eventBus.SubscribeAsync<TestIntegrationEvent>(async e =>
-        {
-            await Task.CompletedTask;
-        });
-
-        Assert.True(true);
-    }
-
-    private class TestIntegrationEvent : EventBase
-    {
-        public override string EventType => "Test.Event";
+        public Guid Id { get; set; } = Guid.NewGuid();
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public string EventId => Id.ToString();
+        public string EventType => "Test.Event";
         public long WorkOrderId { get; set; }
         public string OrderNo { get; set; } = string.Empty;
     }
