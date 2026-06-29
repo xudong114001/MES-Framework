@@ -1,5 +1,24 @@
 import http from './index'
 
+export interface AndonEvent {
+  id: number
+  eventType: number
+  level: number
+  title: string
+  description: string | null
+  workstationId: number | null
+  workstationName: string | null
+  workOrderId: number | null
+  workOrderNo: string | null
+  triggeredById: number | null
+  triggeredByName: string | null
+  triggeredAt: string
+  resolvedById: number | null
+  resolvedByName: string | null
+  resolvedAt: string | null
+  status: string
+}
+
 export interface TriggerAndonRequest {
   eventType: number
   level?: number

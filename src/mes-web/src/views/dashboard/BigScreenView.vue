@@ -1,5 +1,10 @@
 <template>
-  <div class="big-screen" @click="toggleFullscreen">
+  <div class="big-screen">
+    <!-- 全屏切换按钮 -->
+    <el-button class="fullscreen-btn" @click.stop="toggleFullscreen" circle>
+      <el-icon><FullScreen /></el-icon>
+    </el-button>
+
     <!-- 顶部标题 -->
     <header class="screen-header">
       <h1 class="screen-title">MES 生产运营看板</h1>
@@ -152,7 +157,7 @@ import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { dashboardApi } from '../../api/dashboard'
 import { andonApi } from '../../api/andon'
 import signalrService from '../../utils/signalr'
-import { TrendCharts, DataAnalysis, Monitor, Document, WarningFilled } from '@element-plus/icons-vue'
+import { TrendCharts, DataAnalysis, Monitor, Document, WarningFilled, FullScreen } from '@element-plus/icons-vue'
 
 // ============ 数据状态 ============
 const todayStats = ref({ total: 0, pending: 0, inProgress: 0, completed: 0, cancelled: 0 })
@@ -315,9 +320,9 @@ function handleAndonEvent(data: any) {
 // ============ 全屏 ============
 function toggleFullscreen() {
   if (!document.fullscreenElement) {
-    document.documentElement.requestFullscreen().catch(() => {
-      // 浏览器可能拒绝全屏请求
-    })
+    document.documentElement.requestFullscreen().catch(() => {})
+  } else {
+    document.exitFullscreen().catch(() => {})
   }
 }
 
@@ -380,7 +385,19 @@ onUnmounted(() => {
   flex-direction: column;
   gap: 16px;
   font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;
-  cursor: pointer;
+}
+
+/* ===== 全屏按钮 ===== */
+.fullscreen-btn {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 1000;
+  opacity: 0.7;
+}
+
+.fullscreen-btn:hover {
+  opacity: 1;
 }
 
 /* ===== 顶部标题 ===== */

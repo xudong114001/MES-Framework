@@ -1,5 +1,24 @@
 import http from './index'
 
+export interface OeeData {
+  equipmentId: number
+  equipmentName: string
+  status: number
+  oeeValue: number
+  availability: number
+  performance: number
+  quality: number
+  goodQty: number
+  badQty: number
+  actualRunMinutes: number
+  plannedRunMinutes: number
+  lastMaintainTime: string | null
+  nextMaintainTime: string | null
+  maintainCycleDays: number | null
+  theoreticalCycleTime: number | null
+  plannedRunTime: number | null
+}
+
 export interface MaintenancePlan {
   id?: number
   equipmentId?: number
@@ -17,6 +36,7 @@ export const equipmentExtApi = {
   maintain(equipmentId: number) { return http.post(`/equipment/${equipmentId}/maintain`) },
   fault(equipmentId: number) { return http.post(`/equipment/${equipmentId}/fault`) },
   oee(equipmentId: number) { return http.get(`/equipment/${equipmentId}/oee`) },
+  oeeBatch() { return http.get('/equipment/oee-batch') },
   // 保养计划 - 针对单个设备
   createMaintenancePlan(equipmentId: number, data: { planName: string; cycleDays: number; description?: string }) {
     return http.post(`/equipment/${equipmentId}/maintenance-plan`, data)

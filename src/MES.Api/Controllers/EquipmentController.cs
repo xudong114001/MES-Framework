@@ -110,6 +110,16 @@ public class EquipmentController : ControllerBase
         return Ok(ApiResponse.Ok(result));
     }
 
+    /// <summary>
+    /// 批量获取所有设备的 OEE 数据
+    /// </summary>
+    [HttpGet("oee-batch")]
+    public async Task<IActionResult> OeeBatch()
+    {
+        var result = await _equipmentService.CalculateAllOeeAsync();
+        return Ok(ApiResponse.Ok(result));
+    }
+
     // ======================== 保养计划 ========================
 
     /// <summary>

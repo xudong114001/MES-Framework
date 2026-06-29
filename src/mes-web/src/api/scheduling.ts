@@ -1,5 +1,30 @@
 import http from './index'
 
+export interface ScheduleItem {
+  workOrderId: number
+  orderNo: string
+  materialName: string
+  plannedQty: number
+  completedQty: number
+  status: number
+  lineId: number | null
+  lineName: string | null
+  priority: number
+  planStartTime: string | null
+  planEndTime: string | null
+}
+
+export interface DispatchTask {
+  workOrderStepId: number
+  workOrderId: number
+  orderNo: string
+  stepNo: number
+  stepName: string
+  workstationId: number | null
+  workstationName: string | null
+  status: number
+}
+
 export const schedulingApi = {
   unscheduledOrders() { return http.get('/scheduling/unscheduled-orders') },
   schedule(workOrderId: number, lineId: number) { return http.post('/scheduling/schedule', { workOrderId, lineId }) },

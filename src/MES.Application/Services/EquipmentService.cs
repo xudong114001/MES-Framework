@@ -278,6 +278,31 @@ public class EquipmentService : IEquipmentService
         };
     }
 
+    /// <summary>计算所有设备的 OEE</summary>
+    public async Task<List<OeeResultDto>> CalculateAllOeeAsync()
+    {
+        var equipments = await _equipmentRepo.GetAllAsync();
+        var results = new List<OeeResultDto>();
+        foreach (var eq in equipments)
+        {
+            try
+            {
+                var oee = await CalculateOeeAsync(eq.Id);
+                results.Add(oee);
+            }
+            catch
+            {
+                results.Add(new OeeResultDto
+                {
+                    EquipmentId = eq.Id,
+                    EquipmentName = eq.Name,
+                    Status = eq.Status
+                });
+            }
+        }
+        return results;
+    }
+
     // ======================== 保养计划管理 ========================
 
     public async Task<MaintenancePlanDto> CreateMaintenancePlanAsync(

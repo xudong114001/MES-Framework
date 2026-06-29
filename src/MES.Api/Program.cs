@@ -56,7 +56,9 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("DevCors", policy =>
     {
-        policy.WithOrigins("http://localhost:5173")
+        var origins = builder.Configuration.GetSection("CorsOrigins").Get<string[]>()
+            ?? new[] { "http://localhost:5173" };
+        policy.WithOrigins(origins)
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials();
@@ -145,7 +147,9 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
 });
 
 // Health Checks
-builder.Services.AddHealthChecks();
+builder.Services.AddHealthChecks()
+    .AddNpgSql(builder.Configuration.GetConnectionString("MesDb") ?? "", name: "postgresql")
+    .AddRedis(builder.Configuration.GetConnectionString("Redis") ?? "localhost:6379", name: "redis");
 
 // P5 Integration Services
 builder.Services.Configure<RabbitMQSettings>(builder.Configuration.GetSection("RabbitMQ"));

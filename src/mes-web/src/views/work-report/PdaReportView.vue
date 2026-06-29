@@ -138,6 +138,7 @@
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { workReportApi } from '../../api/work-report'
+import { routingApi } from '../../api/routing'
 
 const scanCodeRef = ref<any>(null)
 const stepSelectRef = ref<any>(null)
@@ -150,7 +151,28 @@ const reworkQtyRef = ref<any>(null)
 const submitting = ref(false)
 const errorMsg = ref('')
 
-const stepOptions = ['SMT贴片', 'DIP插件', '波峰焊', '组装', '测试', '包装']
+const stepOptions = ref<string[]>([])
+
+async function loadStepOptions() {
+  try {
+    const res: any = await routingApi.list()
+    if (res.data && Array.isArray(res.data)) {
+      // 从所有工艺路线中提取步骤名称
+      const steps = new Set<string>()
+      res.data.forEach((r: any) => {
+        if (r.steps && Array.isArray(r.steps)) {
+          r.steps.forEach((s: any) => steps.add(s.stepName))
+        }
+      })
+      stepOptions.value = Array.from(steps)
+    }
+  } catch {
+    // 如果获取失败，使用默认选项
+    stepOptions.value = ['SMT贴片', 'DIP插件', '波峰焊', '组装', '测试', '包装']
+  }
+}
+
+loadStepOptions()
 
 const form = reactive({
   scanCode: '',
